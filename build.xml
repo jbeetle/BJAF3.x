@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="showinfo" name="beetle.jpx">
+	<property environment="env" /> 
+	<property name="JAVA_HOME" value="${env.JAVA_HOME}" />
+    <property name="project.root" value="${basedir}" />
+	<property name="build.lib.dir" value="${project.root}/lib" />
+	<property name="build.bin.dir" value="${project.root}/bin/tmp" />
+	<property name="build.main.src.dir" value="${project.root}/src/main" />
+	<property name="build.tool.src.dir" value="${project.root}/src/tool" />
+	<property name="dist.dir" value="${project.root}/dist" />
+	<property name="docs.dir" value="${project.root}/docs" />
+	<property name="samples.dir" value="${project.root}/samples" />
+	<path id="master-classpath">
+		<fileset dir="${build.lib.dir}" />
+	</path>
+	<target name="showinfo">  
+        <echo message="please have a look at 'readme.txt' first. "/>  
+    </target> 
+	<target name="cleanup">
+		<delete dir="${build.bin.dir}" />
+		<delete file="${dist.dir}/beetle.jar" />
+		<mkdir dir="${build.bin.dir}" />
+	</target>
+	<target depends="cleanup" name="srccompile">
+		<javac destdir="${build.bin.dir}" target="1.6" source="1.6" debug="true" deprecation="true" encoding="UTF-8">
+			<src path="${build.main.src.dir}" />
+			<src path="${build.tool.src.dir}" />
+			<classpath refid="master-classpath" />
+		</javac>
+	</target>
+	<target name="resource">
+        <copy todir="${build.bin.dir}">
+            <fileset dir="${build.main.src.dir}">
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+    </target>
+	<target depends="srccompile,resource" name="archive">
+		<delete dir="${build.bin.dir}/weblogic" />
+        <jar compress="true" destfile="${dist.dir}/beetle.jar" manifest="${build.main.src.dir}/META-INF/MANIFEST.MF">
+            <fileset dir="${build.bin.dir}">
+                <include name="**/*.*"/>
+            </fileset>
+		</jar>
+		<delete dir="${build.bin.dir}" />
+    </target>
+    <target name="javadoc">
+		<delete failonerror="false" includeemptydirs="true">
+     		<fileset dir="${docs.dir}/apidoc"/>
+        </delete>
+		<!--
+		<copy file="${build.lib.dir}/guice-3.0/aopalliance.jar" todir="${JAVA_HOME}/jre/lib/ext" />
+		<copy file="${build.lib.dir}/guice-3.0/guice-3.0.jar" todir="${JAVA_HOME}/jre/lib/ext" />
+		<copy file="${build.lib.dir}/guice-3.0/guice-assistedinject-3.0.jar" todir="${JAVA_HOME}/jre/lib/ext" />
+		<copy file="${build.lib.dir}/guice-3.0/javax.inject.jar" todir="${JAVA_HOME}/jre/lib/ext" />
+		-->
+        <javadoc access="protected" author="true" destdir="${docs.dir}/apidoc" doctitle="Beetle J2EE Application Framework 2.2.4"
+                 encoding="UTF-8" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false"
+                 notree="false" source="1.6" sourcepath="${build.main.src.dir}" splitindex="false" use="false" version="true"/>
+		<!--
+		<delete file="${JAVA_HOME}/jre/lib/ext/aopalliance.jar" />
+		<delete file="${JAVA_HOME}/jre/lib/ext/guice-3.0.jar" />
+		<delete file="${JAVA_HOME}/jre/lib/ext/guice-assistedinject-3.0.jar" />
+		<delete file="${JAVA_HOME}/jre/lib/ext/javax.inject.jar" />
+		-->
+    </target>
+	<target name="genDbCode">
+		<delete dir="${basedir}/output/dbGenCode" />
+		<java fork="true" classname="beetle.generate.GenPersistenceCode">
+			<jvmarg value="-Dbeetle.application.home.path=${dist.dir}/config"/>
+            <classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+			</classpath>
+        </java>
+		<delete dir="${basedir}/log" />
+    </target>
+	<!--psdemo-->
+	<target name="runPsDemo" depends="archive">
+		<mkdir dir="${basedir}/output/psdemo" />
+		<javac destdir="${basedir}/output/psdemo" target="1.6" source="1.6" debug="true" deprecation="true" encoding="UTF-8">
+			<src path="${samples.dir}/PsDemo/src" />
+			<classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+			</classpath>
+		</javac>
+		<java fork="true" classname="test.TestMe" dir="${samples.dir}/psdemo">
+			<jvmarg value="-Dbeetle.application.home.path=${samples.dir}/PsDemo/config"/>
+			<classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+				<path location="${basedir}/output/psdemo"/>
+			</classpath>
+        </java>
+	</target>
+	<!--webdemo-->
+	<target name="genWebDemoWar" depends="archive" >
+		<mkdir dir="${basedir}/output/webdemo" />
+		<mkdir dir="${basedir}/output/webdemo/web" />
+		<mkdir dir="${basedir}/output/webdemo/classes" />
+		<delete file="${basedir}/output/webdemo.war" />
+		<!--<native2ascii src="${samples.dir}/WebDemo/src" dest="${basedir}/output/webdemo/tmp" />-->
+		<javac destdir="${basedir}/output/webdemo/classes" target="1.6" source="1.6" debug="true" deprecation="true" encoding="utf-8">
+			<src path="${samples.dir}/WebDemo/src" />
+			<classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+			</classpath>
+		</javac>
+		<copy todir="${basedir}/output/webdemo/web">
+			<fileset dir="${samples.dir}/WebDemo/WebContent" />
+		</copy>
+		<copy todir="${basedir}/output/webdemo/web/WEB-INF/classes">
+			<fileset dir="${basedir}/output/webdemo/classes" />
+		</copy>
+		<copy file="${dist.dir}/beetle.jar" todir="${basedir}/output/webdemo/web/WEB-INF/lib" />
+		<copydir src="${build.lib.dir}/web" dest="${basedir}/output/webdemo/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<copydir src="${build.lib.dir}/util" dest="${basedir}/output/webdemo/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<zip destfile="${basedir}/output/webdemo.war" basedir="${basedir}/output/webdemo/web" />
+		<delete dir="${basedir}/output/webdemo" />
+    </target>
+	<!--dwz-->
+	<target name="genDwzWar" depends="archive" >
+		<mkdir dir="${basedir}/output/dwz" />
+		<mkdir dir="${basedir}/output/dwz/web" />
+		<mkdir dir="${basedir}/output/dwz/classes" />
+		<delete file="${basedir}/output/dwz.war" />
+		<javac destdir="${basedir}/output/dwz/classes" target="1.6" source="1.6" debug="true" deprecation="true" encoding="utf-8">
+			<src path="${samples.dir}/dwz/src" />
+			<classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+			</classpath>
+		</javac>
+		<copy todir="${basedir}/output/dwz/web">
+			<fileset dir="${samples.dir}/dwz/WebContent" />
+		</copy>
+		<copy todir="${basedir}/output/dwz/web/WEB-INF/classes">
+			<fileset dir="${basedir}/output/dwz/classes" />
+		</copy>
+		<copy file="${dist.dir}/beetle.jar" todir="${basedir}/output/dwz/web/WEB-INF/lib" />
+		<copydir src="${build.lib.dir}/web" dest="${basedir}/output/dwz/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<copydir src="${build.lib.dir}/util" dest="${basedir}/output/dwz/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<!--<copydir src="${build.lib.dir}/persistence" dest="${basedir}/output/dwz/web/WEB-INF/lib" includes="**/h2*.jar" flatten="true"/>-->
+		<copydir src="${build.lib.dir}/persistence" dest="${basedir}/output/dwz/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<zip destfile="${basedir}/output/dwz.war" basedir="${basedir}/output/dwz/web" />
+		<delete dir="${basedir}/output/dwz" />
+    </target>
+	<!--gen webconsole-->
+	<target name="genWebConsoleWar" depends="archive" >
+		<mkdir dir="${basedir}/output/WebConsole" />
+		<mkdir dir="${basedir}/output/WebConsole/web" />
+		<mkdir dir="${basedir}/output/WebConsole/classes" />
+		<delete file="${basedir}/output/WebConsole.war" />
+		<javac destdir="${basedir}/output/WebConsole/classes" target="1.6" source="1.6" debug="true" deprecation="true" encoding="utf-8">
+			<src path="${samples.dir}/WebConsole/src" />
+			<classpath>
+                <path refid="master-classpath"/>
+                <path location="${dist.dir}/beetle.jar"/>
+			</classpath>
+		</javac>
+		<copy todir="${basedir}/output/WebConsole/web">
+			<fileset dir="${samples.dir}/WebConsole/WebContent" />
+		</copy>
+		<copy todir="${basedir}/output/WebConsole/web/WEB-INF/classes">
+			<fileset dir="${basedir}/output/WebConsole/classes" />
+		</copy>
+		<copy file="${dist.dir}/beetle.jar" todir="${basedir}/output/WebConsole/web/WEB-INF/lib" />
+		<copydir src="${build.lib.dir}/web" dest="${basedir}/output/WebConsole/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<copydir src="${build.lib.dir}/util" dest="${basedir}/output/WebConsole/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<!--<copydir src="${build.lib.dir}/persistence" dest="${basedir}/output/dwz/web/WEB-INF/lib" includes="**/h2*.jar" flatten="true"/>-->
+		<copydir src="${build.lib.dir}/persistence" dest="${basedir}/output/WebConsole/web/WEB-INF/lib" includes="**/*.jar" flatten="true"/>
+		<zip destfile="${basedir}/output/WebConsole.war" basedir="${basedir}/output/WebConsole/web" />
+		<delete dir="${basedir}/output/WebConsole" />
+    </target>
+	<!--genJar-->
+    <target depends="archive" name="genJar"/>
+	<target depends="genJar,javadoc" name="genAll"/>
+ </project>
+

@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GB2312">
+<link href="t-1.css" rel="stylesheet" type="text/css">
+<title>页面数据绑定与校验</title>
+<script language="JavaScript" src="../js/formValidator.js" type="text/JavaScript">
+</script>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+	function submitForm(){
+		 var f=formValidate(form1);
+         if(!f){
+            return;
+         }
+		 form1.submit();
+	}
+//-->
+</SCRIPT>
+</head>
+<body>
+<strong>雇员信息录入</strong> 
+<form name="form1" method="post" action="RegisterEmpController.ctrl" >
+  <table width="34%" border="0" align="center">
+    <tr> 
+      <td><div align="right">empNo</div></td>
+      <td><input type="text"  name="empNo" required=1 regex='NUMBER' message="请输入数字"></td>
+    </tr>
+	 <tr> 
+      <td><div align="right">ename</div></td>
+      <td><input type="text"  name="ename" required=1 ></td>
+    </tr>
+	<tr> 
+      <td><div align="right">phone</div></td>
+      <td><input type="text"  name="phone" regex='PHONE' ></td>
+    </tr>
+    <tr> 
+      <td><div align="right">job</div></td>
+      <td><input name="job" type="text"  value=""></td>
+    </tr>
+	   <tr> 
+      <td><div align="right">hireDate</div></td>
+      <td><input name="hireDate" type="text"  required=1 regex='DATETIME' value="">(yyyy-mm-dd hh:mm:ss)</td>
+    </tr>
+	 <tr> 
+      <td><div align="right">sal</div></td>
+      <td><input type="text"  name="sal" required=1 regex='CURRENCY'></td>
+    </tr>
+    <tr> 
+      <td><div align="right">email</div></td>
+      <td><input type="text"  name="email" regex='EMAIL' message="请输入一个合法邮件地址"></td>
+    </tr>
+	<tr> 
+      <td colspan="2"><div align="center">
+	          <input type="button" name="Submit" value="提交" onclick="return submitForm()">
+        </div></td>
+    </tr>
+  </table>
+</form>
+<p align="center"><a href="../index.html">返回</a></p>
+</body>
+</html>

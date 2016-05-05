@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>ajax framework demo</title>
+<!-- 引入jsonrpcEx.js客户端javascript开发包 -->
+<script type="text/javascript" src="../js/jquery-1.9.1.min.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+$(document).ready(function(){
+	$('#Submit').on('click', function (e) {
+			e.preventDefault();
+			var frm=$('#form1');
+			ajaxFormSubmit(frm);
+	});
+});
+function ajaxFormSubmit(frm){
+		//alert(frm.attr('action'));
+		$.ajax({
+					type: frm.attr('method'),
+					url: frm.attr('action'),
+					dataType:'json',
+					data: frm.serialize(),
+					success: function (msg) {
+						//alert(msg);
+						var userInfo=msg.UserInfo;
+						var user=userInfo.name;
+						var userid=userInfo.userId;
+						var useryear=userInfo.year;
+						var sex=userInfo.sex;
+						var phone=userInfo.phone;
+						var loginTime=new Date(msg.LoginTime);
+						alert(msg.returnMsg+'\n-->用户信息<--\n编号：'+userid+'\n姓名：'+user+'\n性别：'+sex+'\n年龄：'+useryear+'\n登陆时间：'+loginTime.toString());
+					}
+		});
+};
+//-->
+</SCRIPT>
+<link href="t-1.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<form id="form1" name="form1"  method="post" action="AjaxDemoController.ctrl" >
+  <table width="34%" border="0" align="center">
+    <tr> 
+      <td><div align="right">用户名:</div></td>
+      <td><input name="username" type="text" id="username" value="HenryYu"></td>
+    </tr>
+    <tr> 
+      <td><div align="right">密 码:(888888)</div></td>
+      <td><input name="password" type="text" id="password" value="888888"></td>
+    </tr>
+    <tr> 
+      <td colspan="2"><div align="center">
+	      <!-- 提交调用doLogin函数工作 -->
+		  <input type="hidden" name="$action" value="loginAction" />
+          <input type="button" id="Submit" name="Submit" value="提交">
+        </div></td>
+    </tr>
+  </table>
+</form>
+<p align="center"><a href="../index.html">返回</a></p>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+<!-- 视图的名称是唯一的，url是视图文件在Web服务器上存放位置 -->
+  <views>
+    <!-- Session失效时，请求会自动跳转到此标签定义的视图 -->
+    <DisabledSessionView>IndexView</DisabledSessionView>
+    <!-- 应用错误统一处理视图，当系统发生异常自动跳转到此标签定义的视图 -->
+    <ErrorView>ErrView</ErrorView>
+    <standard>
+      <sItem name="IndexView" url="/index.html"/>
+      <sItem name="MainView" url="/views/main.jsp"/>
+      <sItem name="ErrView" url="/errdeal/errView.jsp"/>
+      <sItem name="ContentView" url="/views/content.jsp"/>
+      <sItem name="InputView" url="/views/input.jsp"/>
+      <!-- 添加更多的Item ...-->
+    </standard>
+    <freemarker>
+      <fItem name="wapInputView" url="/views/wap_input.ftl"/>
+	  <!-- 添加更多的Item ...-->
+    </freemarker>
+  </views>
+   <!--视图模块【针对视图<views>标签，如果系统视图数量比较多，那么可以建立多个视图模块】 -->
+  <module>
+    <mItem filename="xxx_view.xml" active="true"/>
+	<!-- 添加更多的Item ...-->
+  </module>
+</mappings>

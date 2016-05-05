@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+<item interface="example.service.IEchoService" implement="example.service.EchoServiceImpl" />
+  <!--
+  <item interface="example.service.IXService" implement="example.service.XServiceImpl" />
+  <item interface="demo.service.IUserService" implement="demo.service.ServiceImpl" />
+  <item interface="demo.service.IFriendService" implement="demo.service.ServiceImpl" />
+-->
+</binder>

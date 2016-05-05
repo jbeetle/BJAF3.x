@@ -1,0 +1,36 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GB2312">
+<link href="t-1.css" rel="stylesheet" type="text/css">
+<title>Web Service Demo</title>
+</head>
+<body>
+  <table width="80%" border="0" align="center">
+    <tr> 
+      <td><a href="../service/hello/">xml数据格式[WebController.xml配置形式1]</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="hello.service">xml数据格式[WebController.xml配置形式2]</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="../service/hello/?$action=jsonTestService">json数据格式</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="../service/presentation/webservice/Hello">零配置形式1访问</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="../service/presentation/webservice/Hello/">零配置形式2访问</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="../service/presentation/webservice/AdaptiveDataBack/">数据返回格式不显式指定由web.xml中WEB_SERVICE_DATA_DEFAULT_FORMAT参数决定</a></td>
+     </tr>
+	   <tr> 
+      <td><a href="../service/presentation/webservice/AdaptiveDataBack/?$dataFormat=json">数据返回格式由请求时决定($dataFormat=xml/json)</a></td>
+     </tr>
+	  <tr> 
+      <td><a href="../service/presentation/webservice/BeanDataDemoService/">数据直接以Bean而非Map形式返回</a></td>
+     </tr>
+  </table>
+<p align="center"><a href="../index.html">返回</a></p>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>text demo</title>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+function markIt(){
+  form1.flag.value=1;
+}
+function markIt2(){
+  form1.flag.value=2;
+}
+function doLogin()
+{
+  	if(form1.flag.value==1){
+	   form1.action="GenPdfController.dcmt";
+	}else if(form1.flag.value==2){
+	   form1.action="GenExcelController.dcmt";
+	}
+	form1.submit();
+}
+//-->
+</SCRIPT>
+<link href="t-1.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<form action="" method="post" name="form1" target="_blank" >
+  <table width="34%" border="1" align="center">
+    <tr> 
+      <td>内容：</td>
+      <td><textarea name="info" rows="5" id="info">hi,beetle framework!</textarea></td>
+    </tr>
+    <tr> 
+      <td >作者：</td>
+      <td><input name="auther" type="text" id="auther" value="HenryYu" size="10" maxlength="10"></td>
+    </tr>
+	  <tr> 
+      <td>文档类型：</td>
+      <td>pdf<INPUT TYPE="radio" name="a" onClick="markIt()" checked>&nbsp;&nbsp;excel<INPUT TYPE="radio" name="a" onClick="markIt2()">
+	  <INPUT TYPE="hidden" NAME="flag" value="1"></td>
+    </tr>
+    <tr> 
+      <td colspan="2"><div align="center">
+	      <!-- 提交调用doLogin函数工作 -->
+          <input type="button" name="Submit" value="提交" onClick="doLogin()">
+      </div></td>
+    </tr>
+  </table>
+</form>
+<p align="center"><a href="../index.html">返回</a></p>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+    <!-- 
+	*interface-服务接口或抽象类，没有接口可不定义此属性
+	*implement-接口实现类，抽象的扩展类，或提供者类，或非接口实现类（此时不定义interface属性）
+	*singleton-是否为单例（针对implement而已），不定义此属性，默认为true
+	-->
+	<item interface="com.beetle.framework.util.pattern.di.IService" implement="com.beetle.framework.util.pattern.di.IServiceImp" singleton="true"/>
+	<item implement="com.beetle.framework.util.pattern.di.IServiceImp" singleton="true"/>
+	<!--
+	<item interface="com.beetle.framework.util.pattern.di.IService" implement="com.beetle.framework.util.pattern.di.IServiceImp"/>
+	-->
+</binder>

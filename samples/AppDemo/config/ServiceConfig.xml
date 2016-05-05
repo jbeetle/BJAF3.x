@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+	<item interface="demo.XXXApp.service.face.IHelloService"
+		implement="demo.XXXApp.service.impl.HelloServiceImpl" enabled="true" />
+</binder>

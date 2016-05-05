@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+  <item interface="demo.business.IUserManagerService" implement="demo.business.imp.BsUserManager" />
+  <item interface="demo.business.IFriendService" implement="demo.business.imp.BsFriend" />
+ 
+</binder>

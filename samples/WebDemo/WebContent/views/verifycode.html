@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>Insert title here</title>
+<link href="t-1.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+<!--
+.STYLE3 {color: #000033; font-weight: bold; }
+.STYLE4 {color: #000000}
+.STYLE6 {
+	font-style: italic;
+	color: #0000FF;
+	font-size: 12px;
+}
+-->
+</style>
+</head>
+<body>
+<table width="542" border="1" align="center">
+  <caption>
+    验证码样式说明
+  </caption>
+  <tr>
+    <td colspan="2"><p>验证码生成器支持以下参数：</p>
+      <table width="362" border="1" align="center">
+        <tr>
+          <td width="48"><span class="STYLE3">width</span></td>
+          <td width="159"><span class="STYLE4">图片宽</span></td>
+        </tr>
+        <tr>
+          <td><span class="STYLE3">height</span></td>
+          <td><span class="STYLE4">图片高</span></td>
+        </tr>
+        <tr>
+          <td><span class="STYLE3">digit</span></td>
+          <td><span class="STYLE4">验证码位数</span></td>
+        </tr>
+        <tr>
+          <td><span class="STYLE3">type</span></td>
+          <td><span class="STYLE4">内容类型：1-纯数字；2-纯英文字母；3-数字和英文字母混合</span></td>
+        </tr>
+        <tr>
+          <td><span class="STYLE3">font</span></td>
+          <td><span class="STYLE4">验证码字体名称，如果指定为操作系统默认字体</span></td>
+        </tr>
+      </table>      
+    <p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td colspan="2">例子：【<span class="STYLE6">VerifyCode.draw?width=60&amp;height=20&amp;digit=4&amp;type=3&amp;font=Comic Sans MS</span>】</td>
+  </tr>
+  <tr>
+    <td width="76"><img border="0" src="VerifyCode.draw?width=60&height=20&digit=4&type=3&font=Comic Sans MS"
+			style="cursor:pointer;" alt="看不清？点击这里换一个" onclick="this.src='VerifyCode.draw?width=60&height=20&digit=4&type=3&font=Comic Sans MS&timestamp='+ + new Date().getTime();";></td>
+    <td width="298"><span class="STYLE4">宽-60，高-20，4位数验证码，数字和英文混合，
+    字体为：Comic Sans MS</span></td>
+  </tr>
+ 
+</table>
+<div align="center"><a href="../index.html">返回</a></div>
+</body>
+</html>

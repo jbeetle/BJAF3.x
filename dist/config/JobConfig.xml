@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobs>
+  <!-- 
+  *每个Job根据cron时间表达式串行执行，也就是说对同一个Job而已，执行完一次，才会接着执行下一次
+  *id-唯一标识，代表不同的job
+  *implement-Job接口的实现类
+  *enabled-有效启动标记，true代表后天会按时启动；false代表不会按时启动，如果一个Job已经启动再修改此参数，则代表执行完毕后，下次不再执行
+  *cron-时间表达式
+  *timeout-超时参数，为可选参数，代表某个Job执行超过这个时间是否需要强行回收；单位为毫秒ms，如果为0或负数代表参数无效，不会被强行回收
+  *starttime-Job开始计算参数，可选参数，代表在此时间之前，即使时间表达式满足触发条件，Job也不会触发，格式为【yyyy-MM-dd HH:mm:ss】，不设置此参数，默认为配置时间
+  -->
+  <item id="hardTestJob" implement="example.job.HardJob" enabled="true" cron="0/10 * * * * ?" timeout="30000" starttime="2012-11-24 12:30:01" />
+  <item id="lightTestJob" implement="example.job.LightJob" enabled="true" cron="2/10 * * * * ?" />
+</jobs>

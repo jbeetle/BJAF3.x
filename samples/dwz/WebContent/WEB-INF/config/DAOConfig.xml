@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+		<item interface="com.beetle.dwzdemo.persistence.dao.IXxUserDao" implement="com.beetle.dwzdemo.persistence.imp.PsXxUser" />
+		<item interface="com.beetle.dwzdemo.persistence.dao.IXxFriendDao" implement="com.beetle.dwzdemo.persistence.imp.PsXxFriend"/>
+ </binder>

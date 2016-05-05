@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+	<views>
+		<DisabledSessionView>IndexView</DisabledSessionView>
+		<ErrorView>ErrView</ErrorView>
+		<standard>
+			<sItem name="IndexView" url="/index.html" />
+			<sItem name="ErrView" url="/common/errView.jsp" />
+			<sItem name="MainView" url="/views/main.jsp" />
+			<sItem name="InfoView" url="/common/infoView.jsp" />
+			<sItem name="DemoCacheView" url="/views/cache.jsp" />
+			<sItem name="HelloView" url="/views/hello.jsp" />
+			<sItem name="WebServiceView" url="/views/webService.jsp" />
+			<sItem name="LoginoutView" url="/views/loginoutView.jsp" />
+		</standard>
+	    <freemarker>
+			<fItem name="LginFtlView" url="/views/template/LoginView.ftl"/>
+        </freemarker>
+	</views>
+</mappings>

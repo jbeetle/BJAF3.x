@@ -1,0 +1,4 @@
+[INFO ] 2013-05-15 14:50:51,374 [main] com.beetle.framework.persistence.access.DBConfig     - from file:[config\DBConfig.xml]
+[DEBUG] 2013-05-15 14:50:51,411 [main] com.beetle.framework.persistence.access.ConnectionFactory     - SYSDATASOURCE_DEFAULT's[use-mode]:2
+[DEBUG] 2013-05-15 14:50:51,412 [main] com.beetle.framework.persistence.access.ConnectionFactory     - ==create new connention:SYSDATASOURCE_DEFAULT
+[INFO ] 2013-05-15 14:50:52,770 [main] com.beetle.framework.persistence.access.ConnectionFactory     - SYSDATASOURCE_DEFAULT's com.beetle.framework.persistence.access.datasource.CommonPool Started!

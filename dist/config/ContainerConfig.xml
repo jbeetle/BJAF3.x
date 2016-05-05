@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Config> 
+  <!-- EJB容器远程访问设置 -->  
+  <Containers> 
+    <!-- 默认容器，系统必须拥有一个<default>默认EJB容器设置 -->  
+    <default> 
+      <item name="INITIAL_CONTEXT_FACTORY" value="org.jnp.interfaces.NamingContextFactory"/>  
+      <item name="PROVIDER_URL" value="127.0.0.1:2099"/>  
+      <item name="URL_PKG_PREFIXES" value="org.jboss.naming:org.jnp.interfaces"/>  
+      <item name="SECURITY_PRINCIPAL" value="test_user"/>  
+      <item name="SECURITY_CREDENTIALS" value="test_pass"/>  
+      <!-- 容器登录验证类型：其值为："JNDI"或"JAAS"默认为JNDI -->  
+      <item name="VALIDATE_TYPE" value="JAAS"/>  
+      <!-- 容器产品：其值为：jboss,weblogic,websphere -->  
+      <item name="CONTAINER_PRODUCT" value="jboss"/>  
+      <!--
+        群组定义，当访问此容器失败时， 框架会判断是否存在群组定义，若存在，则从此定义中逐个尝试获取其它的EJB容器。
+        存在多个容器，名称用‘#’分隔
+      -->  
+      <item name="GROUP_NAMES" value="xxx_name#xxx_name2"/>  
+      <item name="INVOKE_LIMIT" value="50"/>  
+      <!-- 容器超时时间，单位：ms 默认300000ms(5min) -->  
+      <item name="TIME_OUT" value="300000"/>  
+      <item name="DELEGATE_JNDI_NAME" value="BusinessDelegateBean"/>  
+      <!-- ROUND-ROBIN-AFFINITY负载均衡算法是否启动 (仅对weblogic有效，其它容器必须为false)-->  
+      <item name="ROUND-ROBIN-AFFINITY" value="true"/>  
+      <!-- 是否配置集群，true为是，false为否 -->  
+      <item name="CLUSTER_ENABLED" value="true"/>  
+      <!-- 集群机器地址(hostname1,192.168.1.10:7001#hostname2,10.168.1.101:7001)可选配置 -->  
+      <item name="CLUSTER_HOSTS" value="hsz-5892,10.13.72.46:7001#hsz-5242,10.13.72.37:7001"/> 
+    </default>  
+    <!-- 添加其它EJB容器，<xxx_name> 标签名称自己定义-->  
+    <ctn_xxxname_1> 
+      <item name="INITIAL_CONTEXT_FACTORY" value="weblogic.jndi.WLInitialContextFactory"/>  
+      <item name="PROVIDER_URL" value="t3://192.168.0.118:7001"/>  
+      <item name="URL_PKG_PREFIXES" value=""/>  
+      <item name="SECURITY_PRINCIPAL" value=""/>  
+      <item name="SECURITY_CREDENTIALS" value=""/>  
+      <item name="VALIDATE_TYPE" value="JAAS"/>  
+      <item name="CONTAINER_PRODUCT" value="weblogic"/>  
+      <item name="GROUP_NAMES" value=""/>  
+      <item name="INVOKE_LIMIT" value="50"/>  
+      <item name="TIME_OUT" value="30000"/>  
+      <item name="DELEGATE_JNDI_NAME" value="BusinessDelegateBean"/>  
+      <item name="ROUND-ROBIN-AFFINITY" value="true"/>  
+      <item name="CLUSTER_ENABLED" value="true"/>  
+      <item name="CLUSTER_HOSTS" value="hsz-5892,10.13.72.46:7001#hsz-5242,10.13.72.37:7001"/> 
+    </ctn_xxxname_1>  
+    <ctn_xxxname_2> 
+      <item name="INITIAL_CONTEXT_FACTORY" value="weblogic.jndi.WLInitialContextFactory"/>  
+      <item name="PROVIDER_URL" value="t3://192.168.0.118:7001"/>  
+      <item name="URL_PKG_PREFIXES" value=""/>  
+      <item name="SECURITY_PRINCIPAL" value=""/>  
+      <item name="SECURITY_CREDENTIALS" value=""/>  
+      <item name="VALIDATE_TYPE" value="JAAS"/>  
+      <item name="CONTAINER_PRODUCT" value="weblogic"/>  
+      <item name="GROUP_NAMES" value=""/>  
+      <item name="INVOKE_LIMIT" value="50"/>  
+      <item name="TIME_OUT" value="30000"/>  
+      <item name="DELEGATE_JNDI_NAME" value="BusinessDelegateBean"/>  
+      <item name="ROUND-ROBIN-AFFINITY" value="true"/>  
+      <item name="CLUSTER_ENABLED" value="true"/>  
+      <item name="CLUSTER_HOSTS" value="hsz-5892,10.13.72.46:7001#hsz-5242,10.13.72.37:7001"/> 
+    </ctn_xxxname_2>  
+    
+  </Containers> 
+</Config>

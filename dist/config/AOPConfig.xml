@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+  <item aopid="echo" interceptor="example.aop.EchoServiceInerceptor" />
+  <item aopid="printEcho" interceptor="example.aop.EchoServiceInerceptor" />
+</binder>

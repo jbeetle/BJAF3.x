@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+  <!--控制器 【注：在<controllers>标签内，控制器的名称是唯一的，而且无需带路径】 -->
+  <controllers>
+    <!--横切动作 -->
+    <cutting>
+	  <!--控制器横切动作<ctrlFrontAction>为前置点横切；<ctrlBackAction>为后置点横切 -->
+      <ctrlFrontAction>Example.GlobalPreActionImp</ctrlFrontAction>
+      <ctrlBackAction>Example.GlobalPreActionImp</ctrlBackAction>
+	 </cutting>
+    <standard>
+      <sItem name="SearchController.ctrl" class="com.beetle.jIKBS.web.SearchController"/>
+      <!-- 添加更多的item... -->
+    </standard>
+    <virtual>
+      <vItem name="NoDataFound.ctrl" view="InputView"/>
+      <!-- 添加更多的item... -->
+    </virtual>
+    <upload>
+      <uItem name="Login.Upload" class="com.beetle.SmsCRM.presentation.LogicCtrl"/>
+	  <!-- 添加更多的item... -->
+    </upload>
+    <drawing>
+      <dItem name="PieStatistics.ajax" class="com.beetle.jIKBS.web.StatisticsDraw"/>
+	  <!-- 添加更多的item... -->
+    </drawing>
+    <document>
+      <docItem name="TestPdf.dcmt" class="Example.TestPdf"/>
+	  <!-- 添加更多的item... -->
+    </document>
+  </controllers>
+  <!--启动开关 -->
+  <onoff>
+    <startUp>Example.GlobalPreCallImp</startUp>
+    <closeUp>Example.GlobalPreCallImp</closeUp>
+  </onoff>
+  <!--控制器缓存 -->
+  <caches maxElementsInMemory="100" diskStorePath="./tmpdir" memoryStoreEvictionPolicy="LFU">
+    <cItem name="ShowStatisticsController.ctrl" scope="application" time="60"/>
+    <cItem name="ShowContentController.ctrl" scope="session" time="30"/>
+    <!-- 添加更多的item... -->
+  </caches>
+  <!--控制器模块【针对系统控制器<controllers>标签，如果系统控制器比较多，那么可以建立多个控制器模块】 -->
+  <module>
+    <mItem filename="xxx_controller.xml" active="true"/>
+    <!-- 添加更多的item... -->
+  </module>
+</mappings>

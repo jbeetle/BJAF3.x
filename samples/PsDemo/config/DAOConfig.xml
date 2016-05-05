@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+   		<item interface="demo.persistence.dao.IExpFriendDao" implement="demo.persistence.imp.PsExpFriend" />
+		<item interface="demo.persistence.dao.IExpUfRelationDao" implement="demo.persistence.imp.PsExpUfRelation" />
+		<item interface="demo.persistence.dao.IExpUserDao" implement="demo.persistence.imp.PsExpUser" />
+</binder>

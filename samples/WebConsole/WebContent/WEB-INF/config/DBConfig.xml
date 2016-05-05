@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+	<DataSources>
+		<SYSDATASOURCE_DEFAULT>
+			<item name="use-mode" value="2" />
+			<item name="pool-imp"
+				value="com.beetle.framework.persistence.access.datasource.TomcatJdbcPool" />
+			<item name="pool-minsize" value="5" />
+			<item name="pool-maxsize" value="15" />
+			<!-- 测试sql语句，空隙时，有利于连接池检查连接状态 -->
+			<item name="test-sql" value="select now()" />
+			<item name="connection-url"
+				value="jdbc:h2:tcp://localhost/~/demodb" />
+			<item name="driver-class" value="org.h2.Driver" />
+			<item name="user-name" value="admin" />
+			<item name="mask-imp"
+				value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
+			<item name="password" value="760224" />
+			<!--
+			<item name="password" value="mask{9bf99f38dd0ec8d861ed984a7a9890a8ca9d620eb1580489e3c888f49cec9904}" />
+			-->
+		</SYSDATASOURCE_DEFAULT>
+	</DataSources>
+	<Extensions>
+		<SYSDATASOURCE_DEFAULT>
+			<item name="seq-type" value="H2" />
+			<item name="pagination-imp"
+				value="com.beetle.framework.persistence.pagination.imp.H2PaginationImp" />
+		</SYSDATASOURCE_DEFAULT>
+	</Extensions>
+</Config>

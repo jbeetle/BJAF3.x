@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+  <mysql>
+    <item type="VARCHAR" java="String"/>
+    <item type="TINYINT" java="Integer"/>
+    <item type="SMALLINT" java="Integer"/>
+    <item type="MEDIUMINT" java="Integer"/>
+    <item type="INT" java="Integer"/>
+    <item type="INTEGER" java="Integer"/>
+    <item type="BIGINT" java="Long"/>
+    <item type="FLOAT" java="Float"/>
+    <item type="DOUBLE" java="Double"/>
+    <item type="REAL" java="Double"/>
+    <item type="DECIMAL" java="Integer"/>
+    <item type="NUMERIC" java="Integer"/>
+    <item type="DATE" java="java.sql.Date"/>
+    <item type="DATETIME" java="java.sql.Timestamp"/>
+    <item type="TIMESTAMP" java="java.sql.Timestamp"/>
+    <item type="TIME" java="java.sql.Time"/>
+    <item type="YEAR" java="String"/>
+    <item type="CHAR" java="Character"/>
+    <item type="TINYBLOB" java="String"/>
+    <item type="TINYTEXT" java="String"/>
+    <item type="BLOB" java="String"/>
+    <item type="TEXT" java="String"/>
+    <item type="MEDIUMTEXT" java="String"/>
+    <item type="LONGBLOB" java="String"/>
+    <item type="LONGTEXT" java="String"/>
+    <item type="ENUM" java="String"/>
+    <item type="SET" java="String"/>
+  </mysql>
+  <sybase>
+    <item type="varchar" java="String"/>
+    <item type="tinyint" java="Integer"/>
+    <item type="smallint" java="Integer"/>
+    <item type="mediumint" java="Integer"/>
+    <item type="int" java="Integer"/>
+    <item type="integer" java="Integer"/>
+    <item type="bigint" java="Long"/>
+    <item type="float" java="Float"/>
+    <item type="double" java="Double"/>
+    <item type="real" java="Double"/>
+    <item type="decimal" java="Integer"/>
+    <item type="numeric" java="Integer"/>
+    <item type="date" java="java.sql.Date"/>
+    <item type="datetime" java="java.sql.Timestamp"/>
+    <item type="timestamp" java="java.sql.Timestamp"/>
+    <item type="time" java="java.sql.Time"/>
+    <item type="year" java="String"/>
+    <item type="char" java="Character"/>
+    <item type="tinyblob" java="String"/>
+    <item type="tinytext" java="String"/>
+    <item type="blob" java="String"/>
+    <item type="text" java="String"/>
+    <item type="mediumtext" java="String"/>
+    <item type="longblob" java="String"/>
+    <item type="longtext" java="String"/>
+    <item type="enum" java="String"/>
+    <item type="set" java="String"/>
+  </sybase>
+  <oracle>
+    <item type="VARCHAR" java="String"/>
+    <item type="CHAR" java="String"/>
+    <item type="INT" java="Integer"/>
+    <item type="INTEGER" java="Integer"/>
+    <item type="VARCHAR2" java="String"/>
+    <item type="NUMBER" java="java.math.BigDecimal"/>
+    <item type="DOUBLE" java="Double"/>
+    <item type="FLOAT" java="Float"/>
+    <item type="TIMESTAMP" java="java.sql.Timestamp"/>
+	<item type="DATE" java="java.sql.date"/>
+    <item type="CLOB" java="Clob"/>
+  </oracle>
+  <sqlserver>
+    <item type="VARCHAR" java="String"/>
+  </sqlserver>
+  <standard>
+    <item javatype="String" sqltype="VARCHAR"/>
+    <item javatype="int" sqltype="INTEGER"/>
+    <item javatype="Integer" sqltype="INTEGER"/>
+    <item javatype="java.sql.Date" sqltype="DATE"/>
+    <item javatype="java.sql.Timestamp" sqltype="TIMESTAMP"/>
+    <item javatype="Long" sqltype="BIGINT"/>
+    <item javatype="Double" sqltype="DOUBLE"/>
+    <item javatype="Float" sqltype="FLOAT"/>
+  </standard>
+</mappings>

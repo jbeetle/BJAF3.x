@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+<!--
+  <item interface="demo.persistence.dao.IXxUserDao" implement="demo.persistence.imp.PsXxUser" />
+  <item interface="demo.persistence.dao.IXxFriendDao" implement="demo.persistence.imp.PsXxFriend" />
+  -->
+</binder>

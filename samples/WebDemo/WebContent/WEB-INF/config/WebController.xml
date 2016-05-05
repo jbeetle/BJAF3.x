@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+	<controllers>
+	<cutting>
+	  <ctrlFrontAction>com.beetle.WebDemo.presentation.aop.ControllerFrontAction</ctrlFrontAction>
+      <!-- <ctrlBackAction>com.beetle.WebDemo.presentation.aop.ControllerBackAction</ctrlBackAction> -->
+     </cutting>
+		<standard>
+			<sItem name="LoginController.ctrl" class="com.beetle.WebDemo.presentation.LoginController" />
+			<sItem name="CacheDemoController.ctrl" class="com.beetle.WebDemo.presentation.CacheDemoController" />
+			<sItem name="NoCacheDemoController.ctrl"	class="com.beetle.WebDemo.presentation.CacheDemoController" />
+			<sItem name="LoginController3.ctrl" class="com.beetle.WebDemo.presentation.LoginWithVerifyCodeController" />
+			<sItem name="DownloadFile.ctrl" class="com.beetle.WebDemo.presentation.DownloadController" />
+			<sItem name="RegisterEmpController.ctrl" class="com.beetle.WebDemo.presentation.RegisterEmpController" />
+			<sItem name="LoginAndOutController.ctrl" class="com.beetle.WebDemo.presentation.LoginAndOutController" />
+			<sItem name="AjaxDemoController.ctrl" class="com.beetle.WebDemo.presentation.facade.AjaxController" />
+		</standard>
+		<virtual>
+			<vItem name="DemoVirtualController.ctrl" view="HelloView" />
+			<vItem name="WebServiceDemoController.ctrl" view="WebServiceView" />
+		</virtual>
+		<service>
+			<wsItem name="hello.service" class="com.beetle.WebDemo.presentation.webservice.Hello" />
+			<wsItem name="/hello/" class="com.beetle.WebDemo.presentation.webservice.Hello" />
+		</service>
+		<upload>
+			<uItem name="FileUploadController3.upload" class="com.beetle.WebDemo.presentation.FileUploadController" />
+			<uItem name="FileUploadController.upload" class="com.beetle.WebDemo.presentation.webservice.FileUploadService" />
+		</upload>
+		<drawing>
+			<dItem name="DemoDrawController.draw" class="com.beetle.WebDemo.presentation.DrawPieController" />
+			<dItem name="DemoDraw2Controller.draw" class="com.beetle.WebDemo.presentation.DrawPieController" />
+			<dItem name="VerifyCode.draw" class="com.beetle.framework.web.controller.draw.VerifyCodeDraw" />
+		</drawing>
+		<document>
+			<docItem name="GenPdfController.dcmt" class="com.beetle.WebDemo.presentation.GenPdfController" />
+			<docItem name="GenExcelController.dcmt" class="com.beetle.WebDemo.presentation.GenExcelController" />
+		</document>
+	</controllers>
+	<caches maxElementsInMemory="100" diskStorePath="./tmpdir" memoryStoreEvictionPolicy="LFU">
+		<cItem name="CacheDemoController.ctrl" scope="application" time="30" />
+	</caches>
+	 <onoff>
+    <startUp>com.beetle.WebDemo.presentation.onoff.WebAppOnOff</startUp>
+    <closeUp>com.beetle.WebDemo.presentation.onoff.WebAppOnOff</closeUp>
+  </onoff>
+</mappings>

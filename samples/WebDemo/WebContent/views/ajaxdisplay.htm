@@ -1,0 +1,110 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>AjaxDemo</title>
+<link href="t-1.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" src="../js/jsonrpcEx.js" type="text/JavaScript">
+</script>
+<script language="JavaScript" src="../js/formValidator.js" type="text/JavaScript">
+</script>
+</head>
+<body>
+<p>&nbsp;</p>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+function synchroCall(){
+    var req=new Request();
+	req.setControllerName("ShowDataAjaxController.ajax");
+	var r=req.synchroExecute();
+	if(r.returnFlag==0){
+	   var userList=r.getValueAsArrayListByName("userList");
+	   var tb_obj=document.getElementById("tb_obj");
+	   var tbody=document.getElementById("tbody_obj");
+	   var tcl=tbody.childNodes.length;
+	   for(i=1;i<tcl;i++){
+	      var a=tbody.lastChild;
+		  if(a!=null){
+	          tbody.removeChild(a);
+		  }else{
+		     break;
+		  }
+	   }
+	   for(i=0;i<userList.size();i++){
+		  var user=userList.get(i);
+		  var tr=	tbody.appendChild(document.createElement("tr"));
+		  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.userId));
+		  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.name));
+		  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.sex));
+		  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.phone));
+		  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.year));
+	  }
+	}else{
+	  alert(r.returnMsg);
+	}
+}
+function asynchroCall(){
+    var req=new Request();
+	req.setControllerName("ShowDataAjaxController.ajax");
+	req.asynchroExecute(function resultHandle(r){
+			if(r.returnFlag==0){
+			   var userList=r.getValueAsArrayListByName("userList");
+			   var tb_obj=document.getElementById("tb_obj");
+			   var tbody=document.getElementById("tbody_obj");
+			   var tcl=tbody.childNodes.length;
+			   for(i=1;i<tcl;i++){
+				  var a=tbody.lastChild;
+				  if(a!=null){
+					  tbody.removeChild(a);
+				  }else{
+					 break;
+				  }
+			   }
+			   for(i=0;i<userList.size();i++){
+				  var user=userList.get(i);
+				  var tr=	tbody.appendChild(document.createElement("tr"));
+				  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.userId));
+				  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.name));
+				  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.sex));
+				  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.phone));
+				  tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(user.year));
+			  }
+			}else{
+			  alert(r.returnMsg);
+			}
+	});
+}
+//-->
+</SCRIPT>
+<p>&nbsp;</p>
+  
+<div align="center">
+  <input type="button" name="Submit3" value="获取用户列表[同步调用]" onClick="return synchroCall()">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="button" name="Submit3" value="获取用户列表[异步调用]" onClick="return asynchroCall()">
+</div>
+<table width="74%" border="1" align="center" id="tb_obj">
+  <thead>
+    <tr> 
+      <th><div align="center">编号</div></th>
+      <th><div align="center">用户名</div></th>
+      <th><div align="center">性别</div></th>
+      <th><div align="center">电话</div></th>
+      <th><div align="center">年龄</div></th>
+    </tr>
+  </thead>
+  <tbody id="tbody_obj">
+    <!-- <tr> 
+    <td width="7%"><div align="center"></div></td>
+    <td width="10%"><div align="center"></div></td>
+    <td width="10%"><div align="center"></div></td>
+    <td width="6%"><div align="center"></div></td>
+    <td width="21%"><div align="center"></div></td>
+    <td width="11%"><div align="center"></div></td>
+    <td width="17%"><div align="center"></div></td>
+    </tr> -->
+  </tbody>
+</table>
+<p align="center"><a href="../index.html">返回</a></p>
+
+</body>
+</html>
