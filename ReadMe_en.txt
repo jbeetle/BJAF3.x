@@ -1,11 +1,11 @@
 Welcome to use the Beetle J2EE Application Framework(BJAF ver2.2.4) 
 * The SDK directory description is as follows: 
 	SDK 
-	©À ©¤ dist	Build packages directory, including framework and related configuration file .
-	©À ©¤ docs	Document directory, including the development of guidelines, and JavaDoc documentation .
-	©À ©¤ lib	BJAF reference of third-party libraries .
-	©À ©¤ sample	development samples. 
-	©¸ ©¤ src	 BJAF source code .
+	ï¿½ï¿½ ï¿½ï¿½ dist	Build packages directory, including framework and related configuration file .
+	ï¿½ï¿½ ï¿½ï¿½ docs	Document directory, including the development of guidelines, and JavaDoc documentation .
+	ï¿½ï¿½ ï¿½ï¿½ lib	BJAF reference of third-party libraries .
+	ï¿½ï¿½ ï¿½ï¿½ sample	development samples. 
+	ï¿½ï¿½ ï¿½ï¿½ src	 BJAF source code .
 * build instructions 
 	Dist directory including the distribution of 'beetle.jar' Compiled package, you can also compile the source code to generate beetle.jar by yourself. 
 	Configured the ant and the JDK's home directory. 
@@ -28,8 +28,8 @@ Welcome to use the Beetle J2EE Application Framework(BJAF ver2.2.4)
 		the function is consistent with the DWZ, configure the database to DWZ example. 
 		execute: "ant genWebConsoleWar" generate WebConsole. War, published to the tomcat container 
 * technical support: 
-	http://www.beetlesoft.net/j2ee/index.html 
-	http://code.google.com/p/beetle-j2ee-application-framework/ 
+	http://www.mc2e.cc/j2ee/index.html 
+	https://github.com/jbeetle/BJAF3.x
 	yuhaodong@gmail.com 
 Enjoy it! 
-Yu Haodong 2013-05-17 
+Yu Haodong 2016-05-05 

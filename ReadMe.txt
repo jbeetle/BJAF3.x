@@ -24,11 +24,11 @@
 	 **WebConsole，是基于Bootstrap（http://twitter.github.io/bootstrap/）开发的例子，功能与DWZ一致，配置数据库与DWZ例子一样。
 		执行：“ant genWebConsoleWar”生成WebConsole.war，发布到tomcat容器执行
 *技术支持：
-	http://www.beetlesoft.net/j2ee/index.html
-	http://code.google.com/p/beetle-j2ee-application-framework/
+	http://www.mc2e.cc/j2ee/index.html 
+	https://github.com/jbeetle/BJAF3.x
 	yuhaodong@gmail.com
 Enjoy it!
-余浩东 2013-05-17
+余浩东 2016-05-05
 
 
 	
