@@ -1,4 +1,4 @@
-Welcome to use the Beetle J2EE Application Framework(BJAF ver2.2.4) 
+Welcome to use the Beetle J2EE Application Framework(BJAF ver3.0.1) 
 * The SDK directory description is as follows: 
 	SDK 
 	�� �� dist	Build packages directory, including framework and related configuration file .
