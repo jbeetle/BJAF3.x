@@ -12,11 +12,6 @@
  */
 package com.beetle.framework.web.view;
 
-import com.beetle.framework.web.common.CommonUtil;
-import com.beetle.framework.web.common.WebUtil;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -24,6 +19,11 @@ import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.beetle.framework.web.common.CommonUtil;
 
 /**
  * <p>
@@ -222,38 +222,5 @@ public class ViewHelper {
 		}
 	}
 
-	/**
-	 * 在异常发生时，获取异常错误代码
-	 * 
-	 * 如果错误代码不存在，返回为0
-	 * 
-	 * @return 错误代码(一般为负数)
-	 */
-	public int getErrCode() {
-		WebUtil.ExceptionInfo ei = (WebUtil.ExceptionInfo) request
-				.getAttribute(CommonUtil.WEB_EXCEPTION_INFO);
-		return ei.errCode;
-	}
 
-	/**
-	 * 在异常发生时，获取异常信息
-	 * 
-	 * @return
-	 */
-	public String getErrMessage() {
-		WebUtil.ExceptionInfo ei = (WebUtil.ExceptionInfo) request
-				.getAttribute(CommonUtil.WEB_EXCEPTION_INFO);
-		return ei.errMessage;
-	}
-
-	/**
-	 * 在异常发生时，获取异常堆信息
-	 * 
-	 * @return
-	 */
-	public String getErrStackTraceInfo() {
-		WebUtil.ExceptionInfo ei = (WebUtil.ExceptionInfo) request
-				.getAttribute(CommonUtil.WEB_EXCEPTION_INFO);
-		return ei.stackTraceInfo;
-	}
 }

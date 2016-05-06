@@ -46,7 +46,7 @@ import java.util.Map;
 public class CommonUtil extends WebUtil {
 	public static final String WEB_ENCODE_CHARSET = "WEB_ENCODE_CHARSET";
 	public static final String WEB_SERVER_INFO = "WEB_SERVER_INFO";
-	public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
+	//public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
 	public static final String WEB_CTRL_PREFIX = "WEB_CTRL_PREFIX";
 	public static final String CTRL_VIEW_MAP_ENABLED = "CTRL_VIEW_MAP_ENABLED";
 	public static final String DISABLED_SESSION_VIEW = "DISABLED_SESSION_VIEW";
@@ -66,7 +66,9 @@ public class CommonUtil extends WebUtil {
 	public static final String GET_STR = "get";
 	public static final String TOMCAT_STR = "Tomcat";
 	public static final String ACTION_STR = "$action";
-
+	public static final String PRC_SERVICE_FACE_STR = "$interface";
+	public static final String PRC_SERVICE_METHOD_STR = "$method";
+	public static final String PRC_SERVICE_PARAMS_STR = "$parameter";
 	/**
 	 * 填充配置文件数据
 	 * 

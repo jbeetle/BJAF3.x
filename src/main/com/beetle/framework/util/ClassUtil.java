@@ -280,7 +280,16 @@ public final class ClassUtil {
 		}
 		return result;
 	}
-
+	public static Method getClassMethod(Class<?> c, String methodName) {
+		Method[] ms = c.getMethods();
+		for (int i = 0; i < ms.length; i++) {
+			Method m = ms[i];
+			if (m.getName().equals(methodName)) {
+				return m;
+			}
+		}
+		return null;
+	}
 	public static Method getMethod(Object o, String methodName) {
 		if ((methodName == null) || (o == null)) {
 			return null;
