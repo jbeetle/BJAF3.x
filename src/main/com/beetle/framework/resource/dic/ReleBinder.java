@@ -385,7 +385,7 @@ public class ReleBinder {
 			setBeanVoProperty(vo);
 		}
 	}
-
+	
 	private void setBeanVoProperty(BeanVO bvo) {
 		logger.debug("bvo:{}", bvo);
 		Class<?> imp = bvo.getImp();

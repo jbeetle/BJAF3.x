@@ -55,39 +55,30 @@ public class QueryOperator extends BaseOperator {
 			handlerImp = new ResultSetHandler();
 			if (!this.getParameters().isEmpty()) {
 				if (!this.isUseOnlyConnectionFlag()) {
-					DBAccess.query(AccessMannerFactory.getAccessManner(
-							this.getSql(), this.getParameters()), handlerImp,
-							ConnectionFactory.getConncetion(this
-									.getDataSourceName()), this.maxRow);
+					DBAccess.query(AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()), handlerImp,
+							ConnectionFactory.getConncetion(this.getDataSourceName()), this.maxRow);
 				} else {
 					if (!this.isPresentConnectionUsable()) {
 						// this.setPresentConnection(ConnectionFactory
 						// .getConncetion(this.getDataSourceName()));
-						throw new DBOperatorException(
-								"the current connection is closed!");
+						throw new DBOperatorException("the current connection is closed!");
 					}
-					DBAccess.queryForOneConnection(AccessMannerFactory
-							.getAccessManner(this.getSql(),
-									this.getParameters()), handlerImp, this
-							.getPresentConnection(), this.maxRow);
+					DBAccess.queryForOneConnection(
+							AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()), handlerImp,
+							this.getPresentConnection(), this.maxRow);
 				}
 			} else {
 				if (!this.isUseOnlyConnectionFlag()) {
-					DBAccess.query(AccessMannerFactory.getAccessManner(this
-							.getSql()), handlerImp, ConnectionFactory
-							.getConncetion(this.getDataSourceName()),
-							this.maxRow);
+					DBAccess.query(AccessMannerFactory.getAccessManner(this.getSql()), handlerImp,
+							ConnectionFactory.getConncetion(this.getDataSourceName()), this.maxRow);
 				} else {
 					if (!this.isPresentConnectionUsable()) {
 						// this.setPresentConnection(ConnectionFactory
 						// .getConncetion(this.getDataSourceName()));
-						throw new DBOperatorException(
-								"the current connection is closed!");
+						throw new DBOperatorException("the current connection is closed!");
 					}
-					DBAccess.queryForOneConnection(
-							AccessMannerFactory.getAccessManner(this.getSql()),
-							handlerImp, this.getPresentConnection(),
-							this.maxRow);
+					DBAccess.queryForOneConnection(AccessMannerFactory.getAccessManner(this.getSql()), handlerImp,
+							this.getPresentConnection(), this.maxRow);
 				}
 			}
 			this.SQLResultSet = handlerImp.getResultDataSet();
@@ -120,8 +111,7 @@ public class QueryOperator extends BaseOperator {
 
 	ResultSetHandler getRsHandler() {
 		if (handlerImp == null) {
-			throw new AppRuntimeException(
-					"method[access()]has not executed yet,run it first!");
+			throw new AppRuntimeException("method[access()]has not executed yet,run it first!");
 		}
 		return handlerImp;
 	}
@@ -157,6 +147,7 @@ public class QueryOperator extends BaseOperator {
 	 * 针对单个数据dto对象无法包含所有的结果数据，而又不想重新定向其对应的dto对象的情况。
 	 * 可以将结果集中所对应的多个数据对象定义作为参数输入，方法会自动匹配装入，返回其各个数据列表
 	 * [注意：如果结果集中某些字段在各个输入值对象类中都有定义，都会被设置值。]
+	 * 
 	 * @param dtoClass
 	 * @return CompositeDTO对象，没有数据时为null，有数据时，包含各个值对象的结果列表（对于单挑记录，其数据列表记录为1条）
 	 */
@@ -197,6 +188,17 @@ public class QueryOperator extends BaseOperator {
 	}
 
 	/**
+	 * 获取结果集中某一行某个字段的值
+	 * @param rowIndex 行号从0开始
+	 * @param fieldname 查询字段名称
+	 * @return
+	 */
+	public Object getResultValueOfARow(int rowIndex, String fieldname) {
+		Map<String, Object> arow = getResultList().get(rowIndex);
+		return arow.get(fieldname);
+	}
+
+	/**
 	 * 返回sql语句返回的结果列表
 	 * 
 	 * 
@@ -205,8 +207,7 @@ public class QueryOperator extends BaseOperator {
 	 */
 	public List<Map<String, Object>> getSqlResultSet() {
 		if (!this.isAccessed()) {
-			throw new AppRuntimeException(
-					"method[access()]has not executed yet,run it first!");
+			throw new AppRuntimeException("method[access()]has not executed yet,run it first!");
 		}
 		return SQLResultSet;
 	}

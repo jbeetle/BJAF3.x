@@ -28,12 +28,19 @@ import com.beetle.framework.util.ClassUtil;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.ResourceLoader;
 
+/*
+ * 依赖注入容器
+ * 一个应用只有一个容器实例。
+ * init-初始化容器
+ * close-关闭容器释放资源，关闭容器后必须重新初始化才能使用
+ * retrieve-获取容器中的对应的对象实例,在此方法中会判断容器没有初始化会自动初始化，会判断此类是否已经在容器里，没有存在会尝试已经绑定，如果失败会抛出一个运行时异常
+ * exist-查询某个对象实例是否存在容器中
+ */
 public class DIContainer {
 	private final static Map<String, Object> DI_BEAN_CACHE = new ConcurrentHashMap<String, Object>();
 	private static DIContainer instance = new DIContainer();
 	private static ReleBinder binder;
-	private static final AppLogger logger = AppLogger
-			.getInstance(DIContainer.class);
+	private static final AppLogger logger = AppLogger.getInstance(DIContainer.class);
 	private boolean initFlag;
 
 	private DIContainer() {
@@ -48,6 +55,11 @@ public class DIContainer {
 		if (!initFlag) {
 			this.init();
 		}
+		// try {
+		// initOne(Class.forName(key));
+		// } catch (ClassNotFoundException e) {
+		// throw new DependencyInjectionException(e);
+		// }
 		Object o = ReleBinder.getProxyFromCache(key);
 		if (o == null) {
 			o = getBean(key);
@@ -60,6 +72,7 @@ public class DIContainer {
 		if (!initFlag) {
 			this.init();
 		}
+		// initOne(face);
 		String key = face.getName();
 		Object o = ReleBinder.getProxyFromCache(key);
 		if (o == null) {
@@ -68,18 +81,47 @@ public class DIContainer {
 		return (T) o;
 	}
 
+	// 单独绑定无法保证bean接口引用之间的依赖先后顺序，此方案无用，先保留
+	<T> void initOne(Class<T> face) {
+		String key = face.getName();
+		if (!this.exist(key)) {
+			synchronized (logger) {
+				if (this.exist(key)) {
+					return;
+				}
+				String pn = face.getPackage().getName();
+				Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(pn);
+				Class<?> iv = kvs.get(face);
+				if (iv == null) {
+					throw new DependencyInjectionException("[" + key + "]'s implments class not found!");
+				}
+				if (binder == null) {
+					throw new DependencyInjectionException("call init() first!");
+				}
+				binder.bind(face, iv, true);
+				binder.bindProperties();
+				initBean();
+				initInject();
+				binder.getBeanVoList().clear();
+			}
+		}
+	}
+
 	void createInstance(String beanName, Class<?> impl) {
 		try {
-			Object bean = ClassUtil.newInstance(impl);
-			DI_BEAN_CACHE.put(beanName, bean);
+			if (!DI_BEAN_CACHE.containsKey(beanName)) {
+				Object bean = ClassUtil.newInstance(impl);
+				DI_BEAN_CACHE.put(beanName, bean);
+			}
 		} catch (Exception e) {
-			throw new DependencyInjectionException(
-					"Failed to initialize the Bean", e);
+			throw new DependencyInjectionException("Failed to initialize the Bean", e);
 		}
 	}
 
 	void keepInstance(String key, Object obj) {
-		DI_BEAN_CACHE.put(key, obj);
+		if (!DI_BEAN_CACHE.containsKey(key)) {
+			DI_BEAN_CACHE.put(key, obj);
+		}
 	}
 
 	public boolean exist(String key) {
@@ -113,40 +155,54 @@ public class DIContainer {
 				// loadXmlFile(rb, "DAOConfig.xml");
 				// loadXmlFile(rb, "ServiceConfig.xml");
 				// loadXmlFile(rb, "AOPConfig.xml");
-				String files[] = AppProperties.get(
-						"resource_DI_CONTAINER_FILES",
-						"DAOConfig.xml;ServiceConfig.xml;AOPConfig.xml").split(
-						";");
+				String files[] = AppProperties
+						.get("resource_DI_CONTAINER_FILES", "DAOConfig.xml;ServiceConfig.xml;AOPConfig.xml").split(";");
 				for (int i = 0; i < files.length; i++) {
 					loadXmlFile(binder, files[i]);
 				}
-				//auto scan
-				String daoPackPath=AppProperties.get("resource_DI_DAO_PACK_PATH");
-				if(daoPackPath!=null&&daoPackPath.trim().length()>0){
-					autoScanClass(binder,daoPackPath);
+				// auto scan
+				String daoPackPath = AppProperties.get("resource_DI_DAO_PACK_PATH");
+				if (daoPackPath != null && daoPackPath.trim().length() > 0) {
+					// xxx;yyy;zzz
+					String packs[] = daoPackPath.split(";");
+					for (int i = 0; i < packs.length; i++) {
+						String pn = packs[i];
+						if (pn != null && pn.trim().length() > 0) {
+							autoScanClass(binder, pn);
+						}
+					}
 				}
-				String srvPackPath=AppProperties.get("resource_DI_SERVICE_PACK_PATH");
-				if(srvPackPath!=null&&srvPackPath.trim().length()>0){
-					//...
-					autoScanClass(binder,srvPackPath);
+				String srvPackPath = AppProperties.get("resource_DI_SERVICE_PACK_PATH");
+				if (srvPackPath != null && srvPackPath.trim().length() > 0) {
+					// ...
+					// autoScanClass(binder,srvPackPath);
+					String packs[] = srvPackPath.split(";");
+					for (int i = 0; i < packs.length; i++) {
+						String pn = packs[i];
+						if (pn != null && pn.trim().length() > 0) {
+							autoScanClass(binder, pn);
+						}
+					}
 				}
 				//
 				binder.bindProperties();
 			}
 		}
 	}
+
 	private void autoScanClass(ReleBinder rb, String packname) {
-		 Map<Class<?>, Class<?>> kvs=ClassUtil.getPackAllInterfaceImplMap(packname);
-		 if(!kvs.isEmpty()){
-			 Iterator<?> it=kvs.entrySet().iterator();
-			 while(it.hasNext()){
-				 @SuppressWarnings("unchecked")
-				Map.Entry<Class<?>, Class<?>> kv=(Map.Entry<Class<?>, Class<?>>) it.next(); 
-				 rb.bind(kv.getKey(), kv.getValue(), true);
-			 }						 
-		 }
-		 logger.info("autoScanClass:{}",packname);
+		Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname);
+		if (!kvs.isEmpty()) {
+			Iterator<?> it = kvs.entrySet().iterator();
+			while (it.hasNext()) {
+				@SuppressWarnings("unchecked")
+				Map.Entry<Class<?>, Class<?>> kv = (Map.Entry<Class<?>, Class<?>>) it.next();
+				rb.bind(kv.getKey(), kv.getValue(), true);
+			}
+		}
+		logger.info("autoScanClass:{}", packname);
 	}
+
 	private void loadXmlFile(ReleBinder rb, String xmlname) {
 		String filename = AppProperties.getAppHome() + xmlname;
 		File f = new File(filename);
@@ -224,6 +280,10 @@ public class DIContainer {
 			initConfigBinder();
 			initBean();
 			initInject();
+			//
+			if (binder != null) {
+				binder.getBeanVoList().clear();
+			}
 			initFlag = true;
 		}
 	}

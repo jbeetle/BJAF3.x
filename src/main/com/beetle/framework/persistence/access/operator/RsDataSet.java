@@ -389,6 +389,7 @@ public final class RsDataSet {
 			return (Integer) o;
 		} else {
 			// return new Integer(((BigDecimal) o).intValue());
+			//System.out.println("-->"+columnName);
 			return ((BigDecimal) o).intValue();
 		}
 	}

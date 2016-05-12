@@ -2,49 +2,35 @@
 <Config>
 	<DataSources>
 		<SYSDATASOURCE_DEFAULT>
-			<!--
-			使用模式
-			1-使用J2EE容器数据源模式; 
-			2-使用本框架自带数据源模式;
-			3-使用调试模式
-			-->
+			<!-- 使用模式 1-使用J2EE容器数据源模式; 2-使用本框架自带数据源模式; 3-使用调试模式 -->
 			<item name="use-mode" value="2" />
-			<!-- 
-			模式1下，j2ee容器所配置的数据源名称，其他模式下可删除此项
-			-->
+			<!-- 模式1下，j2ee容器所配置的数据源名称，其他模式下可删除此项 -->
 			<item name="jndi-name" value="xxxDs" />
-			<!-- 
-			模式2下，连接池实现具体实现类（类型），其他模式下可删除此项
-				1-driver[com.beetle.framework.persistence.access.datasource.DriverPool]框架自实现，功能简单，兼容性，用于测试环境; 
+			<!-- 模式2下，连接池实现具体实现类（类型），其他模式下可删除此项 1-driver[com.beetle.framework.persistence.access.datasource.DriverPool]框架自实现，功能简单，兼容性，用于测试环境; 
 				2-CommonPool[com.beetle.framework.persistence.access.datasource.CommonPool]通用连接池，使用各个数据库厂商驱动自实现的连接池，性能良好，用于兼容性强的场景; 
 				3-BoneCP[com.beetle.framework.persistence.access.datasource.BoneCPPool]号称当前性能最好的连接池[实际环境发现兼容性不够好，问题挺多，要根据自己具体情况而定]。 
 				4-XaPool[com.beetle.framework.persistence.access.datasource.XaPool]atomikos开源Xa数据源连接池，事务跨越2个或以上数据源的场景，采取此连接池,兼容性及性能良好 
 				5-NonXaPool[com.beetle.framework.persistence.access.datasource.NonXaPool]atomikos开源NonXa数据源连接池，兼容性及性能良好 
-				6-TomcatJdbcPool[com.beetle.framework.persistence.access.datasource.TomcatJdbcPool]tomcat7.x版本实现的连接池，性能良好，超越commons-dbcp和c3p0[推荐]
-				内部性能测试显示3>6>5>2>1
-			-->
+				6-TomcatJdbcPool[com.beetle.framework.persistence.access.datasource.TomcatJdbcPool]tomcat7.x版本实现的连接池，性能良好，超越commons-dbcp和c3p0[推荐] 
+				内部性能测试显示3>6>5>2>1 -->
 			<item name="pool-imp"
 				value="com.beetle.framework.persistence.access.datasource.TomcatJdbcPool" />
 			<item name="pool-minsize" value="5" />
 			<item name="pool-maxsize" value="10" />
 			<!-- 测试sql语句，空隙时，有利于连接池检查连接状态 -->
 			<item name="test-sql" value="select 1" />
-			<item name="connection-url" value="jdbc:mysql://127.0.0.1:3306/bootycall" />
+			<item name="connection-url" value="jdbc:mysql://127.0.0.1:3306/security" />
 			<item name="driver-class" value="com.mysql.jdbc.Driver" />
 			<item name="user-name" value="root" />
-			<!-- 
-			密码掩码实现类，可选配置，不配置代表密码不加密，同时密码[password]的值必须采取"mask{掩码}"格式 
-			框架提供了一个默认掩码加密实现[com.beetle.framework.persistence.access.DefaultPassworkMask] 
-			用户也可以通过实现[com.beetle.framework.resource.mask.IPasswordMask]接口来扩展
-			-->
+			<!-- 密码掩码实现类，可选配置，不配置代表密码不加密，同时密码[password]的值必须采取"mask{掩码}"格式 框架提供了一个默认掩码加密实现[com.beetle.framework.persistence.access.DefaultPassworkMask] 
+				用户也可以通过实现[com.beetle.framework.resource.mask.IPasswordMask]接口来扩展 -->
 			<item name="mask-imp"
 				value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
 			<!-- 用户密码，采取mask{xxx}格式代表值是掩码，此时必须提供mask-imp实现类 -->
 			<item name="password" value="760224" />
-			<!-- 
-			<item name="password" value="mask{7b55ef6a3c0c4be172e29384b6e6c5f1ca9d620eb1580489e3c888f49cec9904}" /> 
-			-->
-			<!--连接池特有属性配置-->
+			<!-- <item name="password" value="mask{7b55ef6a3c0c4be172e29384b6e6c5f1ca9d620eb1580489e3c888f49cec9904}" 
+				/> -->
+			<!--连接池特有属性配置 -->
 			<item name="specific-attribute" value="key1=value1#key2=value2#key3=value3" />
 		</SYSDATASOURCE_DEFAULT>
 		<h2ds>
@@ -59,7 +45,8 @@
 			<item name="user-name" value="sa" />
 			<item name="mask-imp"
 				value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
-			<item name="password" value="mask{9bf99f38dd0ec8d861ed984a7a9890a8ca9d620eb1580489e3c888f49cec9904}" />
+			<item name="password"
+				value="mask{9bf99f38dd0ec8d861ed984a7a9890a8ca9d620eb1580489e3c888f49cec9904}" />
 		</h2ds>
 		<oracleds>
 			<item name="use-mode" value="2" />
@@ -131,11 +118,9 @@
 				2-sysbase[com.beetle.framework.persistence.pagination.imp.SybasePaginationImp] 
 				3-sqlserver[com.beetle.framework.persistence.pagination.imp.SqlServerPaginationImp] 
 				4-oracle[com.beetle.framework.persistence.pagination.imp.OraclePaginationImp] 
-				5-db2[com.beetle.framework.persistence.pagination.imp.DB2PaginationImp] 
-				6-postgresql[com.beetle.framework.persistence.pagination.imp.PostgreSqlPaginationImp] 
-				7-firebird[com.beetle.framework.persistence.pagination.imp.FireBirdPaginationImp]
-				8-H2[com.beetle.framework.persistence.pagination.imp.H2PaginationImp]
-				-->
+				5-db2[com.beetle.framework.persistence.pagination.imp.DB2PaginationImp] 6-postgresql[com.beetle.framework.persistence.pagination.imp.PostgreSqlPaginationImp] 
+				7-firebird[com.beetle.framework.persistence.pagination.imp.FireBirdPaginationImp] 
+				8-H2[com.beetle.framework.persistence.pagination.imp.H2PaginationImp] -->
 			<item name="pagination-imp"
 				value="com.beetle.framework.persistence.pagination.imp.MysqlPaginationImp" />
 		</SYSDATASOURCE_DEFAULT>

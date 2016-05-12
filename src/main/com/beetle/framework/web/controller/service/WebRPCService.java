@@ -20,7 +20,7 @@ import com.beetle.framework.web.view.ModelData;
  */
 public class WebRPCService extends WebServiceController {
 
-	private static final String resource_DI_SERVICE_PACK_PATH = "resource_DI_SERVICE_PACK_PATH";
+	private static final String web_ws_servicePrefix = "web_ws_servicePrefix";
 	private final static AppLogger logger = AppLogger.getInstance(WebRPCService.class);
 
 	public WebRPCService() {
@@ -38,7 +38,7 @@ public class WebRPCService extends WebServiceController {
 		if (action.length() == 0) {
 			throw new ControllerException("must set $method parameter!");
 		}
-		String serviePack = AppProperties.get(resource_DI_SERVICE_PACK_PATH, "");
+		String serviePack = AppProperties.get(web_ws_servicePrefix, "");
 		if (serviePack.length() > 0) {
 			face = serviePack + "." + face;
 		}
