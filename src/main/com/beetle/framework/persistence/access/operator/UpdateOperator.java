@@ -35,9 +35,28 @@ public final class UpdateOperator extends BaseOperator {
 	private ArrayList<List<SqlParameter>> batchValues = null;
 	private int effectCounts;
 	private int[] batchEffectCounts;
+	private boolean return_generated_keys;
+	private Long autokeyvalue;
 
 	public UpdateOperator() {
 		batchValues = null;
+		return_generated_keys = false;
+		autokeyvalue = -1l;
+	}
+
+	public Long getGeneratedKeyValue() {
+		return autokeyvalue;
+	}
+
+	boolean isReturnGeneratedKeys() {
+		return return_generated_keys;
+	}
+
+	/*
+	 * 针对自动增的PK插入时是否返回最新的值，默认为false
+	 */
+	public void setReturnGeneratedKeys(boolean return_generated_keys) {
+		this.return_generated_keys = return_generated_keys;
 	}
 
 	protected void accessImp() throws DBOperatorException {
@@ -47,19 +66,15 @@ public final class UpdateOperator extends BaseOperator {
 			} else { // 执行批量
 				if (!this.isUseOnlyConnectionFlag()) {
 					this.batchEffectCounts = DBAccess.updateBatch(
-							AccessMannerFactory.getAccessManner(this.getSql(),
-									this.batchValues), ConnectionFactory
-									.getConncetion(this.getDataSourceName()));
+							AccessMannerFactory.getAccessManner(this.getSql(), this.batchValues),
+							ConnectionFactory.getConncetion(this.getDataSourceName()));
 				} else {
 					if (!this.isPresentConnectionUsable()) {
-						throw new ConnectionException(
-								"the current connection is closed!");
+						throw new ConnectionException("the current connection is closed!");
 					}
-					this.batchEffectCounts = DBAccess
-							.updateBatchForOneConnection(
-									AccessMannerFactory.getAccessManner(
-											this.getSql(), this.batchValues),
-									this.getPresentConnection());
+					this.batchEffectCounts = DBAccess.updateBatchForOneConnection(
+							AccessMannerFactory.getAccessManner(this.getSql(), this.batchValues),
+							this.getPresentConnection());
 				}
 			}
 		} catch (ConnectionException ce) {
@@ -78,36 +93,37 @@ public final class UpdateOperator extends BaseOperator {
 	private void notBatch() {
 		if (this.getParameters().isEmpty()) {
 			if (!this.isUseOnlyConnectionFlag()) {
-				effectCounts = DBAccess.update(AccessMannerFactory
-						.getAccessManner(this.getSql()), ConnectionFactory
-						.getConncetion(this.getDataSourceName()));
+				effectCounts = DBAccess.update(AccessMannerFactory.getAccessManner(this.getSql()),
+						ConnectionFactory.getConncetion(this.getDataSourceName()));
 			} else {
 				if (!this.isPresentConnectionUsable()) {
 					// this.setPresentConnection(ConnectionFactory
 					// .getConncetion(this.getDataSourceName()));
-					throw new ConnectionException(
-							"the current connection is closed!");
+					throw new ConnectionException("the current connection is closed!");
 				}
-				effectCounts = DBAccess.updateForOneConnection(
-						AccessMannerFactory.getAccessManner(this.getSql()),
+				effectCounts = DBAccess.updateForOneConnection(AccessMannerFactory.getAccessManner(this.getSql()),
 						this.getPresentConnection());
 			}
 		} else {
 			if (!this.isUseOnlyConnectionFlag()) {
-				effectCounts = DBAccess.update(AccessMannerFactory
-						.getAccessManner(this.getSql(), this.getParameters()),
-						ConnectionFactory.getConncetion(this
-								.getDataSourceName()));
+				if (this.isReturnGeneratedKeys()) {// autokey
+					autokeyvalue = DBAccess.updateReturnKey(
+							AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters(),
+									this.return_generated_keys),
+							ConnectionFactory.getConncetion(this.getDataSourceName()));
+				} else {
+					effectCounts = DBAccess.update(
+							AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()),
+							ConnectionFactory.getConncetion(this.getDataSourceName()));
+				}
 			} else {
 				if (!this.isPresentConnectionUsable()) {
 					// this.setPresentConnection(ConnectionFactory
 					// .getConncetion(this.getDataSourceName()));
-					throw new ConnectionException(
-							"the current connection is closed!");
+					throw new ConnectionException("the current connection is closed!");
 				}
 				effectCounts = DBAccess.updateForOneConnection(
-						AccessMannerFactory.getAccessManner(this.getSql(),
-								this.getParameters()),
+						AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()),
 						this.getPresentConnection());
 			}
 		}
@@ -134,8 +150,7 @@ public final class UpdateOperator extends BaseOperator {
 	 */
 	public int getEffectCounts() {
 		if (!this.isAccessed()) {
-			throw new com.beetle.framework.AppRuntimeException(
-					"please run method of access() first!");
+			throw new com.beetle.framework.AppRuntimeException("please run method of access() first!");
 		}
 		return effectCounts;
 	}

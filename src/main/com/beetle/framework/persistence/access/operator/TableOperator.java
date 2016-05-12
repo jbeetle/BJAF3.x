@@ -38,6 +38,11 @@ import com.beetle.framework.util.cache.ICache;
  * 
  * @version 1.0
  */
+/**
+ * @author henryyu
+ *
+ * @param <T>
+ */
 final public class TableOperator<T> {
 	private final static ICache TableCACHER = new ConcurrentCache();
 	private static final String SYSDATASOURCE_DEFAULT = "SYSDATASOURCE_DEFAULT";
@@ -56,8 +61,7 @@ final public class TableOperator<T> {
 
 	private String primaryKeyName;
 
-	private final static AppLogger logger = AppLogger
-			.getInstance(TableOperator.class);
+	private final static AppLogger logger = AppLogger.getInstance(TableOperator.class);
 
 	/**
 	 * TableOperator（默认为此表的主键为非自动增量）
@@ -70,10 +74,8 @@ final public class TableOperator<T> {
 	 *            表对应的值对象
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public TableOperator(String dataSourceName, String tableName,
-			Class<T> valueObjectClass) {
-		if (!TableCACHER.containsKey(tableName)
-				&& !TableCACHER.containsKey(tableName.toUpperCase())) {
+	public TableOperator(String dataSourceName, String tableName, Class<T> valueObjectClass) {
+		if (!TableCACHER.containsKey(tableName) && !TableCACHER.containsKey(tableName.toUpperCase())) {
 			init(dataSourceName, tableName, valueObjectClass);
 		} else {
 			TableOperator tor = (TableOperator) TableCACHER.get(tableName);
@@ -91,8 +93,7 @@ final public class TableOperator<T> {
 		}
 	}
 
-	private void init(String dataSourceName, String tableName,
-			Class<T> valueObjectClass) {
+	private void init(String dataSourceName, String tableName, Class<T> valueObjectClass) {
 		this.dsName = dataSourceName;
 		Connection conn = null;
 		try {
@@ -108,11 +109,9 @@ final public class TableOperator<T> {
 			filedSet = DBHelper.getTableFields(this.tbName, conn);
 			if (filedSet == null || filedSet.isEmpty()) {
 				throw new DBOperatorException(
-						"Can't retrieved from the database of this "
-								+ this.tbName + " structured data!");
+						"Can't retrieved from the database of this " + this.tbName + " structured data!");
 			}
-			this.primaryKeyName = DBHelper.getTablePrimaryKeyFieldName(
-					this.tbName, conn);
+			this.primaryKeyName = DBHelper.getTablePrimaryKeyFieldName(this.tbName, conn);
 			TableCACHER.put(this.tbName, this);
 			logger.debug("filedSet:{}", filedSet);
 			logger.debug("primaryKeyName:{}", this.primaryKeyName);
@@ -149,8 +148,7 @@ final public class TableOperator<T> {
 	 *            自动增量的key的字段名称
 	 */
 
-	public TableOperator(String dataSourceName, String tableName,
-			Class<T> valueObjectClass, String autoKeyFiledName) {
+	public TableOperator(String dataSourceName, String tableName, Class<T> valueObjectClass, String autoKeyFiledName) {
 		this(dataSourceName, tableName, valueObjectClass);
 		if (autoKeyFiledName != null) {
 			if (!autoKeyFiledName.equals("")) {
@@ -172,8 +170,7 @@ final public class TableOperator<T> {
 	 * @param autoKeyFlag
 	 *            此表的主键是否为自动增量的
 	 */
-	public TableOperator(String dataSourceName, String tableName,
-			Class<T> valueObjectClass, boolean autoKeyFlag) {
+	public TableOperator(String dataSourceName, String tableName, Class<T> valueObjectClass, boolean autoKeyFlag) {
 		this(dataSourceName, tableName, valueObjectClass);
 		this.autoGenerateKey = autoKeyFlag;
 		this.autoKeyFiledName = primaryKeyName;
@@ -195,8 +192,7 @@ final public class TableOperator<T> {
 		}
 		QueryOperator query = new QueryOperator();
 		query.setDataSourceName(this.dsName);
-		query.setSql(SqlGenerator.generateSelectByPKSql(this.filedSet,
-				this.tbName, this.primaryKeyName));
+		query.setSql(SqlGenerator.generateSelectByPKSql(this.filedSet, this.tbName, this.primaryKeyName));
 		query.addParameter(pk);
 		RsDataSet rs = null;
 		try {
@@ -224,8 +220,7 @@ final public class TableOperator<T> {
 	 * @return MasterDetailDTO,没值时，返回为null
 	 * @throws DBOperatorException
 	 */
-	public MasterDetailDTO selectDetailTable(Object masterTablePK,
-			String detailTableName, Class<?> detailTableVOClass)
+	public MasterDetailDTO selectDetailTable(Object masterTablePK, String detailTableName, Class<?> detailTableVOClass)
 			throws DBOperatorException {
 		Object mo = this.selectByPrimaryKey(masterTablePK);
 		if (mo == null) {
@@ -233,10 +228,8 @@ final public class TableOperator<T> {
 			return null;
 		}
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName,
-				detailTableVOClass);
-		List<?> dl = tor.selectByWhereCondition("where " + this.primaryKeyName
-				+ "=?", new Object[] { masterTablePK });
+		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName, detailTableVOClass);
+		List<?> dl = tor.selectByWhereCondition("where " + this.primaryKeyName + "=?", new Object[] { masterTablePK });
 		MasterDetailDTO dto = new MasterDetailDTO(mo, dl);
 		dl.clear();
 		return dto;
@@ -258,30 +251,25 @@ final public class TableOperator<T> {
 	 * @return MasterDetailDTO,没值时，返回为null
 	 * @throws DBOperatorException
 	 */
-	public MasterDetailDTO selectDetailTableByWhereCondition(
-			Object masterTablePK, String detailTableName,
-			Class<?> detailTableVOClass, String whereStrForDetailTable,
-			Object sqlvalues[]) throws DBOperatorException {
+	public MasterDetailDTO selectDetailTableByWhereCondition(Object masterTablePK, String detailTableName,
+			Class<?> detailTableVOClass, String whereStrForDetailTable, Object sqlvalues[]) throws DBOperatorException {
 		Object mo = this.selectByPrimaryKey(masterTablePK);
 		if (mo == null) {
 			// throw new DBOperatorException("can't find master data!");
 			return null;
 		}
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName,
-				detailTableVOClass);
+		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName, detailTableVOClass);
 		whereStrForDetailTable = whereStrForDetailTable.toLowerCase();
 		String pktmp = this.primaryKeyName.toLowerCase();
 		final MasterDetailDTO dto;
 		if (whereStrForDetailTable.indexOf(pktmp) >= 0) {
-			List<?> dl = tor.selectByWhereCondition(whereStrForDetailTable,
-					sqlvalues);
+			List<?> dl = tor.selectByWhereCondition(whereStrForDetailTable, sqlvalues);
 			dto = new MasterDetailDTO(mo, dl);
 			dl.clear();
 		} else {
 			String whereTmp = "where " + this.primaryKeyName + "=? and ";
-			whereStrForDetailTable = whereStrForDetailTable.replaceFirst(
-					"where", whereTmp);
+			whereStrForDetailTable = whereStrForDetailTable.replaceFirst("where", whereTmp);
 			Object vv[] = new Object[sqlvalues.length + 1];
 			vv[0] = masterTablePK;
 			for (int i = 0; i < sqlvalues.length; i++) {
@@ -347,12 +335,10 @@ final public class TableOperator<T> {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public List<T> selectByWhereCondition(String whereStr, Object values[])
-			throws DBOperatorException {
+	public List<T> selectByWhereCondition(String whereStr, Object values[]) throws DBOperatorException {
 		QueryOperator query = new QueryOperator();
 		query.setDataSourceName(this.dsName);
-		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet,
-				this.tbName) + whereStr);
+		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName) + whereStr);
 		int i = whereStr.indexOf("?");
 		if (i > 0) {
 			for (int j = 0; j < values.length; j++) {
@@ -392,8 +378,8 @@ final public class TableOperator<T> {
 		Map<?, ?> valueMap = objToMap(valueObject, this.filedSet);
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateInsertSql(this.filedSet,
-				this.tbName, this.autoGenerateKey, this.autoKeyFiledName));
+		update.setSql(SqlGenerator.generateInsertSql(this.filedSet, this.tbName, this.autoGenerateKey,
+				this.autoKeyFiledName));
 		Iterator<String> it = this.filedSet.iterator();
 		while (it.hasNext()) {
 			Object key = it.next();
@@ -412,8 +398,39 @@ final public class TableOperator<T> {
 		}
 	}
 
-	private void addUpdateParams(Map<?, ?> valueMap, UpdateOperator update,
-			Object key) {
+	/**
+	 * 插入一条记录同时返回最新记录的自动增量PK（主要是针对主键为自动增量，获取这个主键值）
+	 * 
+	 * @param valueObject
+	 * @return
+	 * @throws DBOperatorException
+	 */
+	public Long insertAndRetrievePK(T valueObject) throws DBOperatorException {
+		Map<?, ?> valueMap = objToMap(valueObject, this.filedSet);
+		UpdateOperator update = new UpdateOperator();
+		update.setDataSourceName(this.dsName);
+		update.setReturnGeneratedKeys(true);
+		update.setSql(SqlGenerator.generateInsertSql(this.filedSet, this.tbName, this.autoGenerateKey,
+				this.autoKeyFiledName));
+		Iterator<String> it = this.filedSet.iterator();
+		while (it.hasNext()) {
+			Object key = it.next();
+			if (autoGenerateKey) {
+				if (key.equals(autoKeyFiledName)) {
+					continue;
+				}
+			}
+			addUpdateParams(valueMap, update, key);
+		}
+		try {
+			update.access();
+			return update.getGeneratedKeyValue();
+		} finally {
+			valueMap.clear();
+		}
+	}
+
+	private void addUpdateParams(Map<?, ?> valueMap, UpdateOperator update, Object key) {
 		ValueInfo vi = (ValueInfo) valueMap.get(key);
 		if (vi.getValue() != null) {
 			update.addParameter(vi.getValue());
@@ -459,8 +476,7 @@ final public class TableOperator<T> {
 		}
 	}
 
-	private static Map<String, ValueInfo> mapToMap(Map<String, Object> vs,
-			Set<String> fields) {
+	private static Map<String, ValueInfo> mapToMap(Map<String, Object> vs, Set<String> fields) {
 		Map<String, ValueInfo> map = new HashMap<String, ValueInfo>();
 		Iterator<String> it = fields.iterator();
 		while (it.hasNext()) {
@@ -476,8 +492,7 @@ final public class TableOperator<T> {
 		return map;
 	}
 
-	private static Map<String, ValueInfo> objToMap(Object obj,
-			Set<String> fields) {
+	private static Map<String, ValueInfo> objToMap(Object obj, Set<String> fields) {
 		Map<String, ValueInfo> map = new HashMap<String, ValueInfo>();
 		Iterator<String> it = fields.iterator();
 		while (it.hasNext()) {
@@ -515,17 +530,15 @@ final public class TableOperator<T> {
 	 * @return int[]
 	 * @throws DBOperatorException
 	 */
-	public int[] insertBatch(List<T> valueObjectList)
-			throws DBOperatorException {
+	public int[] insertBatch(List<T> valueObjectList) throws DBOperatorException {
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateInsertSql(this.filedSet,
-				this.tbName, this.autoGenerateKey, this.autoKeyFiledName));
+		update.setSql(SqlGenerator.generateInsertSql(this.filedSet, this.tbName, this.autoGenerateKey,
+				this.autoKeyFiledName));
 		for (int i = 0; i < valueObjectList.size(); i++) {
 			Object valueObject = valueObjectList.get(i);
 			SqlParameterSet r = new SqlParameterSet();
-			Map<String, ValueInfo> valueMap = objToMap(valueObject,
-					this.filedSet);
+			Map<String, ValueInfo> valueMap = objToMap(valueObject, this.filedSet);
 			Iterator<String> it = this.filedSet.iterator();
 			while (it.hasNext()) {
 				Object key = it.next();
@@ -547,8 +560,7 @@ final public class TableOperator<T> {
 		}
 	}
 
-	private void addBatchParams(SqlParameterSet r,
-			Map<String, ValueInfo> valueMap, Object key) {
+	private void addBatchParams(SqlParameterSet r, Map<String, ValueInfo> valueMap, Object key) {
 		ValueInfo vi = (ValueInfo) valueMap.get(key);
 		if (vi.getValue() != null) {
 			r.addParameter(vi.getValue());
@@ -588,8 +600,7 @@ final public class TableOperator<T> {
 		}
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateDeleteByPKSql(this.tbName,
-				this.primaryKeyName));
+		update.setSql(SqlGenerator.generateDeleteByPKSql(this.tbName, this.primaryKeyName));
 		update.addParameter(pk);
 		try {
 			update.access();
@@ -600,8 +611,7 @@ final public class TableOperator<T> {
 		}
 	}
 
-	public int deleteByWhereCondition(String whereStr, Object values[])
-			throws DBOperatorException {
+	public int deleteByWhereCondition(String whereStr, Object values[]) throws DBOperatorException {
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
 		update.setSql("delete from " + this.tbName + " " + whereStr);
@@ -673,8 +683,7 @@ final public class TableOperator<T> {
 		}
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateDeleteByPKSql(this.tbName,
-				this.primaryKeyName));
+		update.setSql(SqlGenerator.generateDeleteByPKSql(this.tbName, this.primaryKeyName));
 		for (int i = 0; i < pks.size(); i++) {
 			Object pk = pks.get(i);
 			SqlParameterSet r = new SqlParameterSet();
@@ -693,8 +702,7 @@ final public class TableOperator<T> {
 		}
 	}
 
-	public int update(final Map<String, Object> fieldValues)
-			throws DBOperatorException {
+	public int update(final Map<String, Object> fieldValues) throws DBOperatorException {
 		if (this.primaryKeyName == null) {
 			throw new AppRuntimeException("此表没有定义主键或为组合主键，不支持此方法");
 		}
@@ -702,8 +710,7 @@ final public class TableOperator<T> {
 		Map<?, ?> valueMap = mapToMap(fieldValues, fss);
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateUpdateByPKSql(fss, this.tbName,
-				this.primaryKeyName, this.autoGenerateKey,
+		update.setSql(SqlGenerator.generateUpdateByPKSql(fss, this.tbName, this.primaryKeyName, this.autoGenerateKey,
 				this.autoKeyFiledName));
 		Iterator<String> it = fss.iterator();
 		Object pkValue = null;
@@ -743,9 +750,8 @@ final public class TableOperator<T> {
 		Map<?, ?> valueMap = objToMap(valueObject, this.filedSet);
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateUpdateByPKSql(this.filedSet,
-				this.tbName, this.primaryKeyName, this.autoGenerateKey,
-				this.autoKeyFiledName));
+		update.setSql(SqlGenerator.generateUpdateByPKSql(this.filedSet, this.tbName, this.primaryKeyName,
+				this.autoGenerateKey, this.autoKeyFiledName));
 		Iterator<String> it = this.filedSet.iterator();
 		Object pkValue = null;
 		while (it.hasNext()) {
@@ -777,21 +783,18 @@ final public class TableOperator<T> {
 	 * @return int[]
 	 * @throws DBOperatorException
 	 */
-	public int[] updateBatch(List<T> valueObjectList)
-			throws DBOperatorException {
+	public int[] updateBatch(List<T> valueObjectList) throws DBOperatorException {
 		if (this.primaryKeyName == null) {
 			throw new AppRuntimeException("此表没有定义主键或为组合主键，不支持此方法");
 		}
 		UpdateOperator update = new UpdateOperator();
 		update.setDataSourceName(this.dsName);
-		update.setSql(SqlGenerator.generateUpdateByPKSql(this.filedSet,
-				this.tbName, this.primaryKeyName, this.autoGenerateKey,
-				this.autoKeyFiledName));
+		update.setSql(SqlGenerator.generateUpdateByPKSql(this.filedSet, this.tbName, this.primaryKeyName,
+				this.autoGenerateKey, this.autoKeyFiledName));
 		for (int i = 0; i < valueObjectList.size(); i++) {
 			Object valueObject = valueObjectList.get(i);
 			SqlParameterSet r = new SqlParameterSet();
-			Map<String, ValueInfo> valueMap = objToMap(valueObject,
-					this.filedSet);
+			Map<String, ValueInfo> valueMap = objToMap(valueObject, this.filedSet);
 			Iterator<String> it = this.filedSet.iterator();
 			Object pkValue = null;
 			while (it.hasNext()) {

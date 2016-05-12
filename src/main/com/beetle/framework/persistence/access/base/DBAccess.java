@@ -31,9 +31,8 @@ import java.sql.SQLException;
 
 public class DBAccess {
 
-	public static void queryForOneConnection(IAccessManner selectAccessManner,
-			ResultSetHandler handlerImp, Connection con, int maxRow)
-			throws DBAccessException {
+	public static void queryForOneConnection(IAccessManner selectAccessManner, ResultSetHandler handlerImp,
+			Connection con, int maxRow) throws DBAccessException {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
@@ -63,8 +62,7 @@ public class DBAccess {
 		}
 	}
 
-	public static void query(IAccessManner selectAccessManner,
-			ResultSetHandler handlerImp, Connection con, int maxRow)
+	public static void query(IAccessManner selectAccessManner, ResultSetHandler handlerImp, Connection con, int maxRow)
 			throws DBAccessException {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -96,13 +94,11 @@ public class DBAccess {
 		}
 	}
 
-	public static int[] updateBatch(IAccessManner updateAccessManner,
-			Connection connection) throws DBAccessException {
+	public static int[] updateBatch(IAccessManner updateAccessManner, Connection connection) throws DBAccessException {
 		return updateBatchImp(updateAccessManner, connection);
 	}
 
-	public static int[] updateBatchForOneConnection(
-			IAccessManner updateAccessManner, Connection con)
+	public static int[] updateBatchForOneConnection(IAccessManner updateAccessManner, Connection con)
 			throws DBAccessException {
 		PreparedStatement ps = null;
 		try {
@@ -120,8 +116,7 @@ public class DBAccess {
 		}
 	}
 
-	private static int[] updateBatchImp(IAccessManner updateAccessManner,
-			Connection con) throws DBAccessException {
+	private static int[] updateBatchImp(IAccessManner updateAccessManner, Connection con) throws DBAccessException {
 		PreparedStatement ps = null;
 		try {
 			ps = updateAccessManner.accessByPreStatement(con);
@@ -138,8 +133,8 @@ public class DBAccess {
 		}
 	}
 
-	public static int updateForOneConnection(IAccessManner updateAccessManner,
-			Connection con) throws DBAccessException {
+	public static int updateForOneConnection(IAccessManner updateAccessManner, Connection con)
+			throws DBAccessException {
 		int reRowNum;
 		PreparedStatement ps = null;
 		try {
@@ -156,13 +151,38 @@ public class DBAccess {
 		}
 	}
 
-	public static int update(IAccessManner updateAccessManner,
-			Connection connection) throws DBAccessException {
+	public static Long updateReturnKey(IAccessManner updateAccessManner, Connection connection)
+			throws DBAccessException {
+		return updateImp2(updateAccessManner, connection);
+	}
+
+	private static Long updateImp2(IAccessManner updateAccessManner, Connection con) throws DBAccessException {
+		Long id = -1l;
+		PreparedStatement ps = null;
+		try {
+			ps = updateAccessManner.accessByPreStatement(con);
+			ps.executeUpdate();
+			ResultSet rs = ps.getGeneratedKeys();
+			if (rs.next()) {
+				// 知其仅有一列，故获取第一列
+				id = rs.getLong(1);
+			}
+			return id;
+		} catch (SQLException sqle) {
+			throw new DBAccessException("execute sql err!", sqle);
+		} finally {
+			try {
+				ConnectionFactory.closeAll(con, ps, null);
+			} catch (ConnectionException ce) {
+			}
+		}
+	}
+
+	public static int update(IAccessManner updateAccessManner, Connection connection) throws DBAccessException {
 		return updateImp(updateAccessManner, connection);
 	}
 
-	private static int updateImp(IAccessManner updateAccessManner,
-			Connection con) throws DBAccessException {
+	private static int updateImp(IAccessManner updateAccessManner, Connection con) throws DBAccessException {
 		int reRowNum;
 		PreparedStatement ps = null;
 		try {

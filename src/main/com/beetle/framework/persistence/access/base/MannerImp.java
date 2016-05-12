@@ -14,38 +14,61 @@
  */
 package com.beetle.framework.persistence.access.base;
 
-import com.beetle.framework.persistence.access.operator.SqlParameter;
-
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.List;
 
- class MannerImp implements IAccessManner {
+import com.beetle.framework.persistence.access.operator.SqlParameter;
+
+class MannerImp implements IAccessManner {
 	private List<SqlParameter> declaredParameters; // = new LinkedList();
 
 	private String sql;
+	private boolean return_generated_keys;
 
 	public MannerImp(List<SqlParameter> declaredParameters, String sql) {
 		this.declaredParameters = declaredParameters;
 		this.sql = sql;
+		this.return_generated_keys = false;
 	}
 
-	public PreparedStatement accessByPreStatement(Connection conn)
-			throws SQLException {
+	public MannerImp(List<SqlParameter> declaredParameters, String sql, boolean return_generated_keys) {
+		super();
+		this.declaredParameters = declaredParameters;
+		this.sql = sql;
+		this.return_generated_keys = return_generated_keys;
+	}
+
+	public PreparedStatement accessByPreStatement(Connection conn) throws SQLException {
 		if (this.declaredParameters == null) {
 			return newPsWithoutParameters(conn);
 		}
 		return newPSWithParameters(conn);
 	}
 
-	private PreparedStatement newPsWithoutParameters(Connection conn)
-			throws SQLException {
-		PreparedStatement ps = conn.prepareStatement(sql);
+	private PreparedStatement newPsWithoutParameters(Connection conn) throws SQLException {
+		PreparedStatement ps = null;
+		if (this.return_generated_keys) {
+			ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		} else {
+			ps = conn.prepareStatement(sql);
+		}
+
 		return ps;
 	}
 
-	private PreparedStatement newPSWithParameters(Connection conn)
-			throws SQLException {
-		PreparedStatement ps = conn.prepareStatement(sql);
+	private PreparedStatement newPSWithParameters(Connection conn) throws SQLException {
+		PreparedStatement ps = null;
+		if (this.return_generated_keys) {
+			ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		} else {
+			ps = conn.prepareStatement(sql);
+		}
 		for (int i = 0; i < declaredParameters.size(); i++) {
 			SqlParameter sqlParam = declaredParameters.get(i);
 			if (sqlParam.getValue() == null) {
@@ -66,8 +89,7 @@ import java.util.List;
 						ps.setTimestamp(i + 1, (Timestamp) sqlParam.getValue());
 						break;
 					default:
-						ps.setObject(i + 1, sqlParam.getValue(),
-								sqlParam.getType());
+						ps.setObject(i + 1, sqlParam.getValue(), sqlParam.getType());
 						break;
 					}
 				}
@@ -79,8 +101,7 @@ import java.util.List;
 		return ps;
 	}
 
-	public CallableStatement accessByCallableStatement(Connection conn)
-			throws SQLException {
+	public CallableStatement accessByCallableStatement(Connection conn) throws SQLException {
 		return conn.prepareCall(sql);
 	}
 }

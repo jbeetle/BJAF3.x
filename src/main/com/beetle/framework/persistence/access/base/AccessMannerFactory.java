@@ -31,15 +31,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccessMannerFactory {
-  public static IAccessManner getAccessManner(String sql) {
-    return new MannerImp(null, sql);
-  }
+	public static IAccessManner getAccessManner(String sql) {
+		return new MannerImp(null, sql);
+	}
 
-  public static IAccessManner getAccessManner(String sql, List<SqlParameter> sqlParameters) { 
-    return new MannerImp(sqlParameters, sql);
-  }
+	public static IAccessManner getAccessManner(String sql, List<SqlParameter> sqlParameters) {
+		return new MannerImp(sqlParameters, sql);
+	}
 
-  public static IAccessManner getAccessManner(String sql, ArrayList<List<SqlParameter>> batchValues) {
-    return new BatchManerImp(sql, batchValues);
-  }
+	public static IAccessManner getAccessManner(String sql, List<SqlParameter> sqlParameters,
+			boolean return_generated_keys) {
+		return new MannerImp(sqlParameters, sql, return_generated_keys);
+	}
+
+	public static IAccessManner getAccessManner(String sql, ArrayList<List<SqlParameter>> batchValues) {
+		return new BatchManerImp(sql, batchValues);
+	}
 }
