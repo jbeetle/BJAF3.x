@@ -365,6 +365,40 @@ final public class TableOperator<T> {
 				rs.clearAll();
 		}
 	}
+	
+	/**
+	 * 统计数量
+	 * @param whereStr 条件语句
+	 * @param values 条件值
+	 * @return
+	 * @throws DBOperatorException
+	 */
+	public long countByWhereCondition(String whereStr, Object values[]) throws DBOperatorException {
+		long x = -1l;
+		QueryOperator query = new QueryOperator();
+		query.setDataSourceName(this.dsName);
+		query.setSql(SqlGenerator.generateSelectCountSql(this.tbName) + whereStr);
+		int i = whereStr.indexOf("?");
+		if (i > 0) {
+			for (int j = 0; j < values.length; j++) {
+				query.addParameter(values[j]);
+			}
+		}
+		RsDataSet rs = null;
+		try {
+			query.access();
+			if (query.resultSetAvailable()) {
+				rs = new RsDataSet(query.getSqlResultSet());
+				x = rs.getFieldValueAsLong(0);
+				return x;
+			} else {
+				return -1l;
+			}
+		} finally {
+			if (rs != null)
+				rs.clearAll();
+		}
+	}
 
 	/**
 	 * 插入一条记录
@@ -702,6 +736,14 @@ final public class TableOperator<T> {
 		}
 	}
 
+	/**
+	 * 指定更新字段名称及其值更新数据库记录
+	 * 
+	 * @param fieldValues
+	 *            字段中必须包含表的主键字段（本质是根据她来更新）
+	 * @return
+	 * @throws DBOperatorException
+	 */
 	public int update(final Map<String, Object> fieldValues) throws DBOperatorException {
 		if (this.primaryKeyName == null) {
 			throw new AppRuntimeException("此表没有定义主键或为组合主键，不支持此方法");
@@ -715,9 +757,9 @@ final public class TableOperator<T> {
 		Iterator<String> it = fss.iterator();
 		Object pkValue = null;
 		while (it.hasNext()) {
-			Object key = it.next();
+			String key = (String) it.next();
 			ValueInfo vi = (ValueInfo) valueMap.get(key);
-			if (key.equals(this.primaryKeyName)) {
+			if (key.equalsIgnoreCase(this.primaryKeyName)) {
 				pkValue = vi.getValue();
 				if (this.autoGenerateKey) {
 					continue;

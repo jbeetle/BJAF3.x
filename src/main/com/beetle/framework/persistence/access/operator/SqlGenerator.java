@@ -67,8 +67,7 @@ class SqlGenerator {
 		return sb.toString();
 	}
 
-	public static String generateFieldsValueUpdateFormatStr(Set<?> fields,
-			String autoKeyName) {
+	public static String generateFieldsValueUpdateFormatStr(Set<?> fields, String autoKeyName) {
 		StringBuilder sb = new StringBuilder();
 		Object l[] = fields.toArray();
 		for (int i = 0; i < l.length; i++) {
@@ -95,6 +94,18 @@ class SqlGenerator {
 		return sb.toString();
 	}
 
+	private static String SELECT_COUNT_SQL_TEMP = "select count(1) from #TABLENAME ";
+
+	public static String generateSelectCountSql(String tableName) {
+		String key = tableName + "_select_count";
+		String sql = (String) SQL_CACHER.get(key);
+		if (sql == null) {
+			sql = SELECT_COUNT_SQL_TEMP;
+			sql = sql.replaceAll("#TABLENAME", tableName);
+		}
+		return sql;
+	}
+
 	private static String SELECT_ALL_SQL_TEMP = "select #FIELDS from #TABLENAME ";
 
 	public static String generateSelectAllSql(Set<?> fields, String tableName) {
@@ -102,8 +113,7 @@ class SqlGenerator {
 		String sql = (String) SQL_CACHER.get(key);
 		if (sql == null) {
 			sql = SELECT_ALL_SQL_TEMP;
-			sql = sql.replaceAll("#FIELDS",
-					generateFieldsFormatStr(fields, tableName));
+			sql = sql.replaceAll("#FIELDS", generateFieldsFormatStr(fields, tableName));
 			sql = sql.replaceAll("#TABLENAME", tableName);
 		}
 		return sql;
@@ -111,23 +121,19 @@ class SqlGenerator {
 
 	private static String UPDATE_BY_PK_SQL_TEMP = "update #TABLENAME set #FIELDS where #PK = ?";
 
-	public static String generateUpdateByPKSql(Set<?> fields, String tableName,
-			String pkFiledName, boolean autoKeyFlag, String autoKeyFiledName) {
+	public static String generateUpdateByPKSql(Set<?> fields, String tableName, String pkFiledName, boolean autoKeyFlag,
+			String autoKeyFiledName) {
 		String key = tableName + "_update";
 		String sql = (String) SQL_CACHER.get(key);
 		if (sql == null) {
 			sql = UPDATE_BY_PK_SQL_TEMP;
 			if (!autoKeyFlag) {
 				sql = sql.replaceAll("#TABLENAME", tableName);
-				sql = sql.replaceAll("#FIELDS",
-						generateFieldsValueUpdateFormatStr(fields));
+				sql = sql.replaceAll("#FIELDS", generateFieldsValueUpdateFormatStr(fields));
 				sql = sql.replaceAll("#PK", pkFiledName);
 			} else {
 				sql = sql.replaceAll("#TABLENAME", tableName);
-				sql = sql.replaceAll(
-						"#FIELDS",
-						generateFieldsValueUpdateFormatStr(fields,
-								autoKeyFiledName));
+				sql = sql.replaceAll("#FIELDS", generateFieldsValueUpdateFormatStr(fields, autoKeyFiledName));
 				sql = sql.replaceAll("#PK", pkFiledName);
 			}
 		}
@@ -136,8 +142,7 @@ class SqlGenerator {
 
 	private static String DELETE_BY_PK_SQL_TEMP = "delete from #TABLENAME where #PK = ?";
 
-	public static String generateDeleteByPKSql(String tableName,
-			String pkFiledName) {
+	public static String generateDeleteByPKSql(String tableName, String pkFiledName) {
 		String key = tableName + "_delete";
 		String sql = (String) SQL_CACHER.get(key);
 		if (sql == null) {
@@ -150,8 +155,7 @@ class SqlGenerator {
 
 	private static String SELECT_BY_PK_SQL_TEMP = "select #FIELDS from #TABLENAME where #PK = ?";
 
-	public static String generateSelectByPKSql(Set<?> fields, String tableName,
-			String pkFiledName) {
+	public static String generateSelectByPKSql(Set<?> fields, String tableName, String pkFiledName) {
 		String key = tableName + "_select_pk";
 		String sql = (String) SQL_CACHER.get(key);
 		if (sql == null) {
@@ -186,8 +190,8 @@ class SqlGenerator {
 
 	private static String INSERT_SQL_TEMP = "insert into #TABLENAME (#FIELDS) values (#VALUES)";
 
-	public static String generateInsertSql(Set<?> fields, String tableName,
-			boolean autoKeyFlag, String autoKeyFiledName) {
+	public static String generateInsertSql(Set<?> fields, String tableName, boolean autoKeyFlag,
+			String autoKeyFiledName) {
 		String key = tableName + "_insert";
 		String sql = (String) SQL_CACHER.get(key);
 		if (sql == null) {
@@ -196,8 +200,8 @@ class SqlGenerator {
 				String fs = generateFieldsFormatStr(fields);
 				int i = fs.indexOf(autoKeyFiledName);
 				if (i < 0) {
-					throw new com.beetle.framework.AppRuntimeException("表不存在此["
-							+ autoKeyFiledName + "]字段，请检查字段名称是否正确，区分大小写");
+					throw new com.beetle.framework.AppRuntimeException(
+							"表不存在此[" + autoKeyFiledName + "]字段，请检查字段名称是否正确，区分大小写");
 				} else {
 					// fs = fs.replaceAll(autoKeyFiledName + ", ", "");
 					fs = replaceX(fs, autoKeyFiledName);
@@ -209,10 +213,8 @@ class SqlGenerator {
 				}
 			} else {
 				sql = sql.replaceAll("#TABLENAME", tableName);
-				sql = sql
-						.replaceAll("#FIELDS", generateFieldsFormatStr(fields));
-				sql = sql.replaceAll("#VALUES",
-						generateFieldsValueFormatStr(fields));
+				sql = sql.replaceAll("#FIELDS", generateFieldsFormatStr(fields));
+				sql = sql.replaceAll("#VALUES", generateFieldsValueFormatStr(fields));
 			}
 			SQL_CACHER.put(key, sql);
 		}
