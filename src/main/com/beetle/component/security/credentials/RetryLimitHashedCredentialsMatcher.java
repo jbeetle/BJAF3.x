@@ -11,6 +11,7 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import com.beetle.component.security.dto.SecUsers;
 import com.beetle.component.security.service.SecurityServiceException;
 import com.beetle.component.security.service.UserService;
+import com.beetle.component.security.service.imp.Helper;
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.resource.dic.DIContainer;
@@ -23,7 +24,17 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 	public RetryLimitHashedCredentialsMatcher() {
 		userService = DIContainer.getInstance().retrieve(UserService.class);
 		this.max = AppProperties.getAsInt("security_login_time", 5);
+		String format = AppProperties.get("security_password_hash_format", "HexFormat");
+		if (format.equalsIgnoreCase("HexFormat")) {
+			this.setStoredCredentialsHexEncoded(true);
+		} else {
+			this.setStoredCredentialsHexEncoded(false);
+		}
+		this.setHashAlgorithmName(Helper.algorithmName);
+		this.setHashIterations(Helper.hashIterations);
 	}
+
+	
 
 	@Override
 	public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
@@ -42,7 +53,7 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 			AtomicInteger retryCount = new AtomicInteger(curCount);
 			if (retryCount.incrementAndGet() > max) {
 				// if retry count > 5 throw
-				logger.error("user:{},time:{}",user.getUsername(),user.getTrycount());
+				logger.error("user:{},time:{}", user.getUsername(), user.getTrycount());
 				throw new ExcessiveAttemptsException();
 			}
 			boolean matches = super.doCredentialsMatch(token, info);
