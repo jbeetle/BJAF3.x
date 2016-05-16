@@ -1,5 +1,7 @@
 package com.beetle.component.security.realm;
 
+import java.util.Set;
+
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -35,10 +37,13 @@ public class UserRealm extends AuthorizingRealm {
 		String username = (String) principals.getPrimaryPrincipal();
 		SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
 		try {
-			authorizationInfo.setRoles(userService.findRoles(username));
-			authorizationInfo.setStringPermissions(userService.findPermissions(username));
-			if (logger.isDebugEnabled())
-				logger.debug("username{},authorizationInfo{}", username, authorizationInfo);
+			Set<String> roles = userService.findRoles(username);
+			Set<String> perms = userService.findPermissions(username);
+			if (logger.isDebugEnabled()) {
+				logger.debug("username:{},roles:{},permissions:{}", username, roles, perms);
+			}
+			authorizationInfo.setRoles(roles);
+			authorizationInfo.setStringPermissions(perms);
 			return authorizationInfo;
 		} catch (SecurityServiceException e) {
 			logger.error(e);

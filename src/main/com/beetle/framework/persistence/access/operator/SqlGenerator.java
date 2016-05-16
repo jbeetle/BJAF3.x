@@ -75,7 +75,7 @@ class SqlGenerator {
 				continue;
 			}
 			sb.append(l[i].toString()).append("=?");
-			if (i < l.length - 1) {
+			if (i < l.length - 2) {//要算上自动字段本身
 				sb.append(",");
 			}
 		}

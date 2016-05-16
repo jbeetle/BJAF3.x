@@ -95,7 +95,7 @@ public class QueryOperator extends BaseOperator {
 	}
 
 	/**
-	 * 查询返回的结果集是否可用 true--结果可用，拥有记录 false--结果不可用，没有记录集
+	 * 查询返回的结果集是否可用(是否有数据) true--结果可用，拥有记录 false--结果不可用，没有记录集
 	 * 
 	 * 
 	 * @return boolean
@@ -109,6 +109,22 @@ public class QueryOperator extends BaseOperator {
 		}
 	}
 
+	/*
+	 * 获取结果集的行数
+	 */
+	public int resultRowCount() {
+		ResultSetHandler imp = getRsHandler();
+		return imp.getRowCount();
+	}
+
+	/*
+	 * 获取结果的列数
+	 */
+	public int resultColumnCount() {
+		ResultSetHandler imp = getRsHandler();
+		return imp.getColumnCount();
+	}
+
 	ResultSetHandler getRsHandler() {
 		if (handlerImp == null) {
 			throw new AppRuntimeException("method[access()]has not executed yet,run it first!");
@@ -120,6 +136,7 @@ public class QueryOperator extends BaseOperator {
 	 * 根据输入的数据对象定义类，自动装配，返回其结果数据列表
 	 * 
 	 * @param dtoClass
+	 *            --只针对自定义的值对象，不支持单个Java基础类型对象，例如：String.class等
 	 * @return
 	 */
 	public <T> List<T> getResultList(Class<T> dtoClass) {
@@ -189,8 +206,11 @@ public class QueryOperator extends BaseOperator {
 
 	/**
 	 * 获取结果集中某一行某个字段的值
-	 * @param rowIndex 行号从0开始
-	 * @param fieldname 查询字段名称
+	 * 
+	 * @param rowIndex
+	 *            行号从0开始
+	 * @param fieldname
+	 *            查询字段名称
 	 * @return
 	 */
 	public Object getResultValueOfARow(int rowIndex, String fieldname) {

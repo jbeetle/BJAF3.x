@@ -47,6 +47,9 @@ public class SecUsersImpl implements SecUsersDao {
 	@Override
 	public SecUsers getByName(String username) throws DBOperatorException {
 		List<SecUsers> x = operator.selectByWhereCondition("where username=?", new Object[] { username });
+		if (x.isEmpty()) {
+			return null;
+		}
 		return x.get(0);
 	}
 
@@ -56,14 +59,15 @@ public class SecUsersImpl implements SecUsersDao {
 		QueryOperator q = new QueryOperator();
 		q.setDataSourceName(Helper.DATASOURCE);
 		q.setSql(sql);
+		q.addParameter(username);
 		q.access();
-		List<String> rr = q.getResultList(String.class);
-		Set<String> s = new HashSet<String>();
-		for (String role : rr) {
-			s.add(role);
+		int rows = q.resultRowCount();
+		Set<String> ss = new HashSet<String>();
+		for (int i = 0; i < rows; i++) {
+			String v = (String) q.getResultValueOfARow(i, "role");
+			ss.add(v);
 		}
-		rr.clear();
-		return s;
+		return ss;
 	}
 
 	@Override
@@ -72,14 +76,15 @@ public class SecUsersImpl implements SecUsersDao {
 		QueryOperator q = new QueryOperator();
 		q.setDataSourceName(Helper.DATASOURCE);
 		q.setSql(sql);
+		q.addParameter(username);
 		q.access();
-		List<String> rr = q.getResultList(String.class);
-		Set<String> s = new HashSet<String>();
-		for (String pm : rr) {
-			s.add(pm);
+		int rows = q.resultRowCount();
+		Set<String> ss = new HashSet<String>();
+		for (int i = 0; i < rows; i++) {
+			String v = (String) q.getResultValueOfARow(i, "permission");
+			ss.add(v);
 		}
-		rr.clear();
-		return s;
+		return ss;
 	}
 
 	@Override
