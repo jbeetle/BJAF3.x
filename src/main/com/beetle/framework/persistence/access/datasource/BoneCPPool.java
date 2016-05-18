@@ -7,7 +7,9 @@ import com.jolbox.bonecp.BoneCPConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
+/*
+ * 不再推荐使用，请使用HikariCP连接池代替
+ */
 public class BoneCPPool implements IConnPool {
 	private String driverName;
 	private String conURL;

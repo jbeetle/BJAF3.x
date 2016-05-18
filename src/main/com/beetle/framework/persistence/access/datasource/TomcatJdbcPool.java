@@ -11,6 +11,16 @@ import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.persistence.access.ConnectionException;
 import com.beetle.framework.persistence.access.IConnPool;
 
+/**
+ * Tomcat数据库连接池
+ * 相关属性可以通过application.properties应用配置文件扩展
+ * 当前暴露的属性有：
+ * TomcatJdbcPool_TestOnBorrow
+ * TomcatJdbcPool_MaxWait
+ * TomcatJdbcPool_RemoveAbandoned
+ * TomcatJdbcPool_RemoveAbandonedTimeout
+ * 参数说明请参考tomcat连接池的api
+ */
 public class TomcatJdbcPool implements IConnPool {
 	private String driverName;
 	private String conURL;
