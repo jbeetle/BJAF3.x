@@ -22,7 +22,7 @@ public class Helper {
 		super();
 		this.format = AppProperties.get("security_password_hash_format", Base64Format);
 	}
-	
+
 	public void encryptPassword(SecUsers user) {
 		final String newPassword;
 		if (format.equalsIgnoreCase(HexFormat)) {
@@ -31,6 +31,22 @@ public class Helper {
 					ByteSource.Util.bytes(user.getCredentialsSalt()), hashIterations).toHex();
 		} else if (format.equalsIgnoreCase(Base64Format)) {
 			user.setSalt(randomNumberGenerator.nextBytes().toBase64());
+			newPassword = new SimpleHash(algorithmName, user.getPassword(),
+					ByteSource.Util.bytes(user.getCredentialsSalt()), hashIterations).toBase64();
+		} else {
+			throw new AppRuntimeException("not support this format[" + format + "]");
+		}
+		user.setPassword(newPassword);
+	}
+
+	public void encryptPasswordForOld(SecUsers user) {
+		final String newPassword;
+		if (format.equalsIgnoreCase(HexFormat)) {
+			// user.setSalt(randomNumberGenerator.nextBytes().toHex());
+			newPassword = new SimpleHash(algorithmName, user.getPassword(),
+					ByteSource.Util.bytes(user.getCredentialsSalt()), hashIterations).toHex();
+		} else if (format.equalsIgnoreCase(Base64Format)) {
+			// user.setSalt(randomNumberGenerator.nextBytes().toBase64());
 			newPassword = new SimpleHash(algorithmName, user.getPassword(),
 					ByteSource.Util.bytes(user.getCredentialsSalt()), hashIterations).toBase64();
 		} else {

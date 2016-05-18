@@ -114,4 +114,34 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
+	@Override
+	public void changePassword(Long userId, String oldPassowrd, String newPassword) throws SecurityServiceException {
+		try {
+			SecUsers user = userDao.get(userId);
+			String oldEncPassword = user.getPassword();
+			user.setPassword(oldEncPassword);
+			helper.encryptPasswordForOld(user);
+			if (user.getPassword().equals(oldEncPassword)) {
+				user.setPassword(newPassword);
+				helper.encryptPassword(user);
+				userDao.update(user);
+			} else {
+				throw new SecurityServiceException(-1002,"The old password is not correct！");
+			}
+		} catch (DBOperatorException e) {
+			throw new SecurityServiceException(e);
+		}
+	}
+
+	@Override
+	public SecUsers getFromSession() throws SecurityServiceException {
+		try {
+			SecUsers user = (SecUsers) org.apache.shiro.SecurityUtils.getSubject().getSession()
+					.getAttribute("APP_LOGINED_USER");
+			return user;
+		} catch (Throwable e) {
+			throw new SecurityServiceException("can't get user from session", e);
+		}
+	}
+
 }

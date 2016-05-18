@@ -22,6 +22,26 @@ public interface UserService {
 	public void changePassword(Long userId, String newPassword) throws SecurityServiceException;
 
 	/**
+	 * 修改密码
+	 * 
+	 * @param userId
+	 * @param oldPassowrd
+	 *            老密码
+	 * @param newPassword
+	 *            新密码
+	 * @throws SecurityServiceException
+	 *             老密码不正确抛出异常，错误吗-1002
+	 */
+	void changePassword(Long userId, String oldPassowrd, String newPassword) throws SecurityServiceException;
+
+	/**
+	 * 从当前登录会话中获取用户对象，如果是分布式结构不一定获取得到（shrio验证与服务层不在一个jvm时）
+	 * 
+	 * @return
+	 */
+	SecUsers getFromSession() throws SecurityServiceException;
+
+	/**
 	 * 添加用户-角色关系
 	 * 
 	 * @param userId

@@ -2,6 +2,7 @@ package com.beetle.component.security.credentials;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -34,8 +35,6 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 		this.setHashIterations(Helper.hashIterations);
 	}
 
-	
-
 	@Override
 	public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
 		String username = (String) token.getPrincipal();
@@ -60,6 +59,10 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 			if (matches) {
 				// clear retry count
 				userService.updateTryTime(user.getUserId(), 0);
+				//
+				if (AppProperties.getAsBoolean("security_login_success_create_session", true)) {
+					SecurityUtils.getSubject().getSession(true).setAttribute("APP_LOGINED_USER", user);
+				}
 			} else {
 				userService.updateTryTime(user.getUserId(), retryCount.get());
 			}
