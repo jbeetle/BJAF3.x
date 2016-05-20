@@ -22,6 +22,8 @@ public interface SecUsersDao {
 	Set<String> findRoles(String username) throws DBOperatorException;
 
 	Set<String> findPermissions(String username) throws DBOperatorException;
-	
-	int updateTryTime(long userid,int times) throws DBOperatorException;
+
+	int updateTryTime(long userid, int times) throws DBOperatorException;
+
+	int updateLock(long userid, int lock) throws DBOperatorException;
 }

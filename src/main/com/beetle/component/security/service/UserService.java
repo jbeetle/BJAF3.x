@@ -35,13 +35,6 @@ public interface UserService {
 	void changePassword(Long userId, String oldPassowrd, String newPassword) throws SecurityServiceException;
 
 	/**
-	 * 从当前登录会话中获取用户对象，如果是分布式结构不一定获取得到（shrio验证与服务层不在一个jvm时）
-	 * 
-	 * @return
-	 */
-	SecUsers getFromSession() throws SecurityServiceException;
-
-	/**
 	 * 添加用户-角色关系
 	 * 
 	 * @param userId
@@ -82,4 +75,8 @@ public interface UserService {
 	public Set<String> findPermissions(String username) throws SecurityServiceException;
 
 	int updateTryTime(long userid, int time) throws SecurityServiceException;
+
+	int lockUser(long userid) throws SecurityServiceException;
+
+	int unlockUser(long userid) throws SecurityServiceException;
 }

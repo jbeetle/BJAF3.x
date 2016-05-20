@@ -61,6 +61,8 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 				userService.updateTryTime(user.getUserId(), 0);
 				//
 				if (AppProperties.getAsBoolean("security_login_success_create_session", true)) {
+					user.setPassword("");//为了安全去掉密码
+					user.setSalt("");
 					SecurityUtils.getSubject().getSession(true).setAttribute("APP_LOGINED_USER", user);
 				}
 			} else {

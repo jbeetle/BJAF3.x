@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
 				helper.encryptPassword(user);
 				userDao.update(user);
 			} else {
-				throw new SecurityServiceException(-1002,"The old password is not correct！");
+				throw new SecurityServiceException(-1002, "The old password is not correct！");
 			}
 		} catch (DBOperatorException e) {
 			throw new SecurityServiceException(e);
@@ -134,13 +134,20 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public SecUsers getFromSession() throws SecurityServiceException {
+	public int lockUser(long userid) throws SecurityServiceException {
 		try {
-			SecUsers user = (SecUsers) org.apache.shiro.SecurityUtils.getSubject().getSession()
-					.getAttribute("APP_LOGINED_USER");
-			return user;
-		} catch (Throwable e) {
-			throw new SecurityServiceException("can't get user from session", e);
+			return userDao.updateLock(userid, 1);
+		} catch (DBOperatorException e) {
+			throw new SecurityServiceException(e);
+		}
+	}
+
+	@Override
+	public int unlockUser(long userid) throws SecurityServiceException {
+		try {
+			return userDao.updateLock(userid, 0);
+		} catch (DBOperatorException e) {
+			throw new SecurityServiceException(e);
 		}
 	}
 

@@ -95,4 +95,12 @@ public class SecUsersImpl implements SecUsersDao {
 		return operator.update(fd);
 	}
 
+	@Override
+	public int updateLock(long userid, int lock) throws DBOperatorException {
+		Map<String, Object> fd = new HashMap<String, Object>();
+		fd.put("userId", userid);
+		fd.put("locked", lock);
+		return operator.update(fd);
+	}
+
 }
