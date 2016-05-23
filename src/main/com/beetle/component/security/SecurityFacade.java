@@ -1,12 +1,14 @@
 package com.beetle.component.security;
 
+import java.io.File;
+
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.ExcessiveAttemptsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.config.Ini;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
@@ -16,6 +18,7 @@ import com.beetle.component.security.dto.SecUsers;
 import com.beetle.component.security.service.PermissionService;
 import com.beetle.component.security.service.RoleService;
 import com.beetle.component.security.service.UserService;
+import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.resource.dic.DIContainer;
 
@@ -37,7 +40,7 @@ import com.beetle.framework.resource.dic.DIContainer;
  */
 public class SecurityFacade {
 	private static final AppLogger logger = AppLogger.getInstance(SecurityFacade.class);
-	private final static org.apache.shiro.mgt.SecurityManager sm;
+	private static org.apache.shiro.mgt.SecurityManager sm;
 	private static final PermissionService permissionService;
 	private static final RoleService roleService;
 	private static final UserService userService;
@@ -57,21 +60,47 @@ public class SecurityFacade {
 	};
 
 	static {
-		Ini config = new Ini();
-		config.setSectionProperty("main", "credentialsMatcher",
-				"com.beetle.component.security.credentials.RetryLimitHashedCredentialsMatcher");
-		config.setSectionProperty("main", "userRealm", "com.beetle.component.security.realm.UserRealm");
-		config.setSectionProperty("main", "userRealm.credentialsMatcher", "$credentialsMatcher");
-		config.setSectionProperty("main", "securityManager.realms", "$userRealm");
+
+		// Ini config = new Ini();
+		// config.setSectionProperty("main", "credentialsMatcher",
+		// "com.beetle.component.security.credentials.RetryLimitHashedCredentialsMatcher");
+		// config.setSectionProperty("main", "userRealm",
+		// "com.beetle.component.security.realm.UserRealm");
+		// config.setSectionProperty("main", "userRealm.credentialsMatcher",
+		// "$credentialsMatcher");
+		// config.setSectionProperty("main", "securityManager.realms",
+		// "$userRealm");
+		// // Factory<org.apache.shiro.mgt.SecurityManager> factory = new
+		// // IniSecurityManagerFactory(configFile);
 		// Factory<org.apache.shiro.mgt.SecurityManager> factory = new
-		// IniSecurityManagerFactory(configFile);
-		Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory(config);
-		sm = factory.getInstance();
-		SecurityUtils.setSecurityManager(sm);
+		// IniSecurityManagerFactory(config);
+		// sm = factory.getInstance();
+		// SecurityUtils.setSecurityManager(sm);
 		permissionService = DIContainer.getInstance().retrieve(PermissionService.class);
 		roleService = DIContainer.getInstance().retrieve(RoleService.class);
 		userService = DIContainer.getInstance().retrieve(UserService.class);
+		initializeByHand();
 		logger.info("SecurityFacade Initialized!");
+	}
+
+	private static void initializeByHand() {
+		try {
+			sm = SecurityUtils.getSecurityManager();
+		} catch (UnavailableSecurityManagerException e) {
+			logger.warn("no SecurityManager instance found! initialize by shiro.ini");
+			String file = AppProperties.getAppHome() + "shiro.ini";
+			File f = new File(file);
+			if (f.exists()) {
+				file = "file:" + file;
+				logger.info("load from[{}]", file);
+			} else {
+				file = "classpath:" + file; 
+				logger.info("load from[{}]", file);
+			}
+			Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory(file);
+			sm = factory.getInstance();
+			SecurityUtils.setSecurityManager(sm);
+		}
 	}
 
 	public static Subject getSubject() {

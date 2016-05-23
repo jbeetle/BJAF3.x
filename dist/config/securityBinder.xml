@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binder>
+  <!--  dao -->
+  <item interface="com.beetle.component.security.persistence.SecPermissionsDao" implement="com.beetle.component.security.persistence.imp.SecPermissionsImpl" />
+  <item interface="com.beetle.component.security.persistence.SecRolesDao" implement="com.beetle.component.security.persistence.imp.SecRolesImpl" />
+  <item interface="com.beetle.component.security.persistence.SecRolesPermissionsDao" implement="com.beetle.component.security.persistence.imp.SecRolesPermissionsImpl" />
+  <item interface="com.beetle.component.security.persistence.SecUsersDao" implement="com.beetle.component.security.persistence.imp.SecUsersImpl" />
+  <item interface="com.beetle.component.security.persistence.SecUsersRolesDao" implement="com.beetle.component.security.persistence.imp.SecUsersRolesImpl" />
+  <!--  service -->
+  <item interface="com.beetle.component.security.service.UserService" implement="com.beetle.component.security.service.imp.UserServiceImpl" />
+  <item interface="com.beetle.component.security.service.RoleService" implement="com.beetle.component.security.service.imp.RoleServiceImpl" />
+  <item interface="com.beetle.component.security.service.PermissionService" implement="com.beetle.component.security.service.imp.PermissionServiceImpl" />
+</binder>
