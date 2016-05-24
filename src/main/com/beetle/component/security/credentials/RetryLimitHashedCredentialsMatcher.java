@@ -33,6 +33,7 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 		}
 		this.setHashAlgorithmName(Helper.algorithmName);
 		this.setHashIterations(Helper.hashIterations);
+		logger.debug("time:{},format:{}",max,format);
 	}
 
 	@Override
@@ -56,6 +57,7 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 				throw new ExcessiveAttemptsException();
 			}
 			boolean matches = super.doCredentialsMatch(token, info);
+			logger.debug("match:{},token:{},info:{}",matches,token,info);
 			if (matches) {
 				// clear retry count
 				userService.updateTryTime(user.getUserId(), 0);
