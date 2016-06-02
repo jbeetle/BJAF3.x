@@ -2,7 +2,7 @@
 <configuration debug="true" scan="true" scanPeriod="30 seconds">
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] [%level] %logger{36}[%line] - %m%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] [%level] %logger{36} - %m%n</pattern>
       <!-- 常用的Pattern变量,大家可打开该pattern进行输出观察 -->
       <!-- 
            <pattern>
