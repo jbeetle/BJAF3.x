@@ -12,13 +12,11 @@ final class LogFormatter {
 		return arrayFormat(messagePattern, new Object[] { arg });
 	}
 
-	public static final String format(String messagePattern, Object arg1,
-			Object arg2) {
+	public static final String format(String messagePattern, Object arg1, Object arg2) {
 		return arrayFormat(messagePattern, new Object[] { arg1, arg2 });
 	}
 
-	public static final String arrayFormat(String messagePattern,
-			Object[] argArray) {
+	public static final String arrayFormat(String messagePattern, Object[] argArray) {
 		if (messagePattern == null) {
 			return null;
 		}
@@ -49,14 +47,12 @@ final class LogFormatter {
 					i = j + 1;
 				} else {
 					sbuf.append(messagePattern.substring(i, j - 1));
-					deeplyAppendParameter(sbuf, argArray[L],
-							new HashMap<Object[], Object>());
+					deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Object>());
 					i = j + 2;
 				}
 			} else {
 				sbuf.append(messagePattern.substring(i, j));
-				deeplyAppendParameter(sbuf, argArray[L],
-						new HashMap<Object[], Object>());
+				deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Object>());
 				i = j + 2;
 			}
 
@@ -66,8 +62,7 @@ final class LogFormatter {
 		return sbuf.toString();
 	}
 
-	static final boolean isEscapedDelimeter(String messagePattern,
-			int delimeterStartIndex) {
+	static final boolean isEscapedDelimeter(String messagePattern, int delimeterStartIndex) {
 		if (delimeterStartIndex == 0) {
 			return false;
 		}
@@ -76,14 +71,11 @@ final class LogFormatter {
 		return potentialEscape == '\\';
 	}
 
-	static final boolean isDoubleEscaped(String messagePattern,
-			int delimeterStartIndex) {
-		return (delimeterStartIndex >= 2)
-				&& (messagePattern.charAt(delimeterStartIndex - 2) == '\\');
+	static final boolean isDoubleEscaped(String messagePattern, int delimeterStartIndex) {
+		return (delimeterStartIndex >= 2) && (messagePattern.charAt(delimeterStartIndex - 2) == '\\');
 	}
 
-	private static void deeplyAppendParameter(StringBuffer sbuf, Object o,
-			Map<Object[], Object> seenMap) {
+	private static void deeplyAppendParameter(StringBuffer sbuf, Object o, Map<Object[], Object> seenMap) {
 		if (o == null) {
 			sbuf.append("null");
 			return;
@@ -115,16 +107,14 @@ final class LogFormatter {
 			String oAsString = o.toString();
 			sbuf.append(oAsString);
 		} catch (Throwable t) {
-			System.err
-					.println("SLF4J: Failed toString() invocation on an object of type ["
-							+ o.getClass().getName() + "]");
+			System.err.println(
+					"SLF4J: Failed toString() invocation on an object of type [" + o.getClass().getName() + "]");
 			t.printStackTrace();
 			sbuf.append("[FAILED toString()]");
 		}
 	}
 
-	private static void objectArrayAppend(StringBuffer sbuf, Object[] a,
-			Map<Object[], Object> seenMap) {
+	private static void objectArrayAppend(StringBuffer sbuf, Object[] a, Map<Object[], Object> seenMap) {
 		sbuf.append('[');
 		if (!seenMap.containsKey(a)) {
 			seenMap.put(a, null);

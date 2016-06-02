@@ -12,20 +12,23 @@
  */
 package com.beetle.framework.log;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.slf4j.LoggerFactory;
+
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.util.ResourceLoader;
 import com.beetle.framework.util.file.PropertiesReader;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * <p>
@@ -40,10 +43,10 @@ import java.util.Set;
  * @version 1.0
  */
 class LogConfigReader extends PropertiesReader {
+	final static JoranConfigurator PropertyConfigurator = new JoranConfigurator();
+
 	final static String getResStr(String key) {
-		return LogConfigReader.getValue(
-				LogConfigReader.getBundle("com.beetle.framework.log.log4j"),
-				key);
+		return LogConfigReader.getValue(LogConfigReader.getBundle("com.beetle.framework.log.log4j"), key);
 	}
 
 	private final static Set<String> loadpathSet = new HashSet<String>();
@@ -55,30 +58,26 @@ class LogConfigReader extends PropertiesReader {
 		return hasInited;
 	}
 
-	public static void reload(Properties pro) {
-		PropertyConfigurator.configure(pro);
-	}
-
-	public static void reload() {
+	public static void reload() throws JoranException {
 		if (loadFlag == 1) {
-			PropertyConfigurator.configure(lastpath);
+			PropertyConfigurator.doConfigure(lastpath);
 		} else if (loadFlag == 2) {
 			URL url;
 			try {
 				url = ResourceLoader.getResURL(lastpath);
-				PropertyConfigurator.configure(url);
+				PropertyConfigurator.doConfigure(url);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		for (String lp : loadpathSet) {
 			try {
-				PropertyConfigurator.configure(lp);
+				PropertyConfigurator.doConfigure(lp);
 			} catch (Exception e) {
 				URL url;
 				try {
 					url = ResourceLoader.getResURL(lp);
-					PropertyConfigurator.configure(url);
+					PropertyConfigurator.doConfigure(url);
 				} catch (Exception ee) {
 					ee.printStackTrace();
 				}
@@ -86,21 +85,17 @@ class LogConfigReader extends PropertiesReader {
 		}
 	}
 
-	public static void init(Properties pro) {
-		PropertyConfigurator.configure(pro);
-	}
-
-	public static void init(URL url) {
+	public static void init(URL url) throws JoranException {
 		if (!loadpathSet.contains(url.toString())) {
 			synchronized (loadpathSet) {
 				if (!loadpathSet.contains(url.toString())) {
-					PropertyConfigurator.configure(url);
+					PropertyConfigurator.doConfigure(url);
 				}
 			}
 		}
 	}
 
-	public static void init(File configFile) {
+	public static void init(File configFile) throws JoranException {
 		if (!configFile.exists()) {
 			System.out.println(configFile + " can't be found! err");
 			return;
@@ -108,48 +103,40 @@ class LogConfigReader extends PropertiesReader {
 		if (!loadpathSet.contains(configFile.getPath())) {
 			synchronized (loadpathSet) {
 				if (!loadpathSet.contains(configFile.getPath())) {
-					PropertyConfigurator.configure(configFile.getPath());
+					PropertyConfigurator.doConfigure(configFile.getPath());
 				}
 			}
 		}
 	}
 
-	public synchronized static void init() {
+	public synchronized static void init() throws JoranException {
 		if (!hasInited) {
-			lastpath = AppProperties.getAppHome() + "log4j.properties";
-			Enumeration<?> e = LogManager.getCurrentLoggers();
-			if (!e.hasMoreElements()) {
-				loadconf();
-			} else {
-				int i = AppProperties.getAsInt("resource_LOG4J_REUSE", 0);
-				if (i == 0) {
-					loadconf();
-				} else {
-					System.out
-							.println("other log4j's config has loaded,uses it.");
-				}
-			}
+			lastpath = AppProperties.getAppHome() + "logback.xml";
+			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+			PropertyConfigurator.setContext(lc);
+			lc.reset();
+			loadconf();
+			StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
 		}
 		hasInited = true;
 	}
 
-	private static void loadconf() {
+	private static void loadconf() throws JoranException {
 		File f = new File(lastpath);
 		if (f.exists()) {
-			PropertyConfigurator.configure(lastpath);
+			PropertyConfigurator.doConfigure(lastpath);
 			loadFlag = 1;
 			System.out.println("loaded {" + lastpath + "} from file");
 		} else { //
 			try {
 				URL url = ResourceLoader.getResURL(lastpath);
 				loadFlag = 2;
-				PropertyConfigurator.configure(url);
-				System.out.println("loaded 'config/log4j.properties' from jar");
+				PropertyConfigurator.doConfigure(url);
+				System.out.println("loaded 'config/logback.xml' from jar");
 			} catch (IOException ex) {
-
 				try {
 					URL url = new URL(lastpath);
-					PropertyConfigurator.configure(url);
+					PropertyConfigurator.doConfigure(url);
 					System.out.println("loaded {" + lastpath + "} ");
 				} catch (Exception e1) {
 					otherway();
@@ -159,30 +146,28 @@ class LogConfigReader extends PropertiesReader {
 		f = null;
 	}
 
-	private static void otherway() {
-		lastpath = AppProperties.getAppHome() + "log4j.xml";
+	private static void otherway() throws JoranException {
+		lastpath = AppProperties.getAppHome() + "logback.groovy";
 		File f = new File(lastpath);
 		if (f.exists()) {
-			PropertyConfigurator.configure(lastpath);
+			PropertyConfigurator.doConfigure(lastpath);
 			loadFlag = 1;
 			System.out.println("loaded {" + lastpath + "} from file");
 		} else {
-			lastpath = "config/log4j.properties";
+			lastpath = "config/logback.xml";
 			f = new File(lastpath);
 			if (f.exists()) {
-				PropertyConfigurator.configure(lastpath);
+				PropertyConfigurator.doConfigure(lastpath);
 				loadFlag = 1;
 				System.out.println("loaded {" + lastpath + "} from file");
 			} else {
-				lastpath = "log4j.properties";
+				lastpath = "logback.xml";
 				f = new File(lastpath);
 				if (f.exists()) {
-					PropertyConfigurator.configure(lastpath);
-					System.out
-							.println("loaded log4j.properties in current path or classpath");
+					PropertyConfigurator.doConfigure(lastpath);
+					System.out.println("loaded logback.xml in current path or classpath");
 				} else {
-					throw new AppRuntimeException(
-							"can not load log4j config file! err!");
+					throw new AppRuntimeException("can not load log config file! err!");
 				}
 			}
 		}

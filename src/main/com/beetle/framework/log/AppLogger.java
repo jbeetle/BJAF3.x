@@ -15,11 +15,14 @@ package com.beetle.framework.log;
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.beetle.framework.AppRuntimeException;
+
+import ch.qos.logback.core.joran.spi.JoranException;
 
 /**
  * <p>
@@ -42,46 +45,56 @@ import org.apache.log4j.Logger;
 public final class AppLogger {
 	private Logger logger;
 	private final static Map<String, AppLogger> loggerCache = new ConcurrentHashMap<String, AppLogger>();
-	private final static String FQCN = AppLogger.class.getName();
 
 	public AppLogger(URL url, String name) {
-		LogConfigReader.init(url);
-		logger = Logger.getLogger(name);
+		try {
+			LogConfigReader.init(url);
+		} catch (JoranException e) {
+			throw new AppRuntimeException(e);
+		}
+		logger = LoggerFactory.getLogger(name);
 	}
 
 	public AppLogger(File configFile, String name) {
-		LogConfigReader.init(configFile);
-		logger = Logger.getLogger(name);
-	}
-
-	public AppLogger(Properties pro, String name) {
-		LogConfigReader.init(pro);
-		logger = Logger.getLogger(name);
+		try {
+			LogConfigReader.init(configFile);
+		} catch (JoranException e) {
+			throw new AppRuntimeException(e);
+		}
+		logger = LoggerFactory.getLogger(name);
 	}
 
 	private AppLogger(Class<?> logClass) {
 		if (!LogConfigReader.isInited()) {
-			LogConfigReader.init();
+			try {
+				LogConfigReader.init();
+			} catch (JoranException e) {
+				throw new AppRuntimeException(e);
+			}
 		}
-		logger = Logger.getLogger(logClass);
+		logger = LoggerFactory.getLogger(logClass);
 	}
 
 	private AppLogger(String className) {
 		if (!LogConfigReader.isInited()) {
-			LogConfigReader.init();
+			try {
+				LogConfigReader.init();
+			} catch (JoranException e) {
+				throw new AppRuntimeException(e);
+			}
 		}
-		logger = Logger.getLogger(className);
+		logger = LoggerFactory.getLogger(className);
 	}
 
 	/**
 	 * 在运行时修改了配置文件，可以通过此方法重载配置，以便修改见效
 	 */
 	public synchronized static void reloadLogConfig() {
-		LogConfigReader.reload();
-	}
-
-	public synchronized static void reloadLogConfig(Properties pro) {
-		LogConfigReader.reload(pro);
+		try {
+			LogConfigReader.reload();
+		} catch (JoranException e) {
+			throw new AppRuntimeException(e);
+		}
 	}
 
 	/**
@@ -136,24 +149,8 @@ public final class AppLogger {
 		return logger.isDebugEnabled();
 	}
 
-	/**
-	 * 设置当前日志的输入级别
-	 * 
-	 * @param level
-	 *            1--debug; 2--info; 3--warn; 4--error; 5--fatal
-	 */
-	public void setLevel(int level) {
-		if (level == 1) {
-			logger.setLevel(Level.DEBUG);
-		} else if (level == 2) {
-			logger.setLevel(Level.INFO);
-		} else if (level == 3) {
-			logger.setLevel(Level.WARN);
-		} else if (level == 4) {
-			logger.setLevel(Level.ERROR);
-		} else if (level == 5) {
-			logger.setLevel(Level.FATAL);
-		}
+	public boolean isTraceEnabled() {
+		return logger.isTraceEnabled();
 	}
 
 	/**
@@ -172,8 +169,7 @@ public final class AppLogger {
 	 *            Object
 	 */
 	public void info(Object message) {
-		if (logger.isInfoEnabled())
-			logger.log(FQCN, Level.INFO, message, null);
+		logger.info("{}", message);
 	}
 
 	/*
@@ -182,46 +178,31 @@ public final class AppLogger {
 	 * paramString, t); } }
 	 */
 	public void info(String paramString, Object... paramObjects) {
-		if (logger.isInfoEnabled()) {
-			String msgStr = LogFormatter.arrayFormat(paramString, paramObjects);
-			logger.log(FQCN, Level.INFO, msgStr, null);
-		}
+		logger.info(paramString, paramObjects);
 	}
 
 	public void warn(Object paramString) {
-		logger.log(FQCN, Level.WARN, paramString, null);
+		logger.warn("{}", paramString);
 	}
 
 	public void warn(String paramString, Object... paramObjects) {
-		if (logger.isEnabledFor(Level.WARN)) {
-			String msgStr = LogFormatter.arrayFormat(paramString, paramObjects);
-			logger.log(FQCN, Level.WARN, msgStr, null);
-		}
+		logger.warn(paramString, paramObjects);
 	}
 
-	/**
-	 * 异常属于错误级别或更高级别，不出现在警告级别中 public void warn(String paramString, Throwable t)
-	 * { logger.log(FQCN, Level.WARN, paramString, t); }
-	 **/
-	public void fatal(Object paramString) {
-		logger.log(FQCN, Level.FATAL, paramString, null);
+	public void trace(Object paramObject) {
+		logger.trace("{}", paramObject);
 	}
 
-	public void fatal(String paramString, Throwable t) {
-		logger.log(FQCN, Level.FATAL, paramString, t);
+	public void trace(String paramString, Object... paramObjects) {
+		logger.trace(paramString, paramObjects);
 	}
 
 	public void debug(Object paramObject) {
-		if (logger.isDebugEnabled()) {
-			logger.log(FQCN, Level.DEBUG, paramObject, null);
-		}
+		logger.debug("{}", paramObject);
 	}
 
 	public void debug(String paramString, Object... paramObjects) {
-		if (logger.isDebugEnabled()) {
-			String msgStr = LogFormatter.arrayFormat(paramString, paramObjects);
-			logger.log(FQCN, Level.DEBUG, msgStr, null);
-		}
+		logger.debug(paramString, paramObjects);
 	}
 
 	/**
@@ -239,22 +220,19 @@ public final class AppLogger {
 			Throwable t = (Throwable) message;
 			error(t.getMessage(), t);
 		} else {
-			logger.log(FQCN, Level.ERROR, message, null);
+			logger.error("{}", message);
 		}
 	}
 
 	public void error(String paramString, Object... paramObjects) {
-		if (logger.isEnabledFor(Level.ERROR)) {
-			String msgStr = LogFormatter.arrayFormat(paramString, paramObjects);
-			logger.log(FQCN, Level.ERROR, msgStr, null);
-		}
+		logger.error(paramString, paramObjects);
 	}
 
 	public void error(String paramString, Throwable t) {
 		if (t != null) {
 			t.printStackTrace();// 在控制台答应，方便调试
 		}
-		logger.log(FQCN, Level.ERROR, paramString, t);
+		logger.error(paramString, t);
 	}
 
 	public String strFormat(String paramString, Object... paramObjects) {
