@@ -98,6 +98,17 @@ public final class AppLogger {
 	}
 
 	/**
+	 * 直接获取org.slf4j.Logger 后台会实现配置文件的初始化，由于AppLogger封装会导致日志输出某些参数无效，例如：%line
+	 * 建议使用
+	 * 
+	 * @param logClass
+	 * @return
+	 */
+	public final static Logger getLogger(Class<?> logClass) {
+		return AppLoggerFactory.getLogger(logClass);
+	}
+
+	/**
 	 * 获取系统日志记录实例
 	 * 
 	 * @param logClassName

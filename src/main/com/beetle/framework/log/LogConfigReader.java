@@ -109,16 +109,20 @@ class LogConfigReader extends PropertiesReader {
 		}
 	}
 
-	public synchronized static void init() throws JoranException {
+	public static void init() throws JoranException {
 		if (!hasInited) {
-			lastpath = AppProperties.getAppHome() + "logback.xml";
-			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-			PropertyConfigurator.setContext(lc);
-			lc.reset();
-			loadconf();
-			StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+			synchronized (PropertyConfigurator) {
+				if (!hasInited) {
+					lastpath = AppProperties.getAppHome() + "logback.xml";
+					LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+					PropertyConfigurator.setContext(lc);
+					lc.reset();
+					loadconf();
+					StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+					hasInited = true;
+				}
+			}
 		}
-		hasInited = true;
 	}
 
 	private static void loadconf() throws JoranException {
