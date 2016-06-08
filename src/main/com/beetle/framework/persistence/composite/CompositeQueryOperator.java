@@ -35,7 +35,7 @@ public class CompositeQueryOperator extends QueryOperator {
 
 	private List<V> paramList = new LinkedList<V>();
 
-	private static class V {
+	public static class V {
 		public String getParameterName() {
 			return parameterName;
 		}
@@ -98,7 +98,7 @@ public class CompositeQueryOperator extends QueryOperator {
 			int i = whereStr.lastIndexOf("and");
 			whereStr = whereStr.substring(0, i);
 			this.setSql(this.getSql() + " where " + whereStr);
-			// System.out.println(this.getSql());
+			//System.out.println(this.getSql());
 			paramList.clear();
 		}
 		super.accessImp();

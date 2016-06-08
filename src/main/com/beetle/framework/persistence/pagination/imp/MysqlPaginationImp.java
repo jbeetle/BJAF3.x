@@ -14,6 +14,7 @@
 package com.beetle.framework.persistence.pagination.imp;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.persistence.access.ConnectionFactory;
@@ -21,7 +22,7 @@ import com.beetle.framework.persistence.access.operator.DBOperatorException;
 import com.beetle.framework.persistence.access.operator.QueryOperator;
 import com.beetle.framework.persistence.access.operator.RsDataSet;
 import com.beetle.framework.persistence.access.operator.SqlParameter;
-import com.beetle.framework.persistence.access.operator.SqlType;
+import com.beetle.framework.persistence.composite.CompositeQueryOperator.V;
 import com.beetle.framework.persistence.pagination.IPagination;
 import com.beetle.framework.persistence.pagination.PageBaseInfo;
 import com.beetle.framework.persistence.pagination.PageHelper;
@@ -54,15 +55,13 @@ import com.beetle.framework.util.cache.TimeOutCache;
 public class MysqlPaginationImp implements IPagination {
 	private static ICache countCache = new TimeOutCache(120);
 
-	private static AppLogger logger = AppLogger
-			.getInstance(MysqlPaginationImp.class);
+	private static AppLogger logger = AppLogger.getInstance(MysqlPaginationImp.class);
 
 	public MysqlPaginationImp() {
 
 	}
 
-	private int getRecordAmount(Connection conn, PageParameter pInfo)
-			throws DBOperatorException {
+	private int getRecordAmount(Connection conn, PageParameter pInfo) throws DBOperatorException {
 		Integer amount;
 		if (pInfo.isCacheRecordAmountFlag()) {
 			Integer key = new Integer(pInfo.getUserSql().hashCode());
@@ -77,20 +76,37 @@ public class MysqlPaginationImp implements IPagination {
 		return amount.intValue();
 	}
 
-	private Integer caleAmount(Connection conn, PageParameter pInfo)
-			throws NumberFormatException, DBOperatorException {
+	private Integer caleAmount(Connection conn, PageParameter pInfo) throws NumberFormatException, DBOperatorException {
 		// select count(1) from (select * from account) t
 		Integer amount;
 		QueryOperator query = new QueryOperator();
 		query.setUseOnlyConnectionFlag(true);
-		if (!pInfo.getSqlParameters().isEmpty()) {
-			for (int i = 0; i < pInfo.getSqlParameters().size(); i++) {
-				SqlParameter sp = (SqlParameter) pInfo.getSqlParameters()
-						.get(i);
-				query.addParameter(sp);
+		if (pInfo.isNormalSQLQueryMode()) {
+			if (!pInfo.getSqlParameters().isEmpty()) {
+				for (int i = 0; i < pInfo.getSqlParameters().size(); i++) {
+					SqlParameter sp = (SqlParameter) pInfo.getSqlParameters().get(i);
+					query.addParameter(sp);
+				}
+			}
+			query.setSql("select count(*) from (" + pInfo.getUserSql() + ") c_t");
+		} else {
+			List<V> paramList = pInfo.getCompositeSQLParamList();
+			if (!paramList.isEmpty()) {
+				StringBuffer sb = new StringBuffer();
+				for (int i = 0; i < paramList.size(); i++) {
+					V v = (V) paramList.get(i);
+					sb.append("(? is null or " + v.getParameterName() + v.getOperateSymbol() + "?) and ");
+					query.addParameter(v.getValue());
+					query.addParameter(v.getValue());
+				}
+				String whereStr = sb.toString();
+				int i = whereStr.lastIndexOf("and");
+				whereStr = whereStr.substring(0, i);
+				String sql = pInfo.getUserSql() + " where " + whereStr;
+				query.setSql("select count(*) from (" + sql + ") c_t");
+				//paramList.clear();
 			}
 		}
-		query.setSql("select count(*) from (" + pInfo.getUserSql() + ") c_t");
 		query.setPresentConnection(conn);
 		query.access();
 		RsDataSet rs = new RsDataSet(query.getSqlResultSet());
@@ -112,36 +128,47 @@ public class MysqlPaginationImp implements IPagination {
 				QueryOperator query = new QueryOperator();
 				query.setPresentConnection(conn);
 				query.setUseOnlyConnectionFlag(true);
-				String usersql = pInfo.getUserSql();
-				StringBuffer sb = new StringBuffer();
-				/*
-				 * if (usersql.indexOf("?") > 0) { StringTokenizer st = new
-				 * StringTokenizer(usersql, "?"); int i = 0; while
-				 * (st.hasMoreTokens()) { sb.append(st.nextToken()); if (i >=
-				 * pInfo.getSqlParameters().size()) { break; } SqlParameter sp =
-				 * (SqlParameter) pInfo .getSqlParameters().get(i); int type =
-				 * sp.getType(); if (type == SqlType.INTEGER || type ==
-				 * SqlType.BIGINT || type == SqlType.DECIMAL || type ==
-				 * SqlType.DOUBLE || type == SqlType.FLOAT || type ==
-				 * SqlType.NUMERIC || type == SqlType.REAL || type ==
-				 * SqlType.SMALLINT) { if (sp.getValue() != null) {
-				 * sb.append(sp.getValue().toString()); } else {
-				 * sb.append("null"); } } else { if (sp.getValue() != null) {
-				 * sb.append("'"); sb.append(sp.getValue().toString());
-				 * sb.append("'"); } else { sb.append("null"); } } i++; } } else
-				 * { sb.append(usersql); }
-				 */
-				sb.append(usersql);
-				int pn = pInfo.getPageNumber();
-				int bn = ((pn - 1) * pInfo.getPageSize());
-				sb.append(" limit " + bn + "," + pInfo.getPageSize());
-				String usql = sb.toString();
-				if (logger.isDebugEnabled()) {
-					logger.debug("sql:" + usql);
-				}
-				query.setSql(usql);
-				for (SqlParameter sp : pInfo.getSqlParameters()) {
-					query.addParameter(sp);
+				if (pInfo.isNormalSQLQueryMode()) {
+					String usersql = pInfo.getUserSql();
+					StringBuffer sb = new StringBuffer();
+					sb.append(usersql);
+					int pn = pInfo.getPageNumber();
+					int bn = ((pn - 1) * pInfo.getPageSize());
+					sb.append(" limit " + bn + "," + pInfo.getPageSize());
+					String usql = sb.toString();
+					if (logger.isDebugEnabled()) {
+						logger.debug("sql:" + usql);
+					}
+					query.setSql(usql);
+					for (SqlParameter sp : pInfo.getSqlParameters()) {
+						query.addParameter(sp);
+					}
+				} else {
+					List<V> paramList = pInfo.getCompositeSQLParamList();
+					if (!paramList.isEmpty()) {
+						StringBuffer sb = new StringBuffer();
+						for (int i = 0; i < paramList.size(); i++) {
+							V v = (V) paramList.get(i);
+							sb.append("(? is null or " + v.getParameterName() + v.getOperateSymbol() + "?) and ");
+							query.addParameter(v.getValue());
+							query.addParameter(v.getValue());
+						}
+						String whereStr = sb.toString();
+						int i = whereStr.lastIndexOf("and");
+						whereStr = whereStr.substring(0, i);
+						String usersql = pInfo.getUserSql() + " where " + whereStr;
+						StringBuffer sb2 = new StringBuffer();
+						sb2.append(usersql);
+						int pn = pInfo.getPageNumber();
+						int bn = ((pn - 1) * pInfo.getPageSize());
+						sb2.append(" limit " + bn + "," + pInfo.getPageSize());
+						String usql = sb2.toString();
+						if (logger.isDebugEnabled()) {
+							logger.debug("sql:" + usql);
+						}
+						query.setSql(usql);
+						//paramList.clear();
+					}
 				}
 				query.access();
 				if (query.resultSetAvailable()) {
@@ -174,35 +201,6 @@ public class MysqlPaginationImp implements IPagination {
 		}
 	}
 
-	// to test
-	public static void main(String[] args) throws PaginationException {
-		PageParameter pp = new PageParameter();
-		pp.setCacheRecordAmountFlag(true);
-		pp.setDataSourceName("xx");
-		pp.setPageNumber(1);
-		pp.setPageSize(5);
-		pp.setUserSql("select * from t1 where n like ?");
-		// pp.addParameter(new SqlParameter(SqlType.BIGINT, new
-		// Long(500000000000002l)));
-		// pp.addParameter(new SqlParameter(SqlType.INTEGER, new Integer(10)));
-		pp.addParameter(new SqlParameter(SqlType.VARCHAR, "%2%"));
-		MysqlPaginationImp sp = new MysqlPaginationImp();
-		PageResult pr = sp.page(pp);
-		System.out.println(pr.getRecordAmount());
-		System.out.println(pr.getCurPageNumber());
-		System.out.println(pr.getCurPageSize());
-		System.out.println("--->");
-		RsDataSet rs = new RsDataSet(pr.getSqlResultSet());
-		for (int i = 0; i < rs.rowCount; i++) {
-			for (int j = 0; j < rs.colCount; j++) {
-				System.out.println(rs.getFieldValue(j));
-			}
-			rs.next();
-			System.out.println("---");
-		}
-		// PageDataList
-	}
-
 	public PageBaseInfo calc(PageParameter pInfo) throws PaginationException {
 		Connection conn = null;
 		PageBaseInfo pbi = new PageBaseInfo();
@@ -210,16 +208,16 @@ public class MysqlPaginationImp implements IPagination {
 			conn = ConnectionFactory.getConncetion(pInfo.getDataSourceName());
 			pbi.setPageSize(pInfo.getPageSize());
 			pbi.setRecordAmount(getRecordAmount(conn, pInfo));
-			pbi.setPageAmount(PageHelper.pageCount(pInfo.getPageSize(),
-					pbi.getRecordAmount()));
+			pbi.setPageAmount(PageHelper.pageCount(pInfo.getPageSize(), pbi.getRecordAmount()));
 		} catch (Throwable e) {
 			logger.error(e);
 			throw new PaginationException(e);
 		} finally {
 			ConnectionFactory.closeConnection(conn);
 			if (!pInfo.getSqlParameters().isEmpty()) {
-				pInfo.getSqlParameters().clear();
+				pInfo.getSqlParameters().clear();	
 			}
+			pInfo.getCompositeSQLParamList().clear();
 		}
 		return pbi;
 	}

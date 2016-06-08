@@ -12,7 +12,10 @@
  */
 package com.beetle.framework.persistence.pagination;
 
+import com.beetle.framework.persistence.access.operator.DBOperatorException;
 import com.beetle.framework.persistence.access.operator.SqlParameter;
+import com.beetle.framework.persistence.access.operator.SqlType;
+import com.beetle.framework.persistence.composite.CompositeQueryOperator.V;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,8 +41,21 @@ import java.util.List;
  * @version 1.0
  */
 public class PageParameter {
-	private String dataSourceName;
+	public enum QueryMode {
+		NormalSQL(0), CompositeSQL(1);
+		public int getValue() {
+			return value;
+		}
 
+		private int value;
+
+		private QueryMode(int value) {
+			this.value = value;
+		}
+	};
+
+	private String dataSourceName;
+	private QueryMode queryMode;
 	private int pageNumber;
 
 	private int pageSize;
@@ -48,20 +64,82 @@ public class PageParameter {
 
 	/**
 	 * 唯一标识别字段名称
-
+	 * 
 	 */
 	private String identityKey;
 
 	private String userSql;
 
-	private List<SqlParameter> sqlParameters = new LinkedList<SqlParameter>(); 
+	private List<SqlParameter> sqlParameters = new LinkedList<SqlParameter>();
+	private List<V> paramList = new LinkedList<V>();
 
 	public PageParameter() {
+		this.queryMode = QueryMode.NormalSQL;
+	}
 
+	public PageParameter(QueryMode queryMode) {
+		super();
+		this.queryMode = queryMode;
+	}
+
+	/**
+	 * 添加组合查询参数
+	 * 
+	 * @param parameterName
+	 *            --参数名称(检索字段的名称)
+	 * @param OperateSymbol
+	 *            --操作符号（检索条件，如：=;>;<等）
+	 * @param value
+	 *            --参数值（检索值，没有，则输入null）
+	 */
+	public void addParameter(String parameterName, String OperateSymbol, Object value) {
+		if (queryMode == QueryMode.NormalSQL) {
+			throw new DBOperatorException("uses the [addParameter(Object value)]instead this methods!");
+		}
+		V v = new V();
+		v.setOperateSymbol(OperateSymbol);
+		v.setValue(value);
+		v.setParameterName(parameterName);
+		paramList.add(v);
 	}
 
 	public void addParameter(SqlParameter sqlParamter) {
+		if (queryMode == QueryMode.CompositeSQL) {
+			throw new DBOperatorException(
+					"uses the [addParameter(String parameterName, Object value)]instead this methods!");
+		}
 		sqlParameters.add(sqlParamter);
+	}
+
+	/**
+	 * 添加sql语句参数
+	 * 
+	 * @param 参数值
+	 * 
+	 *            （无需指定构造sqlParamter对象，不指定参数类型。依赖具体的jdbc驱动）
+	 */
+	public void addParameter(Object value) {
+		if (queryMode == QueryMode.CompositeSQL) {
+			throw new DBOperatorException(
+					"uses the [addParameter(String parameterName, Object value)]instead this methods!");
+		}
+		if (value == null) {
+			sqlParameters.add(new SqlParameter(SqlType.NUMERIC, null)); // has
+																		// bug
+		} else {
+			sqlParameters.add(new SqlParameter(value));
+		}
+	}
+
+	public boolean isNormalSQLQueryMode() {
+		if (queryMode == QueryMode.NormalSQL) {
+			return true;
+		}
+		return false;
+	}
+
+	public List<V> getCompositeSQLParamList() {
+		return paramList;
 	}
 
 	public int getPageNumber() {
@@ -114,7 +192,7 @@ public class PageParameter {
 
 	/**
 	 * 设置系统数据源
-
+	 * 
 	 * 
 	 * @param dataSourceName
 	 *            String
@@ -145,10 +223,10 @@ public class PageParameter {
 
 	/**
 	 * 设置总记录数是否缓存。由于执行没有状态，没调用一次查分页查询操作，
-
+	 * 
 	 * 系统都会重新计算一次总记录数，对于总记录数不发生变动（或者很长时间才发生变动的情况）
 	 * 我们可以缓存它，达到优化的目的。在这里我们会缓存2分钟。设置为true则代表缓存， 默认为不缓存，设置为false则不缓存。
-
+	 * 
 	 * 
 	 * @param cacheRecordAmountFlag
 	 *            boolean

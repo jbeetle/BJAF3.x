@@ -38,6 +38,7 @@
       <maxHistory>30</maxHistory>
     </rollingPolicy>
   </appender>
+   <!--
   <appender name="ERROR-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/error.log</file>
     <encoder>
@@ -48,13 +49,12 @@
       <onMatch>ACCEPT</onMatch>
       <onMismatch>DENY</onMismatch>
     </filter>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <!-- daily rollover -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">  
       <fileNamePattern>error.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
-      <!-- keep 30 days' worth of history -->
       <maxHistory>30</maxHistory>
     </rollingPolicy>
   </appender>
+  -->
   <!-- 按文件大小区分的滚动日志
   <appender name="INFO-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/info.log</file>
@@ -122,6 +122,6 @@
          <appender-ref ref="SUM-OUT" />
     -->
   </root>
-  <logger name="com.beetle.framework" level="info" />
+  <logger name="com.beetle.framework" level="debug" />
   <logger name="test" level="debug" />
 </configuration>
