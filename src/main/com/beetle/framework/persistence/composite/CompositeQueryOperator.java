@@ -89,8 +89,8 @@ public class CompositeQueryOperator extends QueryOperator {
 			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < paramList.size(); i++) {
 				V v = (V) paramList.get(i);
-				sb.append("(? is null or " + v.getParameterName()
-						+ v.getOperateSymbol() + "?) and ");
+				sb.append("(? is null or " + v.getParameterName()+" "
+						+ v.getOperateSymbol() + " ?) and ");
 				super.addParameter(v.getValue());
 				super.addParameter(v.getValue());
 			}

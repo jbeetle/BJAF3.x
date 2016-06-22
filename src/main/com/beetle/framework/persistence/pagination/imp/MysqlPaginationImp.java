@@ -95,7 +95,7 @@ public class MysqlPaginationImp implements IPagination {
 				StringBuffer sb = new StringBuffer();
 				for (int i = 0; i < paramList.size(); i++) {
 					V v = (V) paramList.get(i);
-					sb.append("(? is null or " + v.getParameterName() + v.getOperateSymbol() + "?) and ");
+					sb.append("(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
 					query.addParameter(v.getValue());
 					query.addParameter(v.getValue());
 				}
@@ -104,7 +104,7 @@ public class MysqlPaginationImp implements IPagination {
 				whereStr = whereStr.substring(0, i);
 				String sql = pInfo.getUserSql() + " where " + whereStr;
 				query.setSql("select count(*) from (" + sql + ") c_t");
-				//paramList.clear();
+				// paramList.clear();
 			}
 		}
 		query.setPresentConnection(conn);
@@ -149,7 +149,8 @@ public class MysqlPaginationImp implements IPagination {
 						StringBuffer sb = new StringBuffer();
 						for (int i = 0; i < paramList.size(); i++) {
 							V v = (V) paramList.get(i);
-							sb.append("(? is null or " + v.getParameterName() + v.getOperateSymbol() + "?) and ");
+							sb.append(
+									"(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
 							query.addParameter(v.getValue());
 							query.addParameter(v.getValue());
 						}
@@ -167,7 +168,7 @@ public class MysqlPaginationImp implements IPagination {
 							logger.debug("sql:" + usql);
 						}
 						query.setSql(usql);
-						//paramList.clear();
+						// paramList.clear();
 					}
 				}
 				query.access();
@@ -215,7 +216,7 @@ public class MysqlPaginationImp implements IPagination {
 		} finally {
 			ConnectionFactory.closeConnection(conn);
 			if (!pInfo.getSqlParameters().isEmpty()) {
-				pInfo.getSqlParameters().clear();	
+				pInfo.getSqlParameters().clear();
 			}
 			pInfo.getCompositeSQLParamList().clear();
 		}
