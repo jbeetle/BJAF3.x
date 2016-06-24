@@ -361,7 +361,8 @@ public final class RsDataSet {
 			return (Long) o;
 		} else {
 			// return new Long(((BigDecimal) o).longValue());
-			return ((BigDecimal) o).longValue();
+			//return ((BigDecimal) o).longValue();
+			return ((java.math.BigInteger)o).longValue();
 		}
 	}
 

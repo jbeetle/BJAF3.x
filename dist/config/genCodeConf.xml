@@ -8,6 +8,7 @@
     <item type="INT" java="Integer"/>
     <item type="INTEGER" java="Integer"/>
     <item type="BIGINT" java="Long"/>
+    <item type="BIGINT UNSIGNED" java="Long"/>
     <item type="FLOAT" java="Float"/>
     <item type="DOUBLE" java="Double"/>
     <item type="REAL" java="Double"/>
@@ -18,7 +19,7 @@
     <item type="TIMESTAMP" java="java.sql.Timestamp"/>
     <item type="TIME" java="java.sql.Time"/>
     <item type="YEAR" java="String"/>
-    <item type="CHAR" java="Character"/>
+    <item type="CHAR" java="String"/>
     <item type="TINYBLOB" java="String"/>
     <item type="TINYTEXT" java="String"/>
     <item type="BLOB" java="String"/>

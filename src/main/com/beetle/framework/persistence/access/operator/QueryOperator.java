@@ -161,6 +161,21 @@ public class QueryOperator extends BaseOperator {
 	}
 
 	/**
+	 * 获取结果值对象（根据输入定义类自动状态，如果结果存在多条记录，只返回第一条，没有数据返回null）
+	 * @param dtoClass
+	 * @return 如果结果存在多条记录，只返回第一条，没有数据返回null
+	 */
+	public <T> T getResultAsObject(Class<T> dtoClass) {
+		List<T> lt = getResultList(dtoClass);
+		if (lt.isEmpty()) {
+			return null;
+		}
+		T t = lt.get(0);
+		lt.clear();
+		return t;
+	}
+
+	/**
 	 * 针对单个数据dto对象无法包含所有的结果数据，而又不想重新定向其对应的dto对象的情况。
 	 * 可以将结果集中所对应的多个数据对象定义作为参数输入，方法会自动匹配装入，返回其各个数据列表
 	 * [注意：如果结果集中某些字段在各个输入值对象类中都有定义，都会被设置值。]

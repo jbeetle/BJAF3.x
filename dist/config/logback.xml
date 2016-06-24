@@ -123,5 +123,6 @@
     -->
   </root>
   <logger name="com.beetle.framework" level="debug" />
+   <logger name="com.beetle.component" level="debug" />
   <logger name="test" level="debug" />
 </configuration>
