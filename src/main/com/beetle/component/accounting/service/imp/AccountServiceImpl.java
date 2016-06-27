@@ -15,11 +15,38 @@ import com.beetle.component.accounting.service.AccountingServiceException;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.persistence.access.operator.DBOperatorException;
 import com.beetle.framework.resource.dic.def.InjectField;
+import com.beetle.framework.resource.dic.def.ServiceTransaction;
+import com.beetle.framework.resource.dic.def.ServiceTransaction.Manner;
 
 public class AccountServiceImpl implements AccountService {
 	private Logger logger = AppLogger.getLogger(AccountServiceImpl.class);
 	@InjectField
 	private AccountDao accDao;
+
+	private static class VR {
+		private long payerAccId;
+		private long payeeAccId;
+
+		public VR(long payerAccId, long payeeAccId) {
+			super();
+			this.payerAccId = payerAccId;
+			this.payeeAccId = payeeAccId;
+		}
+
+		public long getPayerAccId() {
+			return payerAccId;
+		}
+
+		public long getPayeeAccId() {
+			return payeeAccId;
+		}
+
+		@Override
+		public String toString() {
+			return "VR [payerAccId=" + payerAccId + ", payeeAccId=" + payeeAccId + "]";
+		}
+
+	}
 
 	@Override
 	public Account openAccount(Account account) throws AccountingServiceException {
@@ -42,11 +69,53 @@ public class AccountServiceImpl implements AccountService {
 		}
 	}
 
+	@ServiceTransaction(manner = Manner.REQUIRES_NEW)
 	@Override
-	public TallyResponse tally(TallyRequest tallyRequest) throws AccountingServiceException {
-		TallyResponse res=new TallyResponse();
-		
+	public TallyResponse tally(TallyRequest req) throws AccountingServiceException {
+		TallyResponse res = new TallyResponse();
+		logger.info("tally-begin[{}]", req);
+		// check raw
+		VR vr = validate(req);
+		long payerAccId = vr.getPayerAccId();
+		long payeeAccId = vr.getPayeeAccId();
+		logger.debug("vr:{}", vr);
+
+		logger.info("tally-end[{}]", res);
 		return res;
+	}
+
+	private VR validate(TallyRequest req) throws AccountingServiceException {
+		Account payerAcc = null;
+		Account payeeAcc = null;
+		if (req.getAmount() == null || req.getAmount() <= 0) {
+			throw new AccountingServiceException(-20001, "交易金融不能为空或小于等于零");
+		}
+		if (req.isPayerAccountCheckPassword()
+				&& (req.getPayerAccountPassword() == null || req.getPayerAccountPassword().trim().length() == 0)) {
+			throw new AccountingServiceException(-20002, "付款账户需要验证密码但密码为空");
+		}
+		if (req.getOrderNo() == null || req.getOrderNo().trim().length() == 0) {
+			throw new AccountingServiceException(-20003, "交易订单的支付编号不能为空");
+		}
+		try {
+			payerAcc = accDao.get(req.getPayerAccountNo());
+			if (payerAcc == null) {
+				throw new AccountingServiceException(-20004, "付款账户[" + req.getPayerAccountNo() + "]不存在");
+			}
+			if (payerAcc.getAccountStatus() != AccountStatus.NORMAL.toInteger()) {
+				throw new AccountingServiceException(-20005, "付款账户[" + req.getPayerAccountNo() + "]状态不正常，禁止交易");
+			}
+			payeeAcc = accDao.get(req.getPayeeAccountNo());
+			if (payeeAcc == null) {
+				throw new AccountingServiceException(-20006, "收款账户[" + req.getPayeeAccountNo() + "]不存在");
+			}
+			if (payeeAcc.getAccountStatus() != AccountStatus.NORMAL.toInteger()) {
+				throw new AccountingServiceException(-20007, "收款账户[" + req.getPayeeAccountNo() + "]状态不正常，禁止交易");
+			}
+			return new VR(payerAcc.getAccountId(), payeeAcc.getAccountId());
+		} catch (DBOperatorException e) {
+			throw new AccountingServiceException(-10001, "数据库操作异常", e);
+		}
 	}
 
 }

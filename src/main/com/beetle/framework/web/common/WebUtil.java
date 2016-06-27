@@ -10,26 +10,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-/**
- * <p>
- * Title: BeetleWeb
- * </p>
- * 
- * <p>
- * Description: Web������
- * </p>
- * 
- * <p>
- * Copyright: Copyright (c) 2005
- * </p>
- * 
- * <p>
- * Company: �׿ǳ����
- * </p>
- * 
- * @author ��ƶ�(hdyu@beetlesoft.net)
- * @version 1.0
- */
+
 public class WebUtil {
 	public static String getDecodeValueByKeyName(HttpServletRequest request,
 			String keyName) {

@@ -70,7 +70,7 @@ public final class ConnectionFactory {
 			throws ConnectionException {
 		Connection conn;
 		if (WatchHelper.isNeedWatch()) {
-			WatchInfo wi = WatchHelper.currentWatch();
+			final WatchInfo wi = WatchHelper.currentWatch();
 			if (wi == null) {
 				conn = getConncetion_(dataSourceName);
 				return conn;
@@ -82,7 +82,8 @@ public final class ConnectionFactory {
 				}
 				return conn;
 			} else {
-				synchronized (driverCache) {
+				//synchronized (driverCache) { //20160627
+				synchronized (wi) {
 					conn = (Connection) wi.getResourceByName(dataSourceName);
 					if (conn != null) {
 						if (logger.isDebugEnabled()) {

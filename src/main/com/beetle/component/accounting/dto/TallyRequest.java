@@ -17,17 +17,13 @@ public class TallyRequest implements java.io.Serializable {
 	/** 交易金额（单位：分） */
 	private Long amount;
 
-
-	/** 付款方会员编号. */
-	private String payerMemberNo;
-
 	/**
-	 * 付款方账户密码 
+	 * 付款方账户密码
 	 */
 	private String payerAccountPassword;
 
 	/** 是否校验密码. */
-	private boolean checkPassword;
+	private boolean payerAccountCheckPassword;
 
 	public String getOrderNo() {
 		return orderNo;
@@ -61,14 +57,6 @@ public class TallyRequest implements java.io.Serializable {
 		this.amount = amount;
 	}
 
-	public String getPayerMemberNo() {
-		return payerMemberNo;
-	}
-
-	public void setPayerMemberNo(String payerMemberNo) {
-		this.payerMemberNo = payerMemberNo;
-	}
-
 	public String getPayerAccountPassword() {
 		return payerAccountPassword;
 	}
@@ -77,19 +65,19 @@ public class TallyRequest implements java.io.Serializable {
 		this.payerAccountPassword = payerAccountPassword;
 	}
 
-	public boolean isCheckPassword() {
-		return checkPassword;
+	public boolean isPayerAccountCheckPassword() {
+		return payerAccountCheckPassword;
 	}
 
-	public void setCheckPassword(boolean checkPassword) {
-		this.checkPassword = checkPassword;
+	public void setPayerAccountCheckPassword(boolean payerAccountCheckPassword) {
+		this.payerAccountCheckPassword = payerAccountCheckPassword;
 	}
 
 	@Override
 	public String toString() {
 		return "TallyRequest [orderNo=" + orderNo + ", payerAccountNo=" + payerAccountNo + ", payeeAccountNo="
-				+ payeeAccountNo + ", amount=" + amount + ", payerMemberNo=" + payerMemberNo + ", payerAccountPassword="
-				+ payerAccountPassword + ", checkPassword=" + checkPassword + "]";
+				+ payeeAccountNo + ", amount=" + amount + ", payerAccountPassword=" + payerAccountPassword
+				+ ", payerAccountCheckPassword=" + payerAccountCheckPassword + "]";
 	}
-	
+
 }
