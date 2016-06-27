@@ -37,17 +37,17 @@ public class AccountImpl implements AccountDao {
 	@Override
 	public Account get(String accountNo) throws DBOperatorException {
 		String sql = "select * from account where accountNo = ?";
-		QueryOperator qo=PsHelper.createQueryOperator(sql);
+		QueryOperator qo = PsHelper.createQueryOperator(sql);
 		qo.addParameter(accountNo);
 		qo.access();
 		return qo.getResultAsObject(Account.class);
 	}
 
 	@Override
-	public Account getAndLock(String accountNo) throws DBOperatorException {
-		String sql = "select * from account where accountNo = ? for update";
-		QueryOperator qo=PsHelper.createQueryOperator(sql);
-		qo.addParameter(accountNo);
+	public Account getAndLock(Long accountid) throws DBOperatorException {
+		String sql = "select * from account where accountId = ? for update";
+		QueryOperator qo = PsHelper.createQueryOperator(sql);
+		qo.addParameter(accountid);
 		qo.access();
 		return qo.getResultAsObject(Account.class);
 	}

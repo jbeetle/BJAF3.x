@@ -24,8 +24,7 @@ import com.beetle.framework.resource.jta.JTAFactory;
 
 public class PojoCommandTarget implements ICommandTarget {
 	private static ICommandTarget instance = new PojoCommandTarget();
-	private static AppLogger logger = AppLogger
-			.getInstance(PojoCommandTarget.class);
+	private static AppLogger logger = AppLogger.getInstance(PojoCommandTarget.class);
 
 	private PojoCommandTarget() {
 		// WatchHelper.startWatch();
@@ -35,8 +34,7 @@ public class PojoCommandTarget implements ICommandTarget {
 		return instance;
 	}
 
-	public CommandImp executeCommandWithTransation(CommandImp command)
-			throws CommandExecuteException {
+	public CommandImp executeCommandWithTransation(CommandImp command) throws CommandExecuteException {
 		ITransaction trans = null;
 		try {
 			trans = JTAFactory.getTransactionFromMock();
@@ -54,8 +52,7 @@ public class PojoCommandTarget implements ICommandTarget {
 		} catch (CommandException e) {
 			trans.rollback();
 			String m = e.getMessage();
-			if (m != null
-					&& m.equals(String.valueOf(CommandImp.FATAL_ERR_FLAG))) {
+			if (m != null && m.equals(String.valueOf(CommandImp.FATAL_ERR_FLAG))) {
 				logger.info("rollback by hand!");
 			} else {
 				command.setReturnFlag(CommandImp.FATAL_ERR_FLAG);
@@ -66,8 +63,10 @@ public class PojoCommandTarget implements ICommandTarget {
 		} catch (JTAException jte) {
 			throw new CommandExecuteException(jte);
 		} catch (Exception e) {
-			if (trans != null)
+			if (trans != null) {
 				trans.rollback();
+				logger.debug("rollback called!");
+			}
 			command.setReturnFlag(CommandImp.FATAL_ERR_FLAG);
 			command.setReturnMsg(logger.getStackTraceInfo(e));
 			command.setPlus(e);
@@ -78,8 +77,7 @@ public class PojoCommandTarget implements ICommandTarget {
 		}
 	}
 
-	public CommandImp executeCommand(CommandImp command)
-			throws CommandExecuteException {
+	public CommandImp executeCommand(CommandImp command) throws CommandExecuteException {
 		try {
 			CommandHelper.bind();
 			command.process();

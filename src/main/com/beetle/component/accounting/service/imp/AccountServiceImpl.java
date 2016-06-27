@@ -9,6 +9,8 @@ import com.beetle.component.accounting.dto.Account;
 import com.beetle.component.accounting.dto.TallyRequest;
 import com.beetle.component.accounting.dto.TallyResponse;
 import com.beetle.component.accounting.dto.enums.AccountStatus;
+import com.beetle.component.accounting.dto.enums.DirectFlag;
+import com.beetle.component.accounting.dto.enums.PasswordCheck;
 import com.beetle.component.accounting.persistence.AccountDao;
 import com.beetle.component.accounting.service.AccountService;
 import com.beetle.component.accounting.service.AccountingServiceException;
@@ -79,9 +81,33 @@ public class AccountServiceImpl implements AccountService {
 		long payerAccId = vr.getPayerAccId();
 		long payeeAccId = vr.getPayeeAccId();
 		logger.debug("vr:{}", vr);
-
+		Account payeeAcc;
+		Account payerAcc;
+		if (payerAccId > payeeAccId) {
+			payeeAcc = accDao.getAndLock(payeeAccId);
+			payerAcc = accDao.getAndLock(payerAccId);
+		} else {
+			payerAcc = accDao.getAndLock(payerAccId);
+			payeeAcc = accDao.getAndLock(payeeAccId);
+		}
+		// 更新付款方账户余额
+		long payerForeBalance = payerAcc.getBalance();
+		long payerNowBalance = calculateBalance(payerAcc, req.getAmount(), DirectFlag.DR);
+		if(payerNowBalance<0){
+			throw new AccountingServiceException(-20009, "付款账户[" + req.getPayerAccountNo() + "]余额不足");
+		}
 		logger.info("tally-end[{}]", res);
 		return res;
+	}
+
+	private Long calculateBalance(Account account, Long tradeAmount, DirectFlag directFlag) {
+		Long balanceAmount = 0L;
+		if (directFlag.toString().equals(account.getSubjectDirect())) {
+			balanceAmount = account.getBalance() + tradeAmount;
+		} else {
+			balanceAmount = account.getBalance() - tradeAmount;
+		}
+		return balanceAmount;
 	}
 
 	private VR validate(TallyRequest req) throws AccountingServiceException {
@@ -89,10 +115,6 @@ public class AccountServiceImpl implements AccountService {
 		Account payeeAcc = null;
 		if (req.getAmount() == null || req.getAmount() <= 0) {
 			throw new AccountingServiceException(-20001, "交易金融不能为空或小于等于零");
-		}
-		if (req.isPayerAccountCheckPassword()
-				&& (req.getPayerAccountPassword() == null || req.getPayerAccountPassword().trim().length() == 0)) {
-			throw new AccountingServiceException(-20002, "付款账户需要验证密码但密码为空");
 		}
 		if (req.getOrderNo() == null || req.getOrderNo().trim().length() == 0) {
 			throw new AccountingServiceException(-20003, "交易订单的支付编号不能为空");
@@ -104,6 +126,14 @@ public class AccountServiceImpl implements AccountService {
 			}
 			if (payerAcc.getAccountStatus() != AccountStatus.NORMAL.toInteger()) {
 				throw new AccountingServiceException(-20005, "付款账户[" + req.getPayerAccountNo() + "]状态不正常，禁止交易");
+			}
+			if (payerAcc.getPasswordCheck() == PasswordCheck.NEED.toInteger()) {
+				if (req.getPayerAccountPassword() == null || req.getPayerAccountPassword().trim().length() == 0) {
+					throw new AccountingServiceException(-20002, "付款账户需要验证交易密码但密码为空");
+				}
+				if (!req.getPayerAccountPassword().equals(payerAcc.getPassword())) {
+					throw new AccountingServiceException(-20008, "付款账户交易密码验证不通过");
+				}
 			}
 			payeeAcc = accDao.get(req.getPayeeAccountNo());
 			if (payeeAcc == null) {

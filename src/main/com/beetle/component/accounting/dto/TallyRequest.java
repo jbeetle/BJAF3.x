@@ -22,9 +22,6 @@ public class TallyRequest implements java.io.Serializable {
 	 */
 	private String payerAccountPassword;
 
-	/** 是否校验密码. */
-	private boolean payerAccountCheckPassword;
-
 	public String getOrderNo() {
 		return orderNo;
 	}
@@ -65,19 +62,10 @@ public class TallyRequest implements java.io.Serializable {
 		this.payerAccountPassword = payerAccountPassword;
 	}
 
-	public boolean isPayerAccountCheckPassword() {
-		return payerAccountCheckPassword;
-	}
-
-	public void setPayerAccountCheckPassword(boolean payerAccountCheckPassword) {
-		this.payerAccountCheckPassword = payerAccountCheckPassword;
-	}
-
 	@Override
 	public String toString() {
 		return "TallyRequest [orderNo=" + orderNo + ", payerAccountNo=" + payerAccountNo + ", payeeAccountNo="
-				+ payeeAccountNo + ", amount=" + amount + ", payerAccountPassword=" + payerAccountPassword
-				+ ", payerAccountCheckPassword=" + payerAccountCheckPassword + "]";
+				+ payeeAccountNo + ", amount=" + amount + "]";
 	}
 
 }

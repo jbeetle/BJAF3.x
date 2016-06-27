@@ -9,11 +9,11 @@ public interface AccountDao {
 	Account get(String accountNo) throws DBOperatorException;
 	/**
 	 * 获取账户并加锁，只有事务结束的时候才释放，调用服务需要在一个事务内进行
-	 * @param accountNo
+	 * @param accountid
 	 * @return
 	 * @throws DBOperatorException
 	 */
-	Account getAndLock(String accountNo) throws DBOperatorException;
+	Account getAndLock(Long accountid) throws DBOperatorException;
 
 	int insert(Account account) throws DBOperatorException;
 

@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `account` (
   `createTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间创建就不变',
   PRIMARY KEY (`accountId`),
   UNIQUE KEY `accountNoUK` (`accountNo`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='账户表';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='账户表';
 
 -- 数据导出被取消选择。
 -- 导出  表 accounting.subject 结构
