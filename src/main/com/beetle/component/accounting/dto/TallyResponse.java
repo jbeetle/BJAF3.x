@@ -6,41 +6,51 @@ public class TallyResponse implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Long payerAccountId;
-	private Long payerAccountWaterId;
-	private Long payeeAccountId;
-	private Long payeeAccountWaterId;
+	private Long drAccountId;
+	private Long drAccountWaterId;
+	private Long crAccountId;
+	private Long crAccountWaterId;
+
 	public TallyResponse() {
 		super();
 	}
-	public Long getPayerAccountId() {
-		return payerAccountId;
+
+	public Long getDrAccountId() {
+		return drAccountId;
 	}
-	public void setPayerAccountId(Long payerAccountId) {
-		this.payerAccountId = payerAccountId;
+
+	public void setDrAccountId(Long drAccountId) {
+		this.drAccountId = drAccountId;
 	}
-	public Long getPayerAccountWaterId() {
-		return payerAccountWaterId;
+
+	public Long getDrAccountWaterId() {
+		return drAccountWaterId;
 	}
-	public void setPayerAccountWaterId(Long payerAccountWaterId) {
-		this.payerAccountWaterId = payerAccountWaterId;
+
+	public void setDrAccountWaterId(Long drAccountWaterId) {
+		this.drAccountWaterId = drAccountWaterId;
 	}
-	public Long getPayeeAccountId() {
-		return payeeAccountId;
+
+	public Long getCrAccountId() {
+		return crAccountId;
 	}
-	public void setPayeeAccountId(Long payeeAccountId) {
-		this.payeeAccountId = payeeAccountId;
+
+	public void setCrAccountId(Long crAccountId) {
+		this.crAccountId = crAccountId;
 	}
-	public Long getPayeeAccountWaterId() {
-		return payeeAccountWaterId;
+
+	public Long getCrAccountWaterId() {
+		return crAccountWaterId;
 	}
-	public void setPayeeAccountWaterId(Long payeeAccountWaterId) {
-		this.payeeAccountWaterId = payeeAccountWaterId;
+
+	public void setCrAccountWaterId(Long crAccountWaterId) {
+		this.crAccountWaterId = crAccountWaterId;
 	}
+
 	@Override
 	public String toString() {
-		return "TallyResponse [payerAccountId=" + payerAccountId + ", payerAccountWaterId=" + payerAccountWaterId
-				+ ", payeeAccountId=" + payeeAccountId + ", payeeAccountWaterId=" + payeeAccountWaterId + "]";
+		return "TallyResponse [drAccountId=" + drAccountId + ", drAccountWaterId=" + drAccountWaterId + ", crAccountId="
+				+ crAccountId + ", crAccountWaterId=" + crAccountWaterId + "]";
 	}
-	
+
 }

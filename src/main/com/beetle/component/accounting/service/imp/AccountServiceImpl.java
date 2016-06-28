@@ -139,7 +139,7 @@ public class AccountServiceImpl implements AccountService {
 		// 借方记账流水
 		Water drWater = new Water();
 		drWater.setAccountId(payerAccId);
-		drWater.setAccountNo(req.getPayerAccountNo());
+		drWater.setAccountNo(req.getDrAccountNo());
 		drWater.setAftBalance(ur.getPayerAftBalance());
 		drWater.setAmount(req.getAmount());
 		drWater.setDirectFlag(DirectFlag.DR.toString());
@@ -151,7 +151,7 @@ public class AccountServiceImpl implements AccountService {
 		// 贷方记账流水
 		Water crWater = new Water();
 		crWater.setAccountId(payeeAccId);
-		crWater.setAccountNo(req.getPayeeAccountNo());
+		crWater.setAccountNo(req.getCrAccountNo());
 		crWater.setAftBalance(ur.getPayeeAftBalance());
 		crWater.setAmount(req.getAmount());
 		crWater.setDirectFlag(DirectFlag.CR.toString());
@@ -163,10 +163,10 @@ public class AccountServiceImpl implements AccountService {
 		logger.info("insertWater done");
 		// 构建返回对象
 		TallyResponse res = new TallyResponse();
-		res.setPayeeAccountId(payeeAccId);
-		res.setPayeeAccountWaterId(crWaterId);
-		res.setPayerAccountId(payerAccId);
-		res.setPayerAccountWaterId(drWaterId);
+		res.setCrAccountId(payeeAccId);
+		res.setCrAccountWaterId(crWaterId);
+		res.setDrAccountId(payerAccId);
+		res.setDrAccountWaterId(drWaterId);
 		logger.info("tally-end[{}]", res);
 		return res;
 	}
@@ -177,22 +177,22 @@ public class AccountServiceImpl implements AccountService {
 		long payerForeBalance = payerAcc.getBalance();
 		long payerAftBalance = calculateBalance(payerAcc, req.getAmount(), DirectFlag.DR);
 		if (payerAftBalance < 0) {
-			throw new AccountingServiceException(-20009, "付款账户[" + req.getPayerAccountNo() + "]余额不足");
+			throw new AccountingServiceException(-20009, "DR账户[" + req.getDrAccountNo() + "]余额不足");
 		}
 		int rowx = accDao.updateBalance(payerAftBalance, payerAccId);
 		if (rowx != 1) {
-			throw new AccountingServiceException(-20010, "付款账户[" + req.getPayerAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
+			throw new AccountingServiceException(-20010, "DR账户[" + req.getDrAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
 		}
 		//// 更新收款方余额
 		long payeeForeBalance = payeeAcc.getBalance();
 		long payeeAftBalance = calculateBalance(payeeAcc, req.getAmount(), DirectFlag.CR);
 		if (payeeAftBalance < 0) {
 			throw new AccountingServiceException(-20011,
-					"收款账户[" + req.getPayeeAccountNo() + "]计算后余额为负数，终止交易，请检测业务记账规则是否有误");
+					"CR账户[" + req.getCrAccountNo() + "]计算后余额为负数，终止交易，请检测业务记账规则是否有误");
 		}
 		int rowy = accDao.updateBalance(payeeAftBalance, payeeAccId);
 		if (rowy != 1) {
-			throw new AccountingServiceException(-20012, "收款账户[" + req.getPayerAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
+			throw new AccountingServiceException(-20012, "CR账户[" + req.getCrAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
 		}
 		UR ur = new UR(payerForeBalance, payerAftBalance, payeeForeBalance, payeeAftBalance);
 		return ur;
@@ -218,27 +218,29 @@ public class AccountServiceImpl implements AccountService {
 			throw new AccountingServiceException(-20003, "交易订单的支付编号不能为空");
 		}
 		try {
-			payerAcc = accDao.get(req.getPayerAccountNo());
+			payerAcc = accDao.get(req.getDrAccountNo());
 			if (payerAcc == null) {
-				throw new AccountingServiceException(-20004, "付款账户[" + req.getPayerAccountNo() + "]不存在");
+				throw new AccountingServiceException(-20004, "DR账户[" + req.getDrAccountNo() + "]不存在");
 			}
 			if (payerAcc.getAccountStatus() != AccountStatus.NORMAL.toInteger()) {
-				throw new AccountingServiceException(-20005, "付款账户[" + req.getPayerAccountNo() + "]状态不正常，禁止交易");
+				throw new AccountingServiceException(-20005, "DR账户[" + req.getDrAccountNo() + "]状态不正常，禁止交易");
 			}
-			if (payerAcc.getPasswordCheck() == PasswordCheck.NEED.toInteger()) {
-				if (req.getPayerAccountPassword() == null || req.getPayerAccountPassword().trim().length() == 0) {
-					throw new AccountingServiceException(-20002, "付款账户需要验证交易密码但密码为空");
-				}
-				if (!req.getPayerAccountPassword().equals(payerAcc.getPassword())) {
-					throw new AccountingServiceException(-20008, "付款账户交易密码验证不通过");
+			if (req.isDrPasswordCheck()) {
+				if (payerAcc.getPasswordCheck() == PasswordCheck.NEED.toInteger()) {
+					if (req.getDrAccountPassword() == null || req.getDrAccountPassword().trim().length() == 0) {
+						throw new AccountingServiceException(-20002, "DR账户需要验证交易密码但密码为空");
+					}
+					if (!req.getDrAccountPassword().equals(payerAcc.getPassword())) {
+						throw new AccountingServiceException(-20008, "DR账户交易密码验证不通过");
+					}
 				}
 			}
-			payeeAcc = accDao.get(req.getPayeeAccountNo());
+			payeeAcc = accDao.get(req.getCrAccountNo());
 			if (payeeAcc == null) {
-				throw new AccountingServiceException(-20006, "收款账户[" + req.getPayeeAccountNo() + "]不存在");
+				throw new AccountingServiceException(-20006, "CR账户[" + req.getCrAccountNo() + "]不存在");
 			}
 			if (payeeAcc.getAccountStatus() != AccountStatus.NORMAL.toInteger()) {
-				throw new AccountingServiceException(-20007, "收款账户[" + req.getPayeeAccountNo() + "]状态不正常，禁止交易");
+				throw new AccountingServiceException(-20007, "CR账户[" + req.getCrAccountNo() + "]状态不正常，禁止交易");
 			}
 			return new VR(payerAcc.getAccountId(), payeeAcc.getAccountId());
 		} catch (DBOperatorException e) {

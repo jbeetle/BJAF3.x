@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `water` (
   PRIMARY KEY (`waterId`),
   KEY `subjectno` (`subjectNo`),
   KEY `accountId` (`accountId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='账户记账流水表';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COMMENT='账户记账流水表';
 
 -- 数据导出被取消选择。
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
