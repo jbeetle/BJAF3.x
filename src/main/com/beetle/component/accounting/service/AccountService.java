@@ -14,7 +14,9 @@ public interface AccountService {
 	 */
 	Account openAccount(Account account) throws AccountingServiceException;
 	/**
-	 * 记账
+	 * 记账<br>
+	 * 注：不参与调用方使用，每次使用新数据库连接启动新事物<br>
+	 * 使用框架公共线程池，并发性能通过application.properties文件[resource]相关参数调优
 	 * @param tallyRequest
 	 * @return
 	 * @throws AccountingServiceException

@@ -5,6 +5,7 @@ import com.beetle.component.accounting.persistence.AccountDao;
 import com.beetle.framework.persistence.access.operator.DBOperatorException;
 import com.beetle.framework.persistence.access.operator.QueryOperator;
 import com.beetle.framework.persistence.access.operator.TableOperator;
+import com.beetle.framework.persistence.access.operator.UpdateOperator;
 
 public class AccountImpl implements AccountDao {
 
@@ -50,6 +51,16 @@ public class AccountImpl implements AccountDao {
 		qo.addParameter(accountid);
 		qo.access();
 		return qo.getResultAsObject(Account.class);
+	}
+
+	@Override
+	public int updateBalance(long balance, long accountId) throws DBOperatorException {
+		String sql = "update account set balance=?,updateTime=sysdate() where accountId=?";
+		UpdateOperator u = PsHelper.createUpdateOperator(sql);
+		u.addParameter(balance);
+		u.addParameter(accountId);
+		u.access();
+		return u.getEffectCounts();
 	}
 
 }

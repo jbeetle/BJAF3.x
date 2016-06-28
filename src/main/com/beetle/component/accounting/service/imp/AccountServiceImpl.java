@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import com.beetle.component.accounting.dto.Account;
 import com.beetle.component.accounting.dto.TallyRequest;
 import com.beetle.component.accounting.dto.TallyResponse;
+import com.beetle.component.accounting.dto.Water;
 import com.beetle.component.accounting.dto.enums.AccountStatus;
 import com.beetle.component.accounting.dto.enums.DirectFlag;
 import com.beetle.component.accounting.dto.enums.PasswordCheck;
 import com.beetle.component.accounting.persistence.AccountDao;
+import com.beetle.component.accounting.persistence.WaterDao;
 import com.beetle.component.accounting.service.AccountService;
 import com.beetle.component.accounting.service.AccountingServiceException;
 import com.beetle.framework.log.AppLogger;
@@ -24,6 +26,8 @@ public class AccountServiceImpl implements AccountService {
 	private Logger logger = AppLogger.getLogger(AccountServiceImpl.class);
 	@InjectField
 	private AccountDao accDao;
+	@InjectField
+	private WaterDao waterDao;
 
 	private static class VR {
 		private long payerAccId;
@@ -46,6 +50,44 @@ public class AccountServiceImpl implements AccountService {
 		@Override
 		public String toString() {
 			return "VR [payerAccId=" + payerAccId + ", payeeAccId=" + payeeAccId + "]";
+		}
+
+	}
+
+	private static class UR {
+		private long payerForeBalance;
+		private long payerAftBalance;
+		private long payeeForeBalance;
+		private long payeeAftBalance;
+
+		public UR(long payerForeBalance, long payerAftBalance, long payeeForeBalance, long payeeAftBalance) {
+			super();
+			this.payerForeBalance = payerForeBalance;
+			this.payerAftBalance = payerAftBalance;
+			this.payeeForeBalance = payeeForeBalance;
+			this.payeeAftBalance = payeeAftBalance;
+		}
+
+		public long getPayerForeBalance() {
+			return payerForeBalance;
+		}
+
+		public long getPayerAftBalance() {
+			return payerAftBalance;
+		}
+
+		public long getPayeeForeBalance() {
+			return payeeForeBalance;
+		}
+
+		public long getPayeeAftBalance() {
+			return payeeAftBalance;
+		}
+
+		@Override
+		public String toString() {
+			return "UR [payerForeBalance=" + payerForeBalance + ", payerAftBalance=" + payerAftBalance
+					+ ", payeeForeBalance=" + payeeForeBalance + ", payeeAftBalance=" + payeeAftBalance + "]";
 		}
 
 	}
@@ -74,7 +116,6 @@ public class AccountServiceImpl implements AccountService {
 	@ServiceTransaction(manner = Manner.REQUIRES_NEW)
 	@Override
 	public TallyResponse tally(TallyRequest req) throws AccountingServiceException {
-		TallyResponse res = new TallyResponse();
 		logger.info("tally-begin[{}]", req);
 		// check raw
 		VR vr = validate(req);
@@ -90,14 +131,71 @@ public class AccountServiceImpl implements AccountService {
 			payerAcc = accDao.getAndLock(payerAccId);
 			payeeAcc = accDao.getAndLock(payeeAccId);
 		}
-		// 更新付款方账户余额
-		long payerForeBalance = payerAcc.getBalance();
-		long payerNowBalance = calculateBalance(payerAcc, req.getAmount(), DirectFlag.DR);
-		if(payerNowBalance<0){
-			throw new AccountingServiceException(-20009, "付款账户[" + req.getPayerAccountNo() + "]余额不足");
-		}
+		logger.info("validate done");
+		// update account balance
+		UR ur = updateAccountBalance(req, payerAccId, payeeAccId, payeeAcc, payerAcc);
+		logger.info("updateAccountBalance done");
+		// log water
+		// 借方记账流水
+		Water drWater = new Water();
+		drWater.setAccountId(payerAccId);
+		drWater.setAccountNo(req.getPayerAccountNo());
+		drWater.setAftBalance(ur.getPayerAftBalance());
+		drWater.setAmount(req.getAmount());
+		drWater.setDirectFlag(DirectFlag.DR.toString());
+		drWater.setForeBalance(ur.getPayerForeBalance());
+		drWater.setOrderNo(req.getOrderNo());
+		drWater.setSubjectNo(payerAcc.getSubjectNo());
+		long drWaterId = waterDao.insert(drWater);
+		logger.debug("drWaterId:{}", drWaterId);
+		// 贷方记账流水
+		Water crWater = new Water();
+		crWater.setAccountId(payeeAccId);
+		crWater.setAccountNo(req.getPayeeAccountNo());
+		crWater.setAftBalance(ur.getPayeeAftBalance());
+		crWater.setAmount(req.getAmount());
+		crWater.setDirectFlag(DirectFlag.CR.toString());
+		crWater.setForeBalance(ur.getPayeeForeBalance());
+		crWater.setOrderNo(req.getOrderNo());
+		crWater.setSubjectNo(payeeAcc.getSubjectNo());
+		long crWaterId = waterDao.insert(crWater);
+		logger.debug("crWaterId:{}", crWaterId);
+		logger.info("insertWater done");
+		// 构建返回对象
+		TallyResponse res = new TallyResponse();
+		res.setPayeeAccountId(payeeAccId);
+		res.setPayeeAccountWaterId(crWaterId);
+		res.setPayerAccountId(payerAccId);
+		res.setPayerAccountWaterId(drWaterId);
 		logger.info("tally-end[{}]", res);
 		return res;
+	}
+
+	private UR updateAccountBalance(TallyRequest req, long payerAccId, long payeeAccId, Account payeeAcc,
+			Account payerAcc) throws AccountingServiceException {
+		// 更新付款方账户余额
+		long payerForeBalance = payerAcc.getBalance();
+		long payerAftBalance = calculateBalance(payerAcc, req.getAmount(), DirectFlag.DR);
+		if (payerAftBalance < 0) {
+			throw new AccountingServiceException(-20009, "付款账户[" + req.getPayerAccountNo() + "]余额不足");
+		}
+		int rowx = accDao.updateBalance(payerAftBalance, payerAccId);
+		if (rowx != 1) {
+			throw new AccountingServiceException(-20010, "付款账户[" + req.getPayerAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
+		}
+		//// 更新收款方余额
+		long payeeForeBalance = payeeAcc.getBalance();
+		long payeeAftBalance = calculateBalance(payeeAcc, req.getAmount(), DirectFlag.CR);
+		if (payeeAftBalance < 0) {
+			throw new AccountingServiceException(-20011,
+					"收款账户[" + req.getPayeeAccountNo() + "]计算后余额为负数，终止交易，请检测业务记账规则是否有误");
+		}
+		int rowy = accDao.updateBalance(payeeAftBalance, payeeAccId);
+		if (rowy != 1) {
+			throw new AccountingServiceException(-20012, "收款账户[" + req.getPayerAccountNo() + "]无法更新余额，可能账户不存在，请联系管理员");
+		}
+		UR ur = new UR(payerForeBalance, payerAftBalance, payeeForeBalance, payeeAftBalance);
+		return ur;
 	}
 
 	private Long calculateBalance(Account account, Long tradeAmount, DirectFlag directFlag) {
