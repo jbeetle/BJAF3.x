@@ -1,5 +1,6 @@
 package com.beetle.framework.web.common;
 
+import com.beetle.framework.AppProperties;
 import com.beetle.framework.web.controller.ControllerException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,12 +11,66 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-
 public class WebUtil {
-	public static String getDecodeValueByKeyName(HttpServletRequest request,
-			String keyName) {
-		String qs = decodeURL(request.getQueryString(),
-				(String) request.getAttribute("WEB_ENCODE_CHARSET"));
+	/**
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过<br>
+	 * application.properties[web_xss_html_filter_defaultLevel]配置<br>
+	 * 
+	 * @param r
+	 * @return
+	 */
+	public final static String xssFilter(String r) {
+		final String rr;
+		String flag = AppProperties.get(CommonUtil.WEB_XSS_HTML_FILTER_DEFAULTLEVEL,
+				CommonUtil.WEB_XSS_HTML_FILTER_LEVEL_NONE);
+		if (flag.equalsIgnoreCase(XssHtmlWhitelist.none.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.none());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.basic.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.basic());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.simpleText.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.simpleText());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.basicWithImages.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.basicWithImages());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.relaxed.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.relaxed());
+		} else {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.none());
+		}
+		return rr;
+	}
+
+	/**
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，可自定义过滤级别<br>
+	 * @param r
+	 * @param level
+	 * @return
+	 */
+	public final static String xssFilter(String r, XssHtmlWhitelist level) {
+		return xssFilter(r, level.toString());
+	}
+
+	public final static String xssFilter(String r, String flag) {
+		final String rr;
+		if (flag.equalsIgnoreCase(XssHtmlWhitelist.none.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.none());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.basic.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.basic());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.simpleText.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.simpleText());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.basicWithImages.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.basicWithImages());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.relaxed.toString())) {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.relaxed());
+		} else if (flag.equalsIgnoreCase(XssHtmlWhitelist.noDeal.toString())) {
+			rr = r;
+		} else {
+			rr = org.jsoup.Jsoup.clean(r, org.jsoup.safety.Whitelist.none());
+		}
+		return rr;
+	}
+
+	public static String getDecodeValueByKeyName(HttpServletRequest request, String keyName) {
+		String qs = decodeURL(request.getQueryString(), (String) request.getAttribute("WEB_ENCODE_CHARSET"));
 		StringTokenizer st = new StringTokenizer(qs, "&");
 		HashMap<String, String> m = new HashMap<String, String>();
 		while (st.hasMoreTokens()) {
@@ -48,8 +103,7 @@ public class WebUtil {
 		}
 	}
 
-	public static Object getParameter(String paramterName,
-			HttpServletRequest request) {
+	public static Object getParameter(String paramterName, HttpServletRequest request) {
 		Object o = request.getAttribute(paramterName);
 		if (o == null) {
 			o = request.getParameter(paramterName);
@@ -57,8 +111,7 @@ public class WebUtil {
 		return o;
 	}
 
-	public static Object getValueFromSession(String sessionName,
-			HttpServletRequest request) {
+	public static Object getValueFromSession(String sessionName, HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			return session.getAttribute(sessionName);

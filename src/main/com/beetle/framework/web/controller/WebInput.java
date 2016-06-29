@@ -38,6 +38,7 @@ import com.beetle.framework.util.ConvertUtil;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.common.WebUtil;
+import com.beetle.framework.web.common.XssHtmlWhitelist;
 
 /**
  * <p>
@@ -60,6 +61,10 @@ import com.beetle.framework.web.common.WebUtil;
  * 
  * @author 余浩东(hdyu@beetlesoft.net)
  * @version 1.0
+ */
+/**
+ * @author yuhaodong@gmail.com
+ *
  */
 public class WebInput {
 	private HttpServletRequest request;
@@ -284,16 +289,9 @@ public class WebInput {
 	}
 
 	/**
-	 * request. For HTTP servlets, parameters are contained in the query string
-	 * or posted form data. You should only use this method when you are sure
-	 * the parameter has only one value. If the parameter might have more than
-	 * one value, use getParameterValues(java.lang.String). If you use this
-	 * method with a multivalued parameter, the value returned is equal to the
-	 * first value in the array returned by getParameterValues. If the parameter
-	 * data was sent in the request body, such as occurs with an HTTP POST
-	 * request, then reading the body directly via getInputStream() or
-	 * getReader() can interfere with the execution of this method.
-	 * 注意使用本方法会自动trim()调字符串前后的空格，如果你想保留可以使用getParameterWithoutTrim()方法
+	 * 获取字段值 注意使用本方法会自动trim()调字符串前后的空格，如果你想保留可以使用getParameterWithoutTrim()方法<br>
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过application.properties[
+	 * web_xss_html_filter_defaultLevel]配置<br>
 	 * 
 	 * @name - a String specifying the name of the parameter
 	 * @return a String representing the single value of the parameter
@@ -301,8 +299,7 @@ public class WebInput {
 	public String getParameter(String name) {
 		String r = request.getParameter(name);
 		if (request.getMethod().toLowerCase().equals(CommonUtil.GET_STR)) {
-			String info = (String) request
-					.getAttribute(CommonUtil.WEB_SERVER_INFO);
+			String info = (String) request.getAttribute(CommonUtil.WEB_SERVER_INFO);
 			if (info != null) {
 				if (info.indexOf(CommonUtil.TOMCAT_STR) > 0) {
 					try {
@@ -317,6 +314,7 @@ public class WebInput {
 		}
 		if (r != null) {
 			r = r.trim();
+			return WebUtil.xssFilter(r);
 		}
 		return r;
 	}
@@ -337,7 +335,12 @@ public class WebInput {
 	}
 
 	public String getParameterWithoutTrim(String name) {
-		return request.getParameter(name);
+		String x = request.getParameter(name);
+		if (x == null) {
+			return null;
+		}
+		return WebUtil.xssFilter(x);
+		// return request.getParameter(name);
 	}
 
 	/**
@@ -348,6 +351,23 @@ public class WebInput {
 	 */
 	public String getParameterWithDecode(String name) {
 		return WebUtil.decodeURL(this.getParameter(name));
+	}
+
+	/**
+	 * 根据html过滤级别获取过滤后的字符值
+	 * 
+	 * @param name
+	 *            字段名
+	 * @param level
+	 *            过滤级别
+	 * @return
+	 */
+	public String getParameterWithHtmlFilterLevel(String name, XssHtmlWhitelist level) {
+		String x = request.getParameter(name);
+		if (x == null) {
+			return null;
+		}
+		return WebUtil.xssFilter(x, level.toString());
 	}
 
 	public String getParameterWithDecode(String name, String charset) {
@@ -474,8 +494,7 @@ public class WebInput {
 	}
 
 	public Timestamp getParameterAsTimestamp(String name, String formatStr) {
-		Date d = ConvertUtil.toDateByFormat(request.getParameter(name),
-				formatStr);
+		Date d = ConvertUtil.toDateByFormat(request.getParameter(name), formatStr);
 		return new Timestamp(d.getTime());
 	}
 
@@ -490,8 +509,7 @@ public class WebInput {
 		}
 	}
 
-	public BigDecimal getParameterAsBigDecimal(String name,
-			BigDecimal defaultValue) {
+	public BigDecimal getParameterAsBigDecimal(String name, BigDecimal defaultValue) {
 		String r = request.getParameter(name);
 		if (r == null) {
 			return defaultValue;
@@ -516,15 +534,16 @@ public class WebInput {
 	}
 
 	/**
-	 * 获取整个页面的内容（不包括header） 如果出现异常，则返回null
+	 * 获取整个页面的内容（不包括header） 如果出现异常，则返回null<br>
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过application.properties[
+	 * web_xss_html_filter_defaultLevel]配置<br>
 	 * 
 	 * @return
 	 */
 	public String getBodyContent() {
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(
-					this.getInputStream(), this.getCharacterEncoding()));
+			reader = new BufferedReader(new InputStreamReader(this.getInputStream(), this.getCharacterEncoding()));
 			StringBuilder sb = new StringBuilder();
 			while (true) {
 				String x = reader.readLine();
@@ -533,7 +552,8 @@ public class WebInput {
 				}
 				sb.append(x);
 			}
-			return sb.toString();
+			// return sb.toString();
+			return WebUtil.xssFilter(sb.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -549,7 +569,44 @@ public class WebInput {
 	}
 
 	/**
-	 * 获取json格式内容，并转换成javabean 如果出错或没有数据则返回null
+	 * 获取整个页面的内容（不包括header） 如果出现异常，则返回null<br>
+	 * 可根据html过滤级别
+	 * 
+	 * @param level
+	 * @return
+	 */
+	public String getBodyContentWithHtmlFilterLevel(XssHtmlWhitelist level) {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(this.getInputStream(), this.getCharacterEncoding()));
+			StringBuilder sb = new StringBuilder();
+			while (true) {
+				String x = reader.readLine();
+				if (x == null) {
+					break;
+				}
+				sb.append(x);
+			}
+			// return sb.toString();
+			return WebUtil.xssFilter(sb.toString(), level.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
+	 * 获取json格式内容，并转换成javabean 如果出错或没有数据则返回null<br>
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过application.properties[
+	 * web_xss_html_filter_defaultLevel]配置<br>
 	 * 
 	 * @param formBeanClass
 	 * @return
@@ -572,7 +629,9 @@ public class WebInput {
 	}
 
 	/**
-	 * 获取xml格式内容，并转化成相应的javabean
+	 * 获取xml格式内容，并转化成相应的javabean<br>
+	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过application.properties[
+	 * web_xss_html_filter_defaultLevel]配置<br>
 	 * 
 	 * @param formBeanClass
 	 * @return
@@ -612,7 +671,16 @@ public class WebInput {
 	 */
 	@SuppressWarnings("rawtypes")
 	public java.util.Map getParameterMap() {
-		return request.getParameterMap();
+		Map<String, String[]> xx = request.getParameterMap();
+		Set<?> e = xx.entrySet();
+		Iterator<?> it = e.iterator();
+		while (it.hasNext()) {
+			Map.Entry me = (Map.Entry) it.next();
+			String key = (String) me.getKey();
+			String values[] = getParameterValues(key);
+			xx.put(key, values);
+		}
+		return xx;
 	}
 
 	/**
@@ -637,7 +705,16 @@ public class WebInput {
 	 * @return an array of String objects containing the parameter's values
 	 */
 	public String[] getParameterValues(String name) {
-		return request.getParameterValues(name);
+		String[] x = request.getParameterValues(name);
+		if (x == null || x.length == 0) {
+			return x;
+		}
+		for (int i = 0; i < x.length; i++) {
+			String s = WebUtil.xssFilter(x[i]);
+			x[i] = s;
+		}
+		// return request.getParameterValues(name);
+		return x;
 	}
 
 	/**
@@ -663,7 +740,7 @@ public class WebInput {
 				String values[] = getParameterValues(key);
 				if (values.length == 1) {
 					try {
-						ObjectUtil.setValue(key, obj, values[0]);
+						ObjectUtil.setValue(key, obj, WebUtil.xssFilter(values[0]));
 					} catch (IllegalArgumentException ille) {
 						Class<?> type = ObjectUtil.getType(key, obj);
 						String tstr = type.toString();
@@ -671,32 +748,22 @@ public class WebInput {
 						// System.out.println("key="+key+"
 						// value="+this.getParameter(key));
 						if (tstr.equals(Integer.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsInt(key));
+							ObjectUtil.setValue(key, obj, getParameterAsInt(key));
 						} else if (tstr.equals(Long.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsLong(key));
+							ObjectUtil.setValue(key, obj, getParameterAsLong(key));
 						} else if (tstr.equals(Float.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsFloat(key));
+							ObjectUtil.setValue(key, obj, getParameterAsFloat(key));
 						} else if (tstr.equals(Double.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsDouble(key));
+							ObjectUtil.setValue(key, obj, getParameterAsDouble(key));
 						} else if (tstr.equals(Timestamp.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsTimestamp(key));
+							ObjectUtil.setValue(key, obj, getParameterAsTimestamp(key));
 						} else if (tstr.equals(java.sql.Date.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsDate(key));
+							ObjectUtil.setValue(key, obj, getParameterAsDate(key));
 						} else if (tstr.equals(BigDecimal.class.toString())) {
-							ObjectUtil.setValue(key, obj,
-									getParameterAsBigDecimal(key));
+							ObjectUtil.setValue(key, obj, getParameterAsBigDecimal(key));
 						} else {
-							com.beetle.framework.log.AppLogger
-									.getInstance(this.getClass())
-									.warn("["
-											+ key
-											+ "]not support,please deal it yourselef!");
+							com.beetle.framework.log.AppLogger.getInstance(this.getClass())
+									.warn("[" + key + "]not support,please deal it yourselef!");
 							ille.printStackTrace();
 						}
 						tstr = null;
@@ -707,11 +774,8 @@ public class WebInput {
 						ObjectUtil.setValue(key, obj, values);
 					} catch (IllegalArgumentException ille) {
 						ille.printStackTrace();
-						com.beetle.framework.log.AppLogger
-								.getInstance(this.getClass())
-								.warn("["
-										+ key
-										+ "]not support,please deal it yourselef!");
+						com.beetle.framework.log.AppLogger.getInstance(this.getClass())
+								.warn("[" + key + "]not support,please deal it yourselef!");
 					}
 				}
 			}

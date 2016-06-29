@@ -46,7 +46,7 @@ import java.util.Map;
 public class CommonUtil extends WebUtil {
 	public static final String WEB_ENCODE_CHARSET = "WEB_ENCODE_CHARSET";
 	public static final String WEB_SERVER_INFO = "WEB_SERVER_INFO";
-	//public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
+	// public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
 	public static final String WEB_CTRL_PREFIX = "WEB_CTRL_PREFIX";
 	public static final String CTRL_VIEW_MAP_ENABLED = "CTRL_VIEW_MAP_ENABLED";
 	public static final String DISABLED_SESSION_VIEW = "DISABLED_SESSION_VIEW";
@@ -69,6 +69,9 @@ public class CommonUtil extends WebUtil {
 	public static final String PRC_SERVICE_FACE_STR = "$interface";
 	public static final String PRC_SERVICE_METHOD_STR = "$method";
 	public static final String PRC_SERVICE_PARAMS_STR = "$parameter";
+	public static final String WEB_XSS_HTML_FILTER_DEFAULTLEVEL = "web_xss_html_filter_defaultLevel";
+	public static final String WEB_XSS_HTML_FILTER_LEVEL_NONE = XssHtmlWhitelist.none.toString();
+
 	/**
 	 * 填充配置文件数据
 	 * 
@@ -87,17 +90,15 @@ public class CommonUtil extends WebUtil {
 	 * @param map
 	 *            Map
 	 */
-	public static final void fill_DataMap(ServletContext app, String filename,
-			String itemPath, String ElementName, String keyName,
-			String valueName, Map<String, String> map) {
+	public static final void fill_DataMap(ServletContext app, String filename, String itemPath, String ElementName,
+			String keyName, String valueName, Map<String, String> map) {
 		InputStream in;
 		if (filename.indexOf("/config/") >= 0) {
 			in = app.getResourceAsStream(filename);
 		} else {
 			in = app.getResourceAsStream("/config/" + filename);
 		}
-		Map<String, String> m = XMLReader.getProperties(in, itemPath,
-				ElementName, keyName, valueName);
+		Map<String, String> m = XMLReader.getProperties(in, itemPath, ElementName, keyName, valueName);
 		if (!m.isEmpty()) {
 			map.putAll(m);
 			m.clear();
@@ -121,8 +122,7 @@ public class CommonUtil extends WebUtil {
 	 *            HttpServletRequest
 	 * @return Cookie
 	 */
-	public static final Cookie getCookie(String cookieName,
-			HttpServletRequest request) {
+	public static final Cookie getCookie(String cookieName, HttpServletRequest request) {
 		Cookie cks[] = request.getCookies();
 		if (cks == null) {
 			return null;
@@ -197,12 +197,14 @@ public class CommonUtil extends WebUtil {
 		}
 		return a;
 	}
+
 	public final static String delLastBevel(String a) {
 		if (a.endsWith("/")) {
 			a = a.substring(0, a.length() - 1);
 		}
 		return a;
 	}
+
 	public final static String delLastDot(String a) {
 		if (a.endsWith(".")) {
 			a = a.substring(0, a.length() - 1);
