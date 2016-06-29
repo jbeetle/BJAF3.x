@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 
+import com.beetle.framework.persistence.access.DBHelper;
 import com.beetle.framework.persistence.access.operator.SqlParameter;
 
 class MannerImp implements IAccessManner {
@@ -35,6 +36,9 @@ class MannerImp implements IAccessManner {
 		this.declaredParameters = declaredParameters;
 		this.sql = sql;
 		this.return_generated_keys = false;
+		if (DBHelper.sqlInjectValidate(sql)) {
+			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+		}
 	}
 
 	public MannerImp(List<SqlParameter> declaredParameters, String sql, boolean return_generated_keys) {
@@ -42,6 +46,9 @@ class MannerImp implements IAccessManner {
 		this.declaredParameters = declaredParameters;
 		this.sql = sql;
 		this.return_generated_keys = return_generated_keys;
+		if (DBHelper.sqlInjectValidate(sql)) {
+			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+		}
 	}
 
 	public PreparedStatement accessByPreStatement(Connection conn) throws SQLException {

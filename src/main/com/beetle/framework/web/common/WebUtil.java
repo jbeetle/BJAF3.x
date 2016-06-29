@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class WebUtil {
+	
+
 	/**
 	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，过滤等级可通过<br>
 	 * application.properties[web_xss_html_filter_defaultLevel]配置<br>
@@ -41,6 +43,7 @@ public class WebUtil {
 
 	/**
 	 * 为了防止XSS脚本攻击，默认进行了html标签过滤，可自定义过滤级别<br>
+	 * 
 	 * @param r
 	 * @param level
 	 * @return

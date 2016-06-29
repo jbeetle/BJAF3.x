@@ -109,6 +109,18 @@
 			<item name="user-name" value="postgres" />
 			<item name="password" value="yhd@1976" />
 		</SYSDATASOURCE_demodb>
+		<myqlTestDS>
+			<item name="use-mode" value="2" />
+			<item name="pool-imp"
+				value="com.beetle.framework.persistence.access.datasource.CommonPool" />
+			<item name="pool-minsize" value="2" />
+			<item name="pool-maxsize" value="5" />
+			<item name="test-sql" value="select 1" />
+			<item name="connection-url" value="jdbc:mysql://127.0.0.1:3306/bootycall?useUnicode=true&amp;characterEncoding=UTF-8" />
+			<item name="driver-class" value="com.mysql.jdbc.Driver" />
+			<item name="user-name" value="root" />
+			<item name="password" value="760224" />
+		</myqlTestDS>
 	</DataSources>
 	<Extensions>
 		<SYSDATASOURCE_DEFAULT>
@@ -124,6 +136,11 @@
 			<item name="pagination-imp"
 				value="com.beetle.framework.persistence.pagination.imp.MysqlPaginationImp" />
 		</SYSDATASOURCE_DEFAULT>
+		<myqlTestDS>
+			<item name="seq-type" value="MySql" />
+			<item name="pagination-imp"
+				value="com.beetle.framework.persistence.pagination.imp.MysqlPaginationImp" />
+		</myqlTestDS>
 		<SYSDATASOURCE_SQLSERVER>
 			<item name="seq-type" value="Common" />
 			<item name="pagination-imp"

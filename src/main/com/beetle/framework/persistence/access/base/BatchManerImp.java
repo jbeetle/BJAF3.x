@@ -14,6 +14,7 @@
  */
 package com.beetle.framework.persistence.access.base;
 
+import com.beetle.framework.persistence.access.DBHelper;
 import com.beetle.framework.persistence.access.operator.SqlParameter;
 
 import java.sql.*;
@@ -28,6 +29,9 @@ import java.util.List;
 	public BatchManerImp(String sql, ArrayList<List<SqlParameter>> batchValues) {
 		this.sql = sql;
 		this.batchValues = batchValues;
+		if (DBHelper.sqlInjectValidate(sql)) {
+			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+		}
 	}
 
 	public PreparedStatement accessByPreStatement(Connection conn)

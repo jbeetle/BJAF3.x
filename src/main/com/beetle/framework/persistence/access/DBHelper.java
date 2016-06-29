@@ -4,9 +4,27 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 public class DBHelper {
+	private static final String sqlInject = "'|;|-|--|+|//|/|%|#";// 过滤掉的sql关键字，可以手动添加
+
+	public final static boolean sqlInjectValidate(String str) {
+		str = str.toLowerCase();// 统一转为小写
+		String[] badStrs = sqlInject.split("\\|");
+		for (int i = 0; i < badStrs.length; i++) {
+			if (str.indexOf(badStrs[i]) >= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * ��ȡ��ݿ�ϵͳ���û�
 	 * 
@@ -27,8 +45,7 @@ public class DBHelper {
 	 * @return String[]
 	 * @throws SQLException
 	 */
-	public static String[] getDBUsers(DatabaseMetaData metaData)
-			throws SQLException {
+	public static String[] getDBUsers(DatabaseMetaData metaData) throws SQLException {
 		ResultSet rs = metaData.getSchemas();
 		List<String> users = new ArrayList<String>();
 		try {
@@ -76,8 +93,7 @@ public class DBHelper {
 	 * @return String[]
 	 * @throws SQLException
 	 */
-	public static String[] getDatabases(DatabaseMetaData metaData)
-			throws SQLException {
+	public static String[] getDatabases(DatabaseMetaData metaData) throws SQLException {
 		List<String> databases = new ArrayList<String>();
 		ResultSet rs = metaData.getCatalogs();
 		try {
@@ -104,8 +120,7 @@ public class DBHelper {
 	 * @return String[]
 	 * @throws SQLException
 	 */
-	public static String[] getDBTables(Connection conn, String user,
-			String dataBase) throws SQLException {
+	public static String[] getDBTables(Connection conn, String user, String dataBase) throws SQLException {
 		return getDBTables(conn.getMetaData(), dataBase, user);
 	}
 
@@ -121,10 +136,8 @@ public class DBHelper {
 	 * @return String[]
 	 * @throws SQLException
 	 */
-	public static String[] getDBTables(DatabaseMetaData metaData,
-			String dataBase, String user) throws SQLException {
-		ResultSet rs = metaData.getTables(dataBase, null, user,
-				new String[] { "TABLE" });
+	public static String[] getDBTables(DatabaseMetaData metaData, String dataBase, String user) throws SQLException {
+		ResultSet rs = metaData.getTables(dataBase, null, user, new String[] { "TABLE" });
 		List<String> tables = new ArrayList<String>();
 		try {
 			while (rs.next()) {
@@ -138,15 +151,13 @@ public class DBHelper {
 		return result;
 	}
 
-	public static Set<String> getTableFields(String tableName,
-			Connection connection) throws SQLException {
+	public static Set<String> getTableFields(String tableName, Connection connection) throws SQLException {
 		Set<String> columns = new HashSet<String>();
 		ResultSet result = null;
 		String table = null;
 		String schema = null;
 		try {
-			result = connection.getMetaData().getColumns(null, null, tableName,
-					null);
+			result = connection.getMetaData().getColumns(null, null, tableName, null);
 			while (result.next()) {
 				if (result.getString(4) != null) {
 					columns.add(result.getString(4));
@@ -158,13 +169,11 @@ public class DBHelper {
 				if (pIndex > 0 && pIndex < (tableName.length() - 1)) {
 					table = tableName.substring(pIndex + 1);
 					schema = tableName.substring(0, pIndex);
-					result = connection.getMetaData().getColumns(null, schema,
-							table, null);
+					result = connection.getMetaData().getColumns(null, schema, table, null);
 				}
 				if (pIndex < 0) {
 					tableName = tableName.toUpperCase();
-					result = connection.getMetaData().getColumns(null, null,
-							tableName, null);
+					result = connection.getMetaData().getColumns(null, null, tableName, null);
 				}
 				if (!result.isClosed()) {
 					while (result.next()) {
@@ -180,15 +189,13 @@ public class DBHelper {
 		return columns;
 	}
 
-	public static String getTablePrimaryKeyFieldName(String tableName,
-			Connection connection) throws SQLException {
+	public static String getTablePrimaryKeyFieldName(String tableName, Connection connection) throws SQLException {
 		String k = null;
 		ResultSet result = null;
 		String table = null;
 		String schema = null;
 		try {
-			result = connection.getMetaData().getPrimaryKeys(null, null,
-					tableName);
+			result = connection.getMetaData().getPrimaryKeys(null, null, tableName);
 			if (result.next()) {
 				k = result.getString(4);
 			}
@@ -198,13 +205,11 @@ public class DBHelper {
 				if (pIndex > 0 && pIndex < (tableName.length() - 1)) {
 					table = tableName.substring(pIndex + 1);
 					schema = tableName.substring(0, pIndex);
-					result = connection.getMetaData().getPrimaryKeys(null,
-							schema, table);
+					result = connection.getMetaData().getPrimaryKeys(null, schema, table);
 				}
 				if (pIndex < 0) {
 					tableName = tableName.toUpperCase();
-					result = connection.getMetaData().getPrimaryKeys(null,
-							null, tableName);
+					result = connection.getMetaData().getPrimaryKeys(null, null, tableName);
 				}
 				if (result.next()) {
 					k = result.getString(4);
@@ -236,8 +241,7 @@ public class DBHelper {
 		String ipv6address = null;
 		if ((ipv6start != -1) && (ipv6end > ipv6start)) {
 			ipv6address = l_urlServer.substring(ipv6start + 1, ipv6end);
-			l_urlServer = l_urlServer.substring(0, ipv6start) + "ipv6host"
-					+ l_urlServer.substring(ipv6end + 1);
+			l_urlServer = l_urlServer.substring(0, ipv6start) + "ipv6host" + l_urlServer.substring(ipv6end + 1);
 		}
 
 		StringTokenizer st = new StringTokenizer(l_urlServer, ":/", true);
@@ -285,13 +289,11 @@ public class DBHelper {
 					} else if ((count == 8) && (state == 2)) {
 						try {
 							Integer portNumber = Integer.decode(token);
-							urlProps.setProperty("PGPORT",
-									portNumber.toString());
+							urlProps.setProperty("PGPORT", portNumber.toString());
 						} catch (Exception e) {
 							return null;
 						}
-					} else if (((count == 7) || (count == 9))
-							&& ((state == 1) || (state == 2))
+					} else if (((count == 7) || (count == 9)) && ((state == 1) || (state == 2))
 							&& (token.equals("/"))) {
 						state = -1;
 					} else {
@@ -315,8 +317,7 @@ public class DBHelper {
 			if (l_pos == -1) {
 				urlProps.setProperty(token, "");
 			} else {
-				urlProps.setProperty(token.substring(0, l_pos),
-						token.substring(l_pos + 1));
+				urlProps.setProperty(token.substring(0, l_pos), token.substring(l_pos + 1));
 			}
 		}
 		return urlProps;
