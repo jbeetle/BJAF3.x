@@ -19,6 +19,9 @@ import com.beetle.framework.persistence.access.operator.SqlParameter;
 import java.util.LinkedList;
 import java.util.List;
 
+/*
+ * 组合条件查询，设置sql语句时，无需指定组合条件参数（查询器会自己拼接），支持无输入参数的where条件语句
+ */
 public class CompositeQueryOperator extends QueryOperator {
 	public void addParameter(Object value) {
 		throw new DBOperatorException(
@@ -75,8 +78,7 @@ public class CompositeQueryOperator extends QueryOperator {
 	 * @param value
 	 *            --参数值（检索值，没有，则输入null）
 	 */
-	public void addParameter(String parameterName, String OperateSymbol,
-			Object value) {
+	public void addParameter(String parameterName, String OperateSymbol, Object value) {
 		V v = new V();
 		v.setOperateSymbol(OperateSymbol);
 		v.setValue(value);
@@ -89,16 +91,25 @@ public class CompositeQueryOperator extends QueryOperator {
 			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < paramList.size(); i++) {
 				V v = (V) paramList.get(i);
-				sb.append("(? is null or " + v.getParameterName()+" "
-						+ v.getOperateSymbol() + " ?) and ");
+				sb.append("(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
 				super.addParameter(v.getValue());
 				super.addParameter(v.getValue());
 			}
 			String whereStr = sb.toString();
 			int i = whereStr.lastIndexOf("and");
 			whereStr = whereStr.substring(0, i);
-			this.setSql(this.getSql() + " where " + whereStr);
-			//System.out.println(this.getSql());
+			//
+			String tmpSql = this.getSql().toLowerCase();
+			final String sql;
+			if (tmpSql.indexOf("where") > 1) {
+				sql = this.getSql() + " and " + whereStr;
+			} else {
+				sql = this.getSql() + " where " + whereStr;
+			}
+			this.setSql(sql);
+			//
+			// this.setSql(this.getSql() + " where " + whereStr);
+			// System.out.println(this.getSql());
 			paramList.clear();
 		}
 		super.accessImp();

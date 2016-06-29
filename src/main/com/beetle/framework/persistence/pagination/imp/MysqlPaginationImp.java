@@ -102,7 +102,16 @@ public class MysqlPaginationImp implements IPagination {
 				String whereStr = sb.toString();
 				int i = whereStr.lastIndexOf("and");
 				whereStr = whereStr.substring(0, i);
-				String sql = pInfo.getUserSql() + " where " + whereStr;
+				//
+				String tmpSql = pInfo.getUserSql().toLowerCase();
+				final String sql;
+				if (tmpSql.indexOf("where") > 1) {
+					sql = pInfo.getUserSql() + " and " + whereStr;
+				} else {
+					sql = pInfo.getUserSql() + " where " + whereStr;
+				}
+				//
+				// String sql = pInfo.getUserSql() + " where " + whereStr;
 				query.setSql("select count(*) from (" + sql + ") c_t");
 				// paramList.clear();
 			}
@@ -157,7 +166,13 @@ public class MysqlPaginationImp implements IPagination {
 						String whereStr = sb.toString();
 						int i = whereStr.lastIndexOf("and");
 						whereStr = whereStr.substring(0, i);
-						String usersql = pInfo.getUserSql() + " where " + whereStr;
+						String tmpSql = pInfo.getUserSql().toLowerCase();
+						final String usersql;
+						if (tmpSql.indexOf("where") > 1) {
+							usersql = pInfo.getUserSql() + " and " + whereStr;
+						} else {
+							usersql = pInfo.getUserSql() + " where " + whereStr;
+						}
 						StringBuffer sb2 = new StringBuffer();
 						sb2.append(usersql);
 						int pn = pInfo.getPageNumber();
