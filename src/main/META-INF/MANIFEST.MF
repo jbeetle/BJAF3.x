@@ -4,6 +4,6 @@ Created-By: 1.8 (Oracle Inc.)
 
 Name: com/beetle/framework/
 Implementation-Title: j2ee framework
-Implementation-Version: 3.0.1 build_521
+Implementation-Version: 3.0.2 build_521
 Implementation-Vendor: "BeetleSoftware, Henry Yu, yuhaodong@gmail.com"
 

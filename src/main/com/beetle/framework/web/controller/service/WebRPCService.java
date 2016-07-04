@@ -30,6 +30,11 @@ public class WebRPCService extends WebServiceController {
 
 	@Override
 	public ModelData defaultAction(WebInput wi) throws ControllerException {
+		String userid = this.verifyToken(wi);
+		logger.debug("JwtTokenLoginUserId:{}", userid);
+		if (userid != null) {
+			wi.bindJwtTokenLoginUserIdInRequest(userid);
+		}
 		String face = wi.getParameter(CommonUtil.PRC_SERVICE_FACE_STR, "");
 		if (face.length() == 0) {
 			throw new ControllerException("must set $interface parameter!");
@@ -54,6 +59,10 @@ public class WebRPCService extends WebServiceController {
 			WebService.ReturnDataFormat rf = method.getAnnotation(WebService.class).returnDataFormat();
 			Object faceImpObj = this.serviceLookup(faceC);
 			Object[] paramObjs = fillParamters(wi, face, action);
+			//为了方便编程，约定[...ByCurrentUserId]结尾命名的方法（服务），第一个参数为当前用户UserId
+			if (face.endsWith("ByCurrentUserId")) {
+				paramObjs[0] = userid;
+			}
 			Object value = ClassUtil.invoke(faceImpObj, action, paramObjs);
 			ModelData md = new ModelData();
 			md.setData(value);
@@ -69,12 +78,22 @@ public class WebRPCService extends WebServiceController {
 		}
 	}
 
+	/*
+	 * 校验token，成功返回userid
+	 */
+	protected String verifyToken(WebInput wi) throws ControllerException {
+		return null;
+	}
 
 	/**
 	 * 填充方法参数，如果默认的不支持所有的类型，可重载自己实现
-	 * @param wi 页面参数输入对象
-	 * @param interfaceName 服务接口名称
-	 * @param mothodName 服务调用的方法名
+	 * 
+	 * @param wi
+	 *            页面参数输入对象
+	 * @param interfaceName
+	 *            服务接口名称
+	 * @param mothodName
+	 *            服务调用的方法名
 	 * @return
 	 */
 	protected Object[] fillParamters(WebInput wi, String interfaceName, String mothodName) {

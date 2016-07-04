@@ -12,14 +12,16 @@
  */
 package com.beetle.framework.web.common;
 
-import com.beetle.framework.util.file.XMLReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+
+import com.beetle.framework.util.file.FileUtil;
+import com.beetle.framework.util.file.XMLReader;
 
 /**
  * <p>
@@ -111,6 +113,46 @@ public class CommonUtil extends WebUtil {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	private static String public_key = null;
+
+	public static final String getRsaPublicKey(ServletContext app) throws IOException {
+		if (public_key == null) {
+			synchronized (WEB_ENCODE_CHARSET) {
+				if (public_key != null) {
+					return public_key;
+				}
+				String pkfilename = app.getInitParameter("RSA_PUBLIC_KEY_FILE");
+				InputStream in = app.getResourceAsStream("/WEB-INF/config/" + pkfilename);
+				try {
+					public_key = FileUtil.convertStreamToString(in, 1024);
+				} finally {
+					in.close();
+				}
+			}
+		}
+		return public_key;
+	}
+
+	private static String private_key = null;
+
+	public static final String getRsaPrivateKey(ServletContext app) throws IOException {
+		if (private_key == null) {
+			synchronized (WEB_ENCODE_CHARSET) {
+				if (private_key != null) {
+					return private_key;
+				}
+				String pkfilename = app.getInitParameter("RSA_PRIVATE_KEY_FILE");
+				InputStream in = app.getResourceAsStream("/WEB-INF/config/" + pkfilename);
+				try {
+					private_key = FileUtil.convertStreamToString(in, 1024);
+				} finally {
+					in.close();
+				}
+			}
+		}
+		return private_key;
 	}
 
 	/**

@@ -36,6 +36,7 @@ import com.beetle.framework.AppProperties;
 import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.util.ConvertUtil;
 import com.beetle.framework.util.ObjectUtil;
+import com.beetle.framework.util.encrypt.RSAEncrypt;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.common.WebUtil;
 import com.beetle.framework.web.common.XssHtmlWhitelist;
@@ -268,6 +269,14 @@ public class WebInput {
 	 */
 	public HttpSession getSession() {
 		return request.getSession();
+	}
+
+	public String getJwtTokenLoginUserId() {
+		return (String) request.getAttribute("getJwtTokenLoginUserId");
+	}
+
+	public void bindJwtTokenLoginUserIdInRequest(String jwtTokenLoginUserId) {
+		request.setAttribute("getJwtTokenLoginUserId", jwtTokenLoginUserId);
 	}
 
 	/**
@@ -799,6 +808,45 @@ public class WebInput {
 			return null;
 		} else {
 			return session.getAttribute(valueName);
+		}
+	}
+
+	public String encryptByRsaPublicKey(String data) {
+		try {
+			String key = CommonUtil.getRsaPublicKey(this.getServletContext());
+			return RSAEncrypt.encryptByPublicKey(key, data);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+			// throw new AppRuntimeException("can't read privatekey file",e);
+		}
+	}
+
+	public String decryptByRsaPrivateKey(String data) {
+		try {
+			String key = CommonUtil.getRsaPrivateKey(this.getServletContext());
+			return RSAEncrypt.decryptByPrivateKey(data, key);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * 根据字段名获取解密后的值
+	 * 
+	 * @param name
+	 * @return 如果找到值或者密匙不对解码失败则返回null
+	 */
+	public String decryptFieldValueByRsaPrivateKey(String fieldName) {
+		String r = request.getParameter(fieldName);
+		try {
+			String key = CommonUtil.getRsaPrivateKey(this.getServletContext());
+			return RSAEncrypt.decryptByPrivateKey(r, key);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+			// throw new AppRuntimeException("can't read privatekey file",e);
 		}
 	}
 

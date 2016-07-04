@@ -40,8 +40,7 @@ public final class FileUtil {
 	 *            size of the buffer used for copying
 	 * @throws IOException
 	 */
-	public static void copy(String fileIn, String fileOut, int bufsize)
-			throws IOException {
+	public static void copy(String fileIn, String fileOut, int bufsize) throws IOException {
 		copy(new File(fileIn), new File(fileOut), bufsize);
 	}
 
@@ -70,8 +69,7 @@ public final class FileUtil {
 	 *            size of the buffer used for copying
 	 * @throws IOException
 	 */
-	public static void copy(File fileIn, File fileOut, int bufsize)
-			throws IOException {
+	public static void copy(File fileIn, File fileOut, int bufsize) throws IOException {
 		FileInputStream in = null;
 		FileOutputStream out = null;
 		try {
@@ -126,8 +124,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(String fileName, int bufferSize)
-			throws IOException {
+	public static String readString(String fileName, int bufferSize) throws IOException {
 		return readString(new File(fileName), bufferSize);
 	}
 
@@ -155,8 +152,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(File file, int bufferSize)
-			throws IOException {
+	public static String readString(File file, int bufferSize) throws IOException {
 		long fileLen = file.length();
 		if (fileLen <= 0L) {
 			if (file.exists() == true) {
@@ -199,8 +195,7 @@ public final class FileUtil {
 	 *            source string
 	 * @throws IOException
 	 */
-	public static void writeString(String fileName, String s)
-			throws IOException {
+	public static void writeString(String fileName, String s) throws IOException {
 		writeString(new File(fileName), s, STRING_BUFFER_SIZE);
 	}
 
@@ -216,8 +211,7 @@ public final class FileUtil {
 	 *            buffer size
 	 * @throws IOException
 	 */
-	public static void writeString(String fileName, String s, int bufferSize)
-			throws IOException {
+	public static void writeString(String fileName, String s, int bufferSize) throws IOException {
 		writeString(new File(fileName), s, bufferSize);
 	}
 
@@ -247,8 +241,7 @@ public final class FileUtil {
 	 *            buffer size
 	 * @throws IOException
 	 */
-	public static void writeString(File file, String s, int bufferSize)
-			throws IOException {
+	public static void writeString(File file, String s, int bufferSize) throws IOException {
 		FileWriter fw = null;
 		BufferedWriter out = null;
 		if (s == null) {
@@ -282,8 +275,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(String fileName, String encoding)
-			throws IOException {
+	public static String readString(String fileName, String encoding) throws IOException {
 		return readString(new File(fileName), STRING_BUFFER_SIZE, encoding);
 	}
 
@@ -299,8 +291,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(String fileName, int bufferSize,
-			String encoding) throws IOException {
+	public static String readString(String fileName, int bufferSize, String encoding) throws IOException {
 		return readString(new File(fileName), bufferSize, encoding);
 	}
 
@@ -314,8 +305,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(File file, String encoding)
-			throws IOException {
+	public static String readString(File file, String encoding) throws IOException {
 		return readString(file, STRING_BUFFER_SIZE, encoding);
 	}
 
@@ -334,8 +324,7 @@ public final class FileUtil {
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
-	public static String readString(File file, int bufferSize, String encoding)
-			throws IOException {
+	public static String readString(File file, int bufferSize, String encoding) throws IOException {
 		long fileLen = file.length();
 		if (fileLen <= 0L) {
 			if (file.exists() == true) {
@@ -393,8 +382,7 @@ public final class FileUtil {
 	 *            java encoding string
 	 * @throws IOException
 	 */
-	public static void writeString(String fileName, String s, String encoding)
-			throws IOException {
+	public static void writeString(String fileName, String s, String encoding) throws IOException {
 		writeString(new File(fileName), s, STRING_BUFFER_SIZE, encoding);
 	}
 
@@ -411,8 +399,7 @@ public final class FileUtil {
 	 *            java encoding string
 	 * @throws IOException
 	 */
-	public static void writeString(String fileName, String s, int bufferSize,
-			String encoding) throws IOException {
+	public static void writeString(String fileName, String s, int bufferSize, String encoding) throws IOException {
 		writeString(new File(fileName), s, bufferSize, encoding);
 	}
 
@@ -427,8 +414,7 @@ public final class FileUtil {
 	 *            java encoding string
 	 * @throws IOException
 	 */
-	public static void writeString(File file, String s, String encoding)
-			throws IOException {
+	public static void writeString(File file, String s, String encoding) throws IOException {
 		writeString(file, s, STRING_BUFFER_SIZE, encoding);
 	}
 
@@ -445,8 +431,7 @@ public final class FileUtil {
 	 *            java encoding string
 	 * @throws IOException
 	 */
-	public static void writeString(File file, String s, int bufferSize,
-			String encoding) throws IOException {
+	public static void writeString(File file, String s, int bufferSize, String encoding) throws IOException {
 		if (s == null) {
 			return;
 		}
@@ -507,8 +492,7 @@ public final class FileUtil {
 	 *            buffer size used for writing
 	 * @throws IOException
 	 */
-	public static void writeObject(String f, Object o, int bufferSize)
-			throws IOException {
+	public static void writeObject(String f, Object o, int bufferSize) throws IOException {
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
@@ -541,8 +525,7 @@ public final class FileUtil {
 	 * @return serialized object from the file.
 	 * @throws IOException
 	 */
-	public static Object readObject(String f) throws IOException,
-			ClassNotFoundException, FileNotFoundException {
+	public static Object readObject(String f) throws IOException, ClassNotFoundException, FileNotFoundException {
 		return readObject(f, OBJECT_BUFFER_SIZE);
 	}
 
@@ -588,6 +571,15 @@ public final class FileUtil {
 
 	// ---------------------------------------------------------------- byte
 	// array
+	public static String convertStreamToString(InputStream is, int bufferSize) throws IOException {
+		byte[] buffer = new byte[bufferSize];
+		int readBytes = 0;
+		StringBuilder stringBuilder = new StringBuilder();
+		while ((readBytes = is.read(buffer)) > 0) {
+			stringBuilder.append(new String(buffer, 0, readBytes));
+		}
+		return stringBuilder.toString();
+	}
 
 	/**
 	 * Reads file content as byte array.
@@ -614,19 +606,16 @@ public final class FileUtil {
 		try {
 			long l = file.length();
 			if (l > Integer.MAX_VALUE) {
-				throw new IOException(
-						"File too big for loading into a byte array!");
+				throw new IOException("File too big for loading into a byte array!");
 			}
 			byte byteArray[] = new byte[(int) l];
 			int i = 0;
 			for (int j; (i < byteArray.length)
-					&& (j = fileinputstream.read(byteArray, i, byteArray.length
-							- i)) >= 0; i += j) {
+					&& (j = fileinputstream.read(byteArray, i, byteArray.length - i)) >= 0; i += j) {
 				;
 			}
 			if (i < byteArray.length) {
-				throw new IOException("Could not completely read the file "
-						+ file.getName());
+				throw new IOException("Could not completely read the file " + file.getName());
 			}
 			return byteArray;
 		} finally {
@@ -635,8 +624,7 @@ public final class FileUtil {
 
 	}
 
-	public static void writeBytes(String filename, byte[] source)
-			throws IOException {
+	public static void writeBytes(String filename, byte[] source) throws IOException {
 		if (source == null) {
 			return;
 		}
@@ -650,13 +638,11 @@ public final class FileUtil {
 		writeBytes(file, source, 0, source.length);
 	}
 
-	public static void writeBytes(String filename, byte[] source, int offset,
-			int len) throws IOException {
+	public static void writeBytes(String filename, byte[] source, int offset, int len) throws IOException {
 		writeBytes(new File(filename), source, offset, len);
 	}
 
-	public static void writeBytes(File file, byte[] source, int offset, int len)
-			throws IOException {
+	public static void writeBytes(File file, byte[] source, int offset, int len) throws IOException {
 		if (len < 0) {
 			throw new IOException("File size is negative!");
 		}

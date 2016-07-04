@@ -16,7 +16,15 @@
 	</context-param>
 	<context-param>
 		<param-name>CTRL_VIEW_MAP_ENABLED</param-name>
-		<param-value>true</param-value>
+		<param-value>false</param-value>
+	</context-param>
+	<context-param>
+		<param-name>RSA_PUBLIC_KEY_FILE</param-name>
+		<param-value>rsa512public.key</param-value>
+	</context-param>
+	<context-param>
+		<param-name>RSA_PRIVATE_KEY_FILE</param-name>
+		<param-value>rsa512private.key</param-value>
 	</context-param>
 	<filter>
 		<filter-name>CacheFilter</filter-name>

@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import com.beetle.framework.AppRuntimeException;
-
 public class ObjectUtil {
 
 	private final static Map<Class<?>, Method[]> cache = new WeakHashMap<Class<?>, Method[]>();
@@ -101,8 +99,7 @@ public class ObjectUtil {
 				Class<Object> type = ObjectUtil.getType(key, obj);
 				String tstr = type.toString();
 				if (tstr.equals(Integer.class.toString())) {
-					ObjectUtil
-							.setValue(key, obj, Integer.valueOf(o.toString()));
+					ObjectUtil.setValue(key, obj, Integer.valueOf(o.toString()));
 				} else if (tstr.equals(Long.class.toString())) {
 					ObjectUtil.setValue(key, obj, Long.valueOf(o.toString()));
 				} else if (tstr.equals(Float.class.toString())) {
@@ -125,8 +122,7 @@ public class ObjectUtil {
 						ObjectUtil.setValue(key, obj, (Date) o);
 					} else {
 						long time = ((Double) o).longValue();
-						ObjectUtil.setValue(key, obj, new java.sql.Timestamp(
-								time));
+						ObjectUtil.setValue(key, obj, new java.sql.Timestamp(time));
 					}
 				} else {
 					throw e;
@@ -180,8 +176,7 @@ public class ObjectUtil {
 
 		for (int i = 0; i < methods.length; i++) {
 
-			if (get.equalsIgnoreCase(methods[i].getName())
-					|| is.equalsIgnoreCase(methods[i].getName())) {
+			if (get.equalsIgnoreCase(methods[i].getName()) || is.equalsIgnoreCase(methods[i].getName())) {
 
 				try {
 					return methods[i].invoke(target, (Object[]) null);
@@ -222,28 +217,30 @@ public class ObjectUtil {
 	 * @param daoImpClass
 	 * @return
 	 */
-	public static <T> T jsonToObjectWithJackson(String json,
-			Class<T> daoImpClass) {
+	public static <T> T jsonToObjectWithJackson(String json, Class<T> daoImpClass) {
 		try {
-			return ObjectMapperCreator.getInstance().getObjectMapper()
-					.readValue(json, daoImpClass);
+			return ObjectMapperCreator.getInstance().getObjectMapper().readValue(json, daoImpClass);
 		} catch (Exception e) {
-			throw new AppRuntimeException(e);
+			e.printStackTrace();
+			// throw new AppRuntimeException(e);
+			return null;
 		}
 	}
 
 	public static String objectToJsonWithJackson(Object dataObject) {
 
 		try {
-			return ObjectMapperCreator.getInstance().getObjectMapper()
-					.writeValueAsString(dataObject);
+			return ObjectMapperCreator.getInstance().getObjectMapper().writeValueAsString(dataObject);
 		} catch (Exception e) {
-			throw new AppRuntimeException(e);
+			e.printStackTrace();
+			// throw new AppRuntimeException(e);
+			return null;
 		}
 	}
 
 	/**
 	 * 设置某个对象的字段的值（支持私有属性）
+	 * 
 	 * @param target
 	 * @param field
 	 * @param value
@@ -264,8 +261,7 @@ public class ObjectUtil {
 		}
 	}
 
-	public final static void setValue(String property, Object target,
-			Object value) {
+	public final static void setValue(String property, Object target, Object value) {
 		property = "set" + property;
 		Method[] methods = (Method[]) cache.get(target.getClass());
 		if (methods == null) {
