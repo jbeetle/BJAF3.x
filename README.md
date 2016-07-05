@@ -32,6 +32,7 @@ Beetle J2EE Application Framework Version 3，Powerful, simple and easy to use
 * Web表示层
 	* 标准MVC框架，简单控制器及视图编程，提供各类型控制器，并特供如：防止重复提交、响应结果缓存、get请求方法禁止等功能
 	* 支持WebService开发，请求结果动态转换Java对象为JSON或XML格式
+	* 支持JWT的OpenAPI的Web服务代理
 	* 请求动态缓存，可根据每个请求控制器的特性合理配置相应的缓存机制
 	* 自带http客户端，方便调用WebService
 	* 支持上传、转PDF文档、验证码、JChat等常见功能
