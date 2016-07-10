@@ -115,6 +115,16 @@ public abstract class OpenApi extends WebRPCService {
 		start();
 	}
 
+	static String[] parseStr(String token) {
+		String[] xx = new String[2];
+		int i = token.lastIndexOf('.');
+		String y = token.substring(0, i);
+		String z = token.substring(i + 1);
+		xx[0] = y;
+		xx[1] = z;
+		return xx;
+	}
+
 	static String getUserAgent(WebInput wi) {
 		String userAgent = wi.getHeader("User-Agent");
 		if (userAgent == null || userAgent.trim().length() == 0) {
@@ -231,7 +241,7 @@ public abstract class OpenApi extends WebRPCService {
 			logger.info("user[{}]login err", username);
 			return md.asJSON();
 		}
-		logger.debug("claimsJson:{}",claimsJson);
+		logger.debug("claimsJson:{}", claimsJson);
 		String claimsCiphertext = wi.encryptByRsaPublicKey(claimsJson);
 		String claimsCiphertextMd5 = Coder.md5(claimsCiphertext);
 		String tokenStr = claimsCiphertext + "." + claimsCiphertextMd5;
@@ -279,7 +289,7 @@ public abstract class OpenApi extends WebRPCService {
 			throw new ControllerException(401, "token can not verify through");
 		}
 		logger.debug("header[X-JWT-Token]:{}", token);
-		String[] km = token.split(".");
+		String[] km = parseStr(token);
 		String claimsCiphertext = km[0];
 		String claimsCiphertextMd5 = km[1];
 		String claimsCiphertextMd5_ = Coder.md5(claimsCiphertext);
@@ -302,7 +312,7 @@ public abstract class OpenApi extends WebRPCService {
 			if (!udto.getToken().equals(token)) {
 				throw new ControllerException(401, "token can not verify through");
 			}
-			String[] userkm = udto.getToken().split(".");
+			String[] userkm = parseStr(udto.getToken());
 			if (!userkm[1].equals(claimsCiphertextMd5_)) {
 				throw new ControllerException(401, "token can not verify through");
 			}
