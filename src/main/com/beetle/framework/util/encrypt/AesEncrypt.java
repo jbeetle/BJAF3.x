@@ -12,6 +12,17 @@
  */
 package com.beetle.framework.util.encrypt;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.security.SecureRandom;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * <p>字符加密类</p>
  *
@@ -29,19 +40,10 @@ import com.beetle.framework.AppProperties;
 import com.beetle.framework.util.OtherUtil;
 import com.beetle.framework.util.ResourceLoader;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-
 public final class AesEncrypt {
 	private static Cipher cipher = null;
 	private static SecretKeySpec skeySpec = null;
-	private final static String sysconfigFileName = AppProperties.getAppHome()
-			+ "BeetleACE.key";
+	private final static String sysconfigFileName = AppProperties.getAppHome() + "BeetleACE.key";
 	private final static char f = 2;
 	private final static Object lock = new Object();
 
@@ -61,8 +63,7 @@ public final class AesEncrypt {
 		ObjectInputStream ois = null;
 		try {
 			cipher = Cipher.getInstance("AES");
-			is = ResourceLoader
-					.getResAsStream("com/beetle/framework/util/encrypt/AesEncryptKey.properties");
+			is = ResourceLoader.getResAsStream("com/beetle/framework/util/encrypt/AesEncryptKey.properties");
 			ois = new ObjectInputStream(is);
 			skeySpec = (SecretKeySpec) ois.readObject();
 			// System.out.println(skeySpec);
@@ -139,12 +140,55 @@ public final class AesEncrypt {
 		return bytebuf;
 	}
 
+	public static String genKey() {
+		try {
+			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+			keyGen.init(128);
+			return asHex(keyGen.generateKey().getEncoded());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String encrypt(String content, String keyStr) {
+		try {
+			content = OtherUtil.strBase64Encode(content);
+			byte[] enCodeFormat = asByte(keyStr);
+			SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+			Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+			byte[] byteContent = content.getBytes("utf-8");
+			cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化
+			byte[] result = cipher.doFinal(byteContent);
+			return asHex(result); // 加密
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String decrypt(String content, String keyStr) {
+		try {
+			byte[] enCodeFormat = asByte(keyStr);
+			SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+			Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+			cipher.init(Cipher.DECRYPT_MODE, key);// 初始化
+			byte[] encrypted = asByte(content);
+			byte[] result = cipher.doFinal(encrypted);
+			String r = new String(result);
+			r = OtherUtil.strBase64Decode(r);
+			return r;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * 加密字符串
 	 * 
 	 * @param pwd
-	 *            --明文
-	 * @return--密文（最少生成64位大小字符串，明文21位以内都是生成64，大于21，则相应增大）
+	 *            --明文 @return--密文（最少生成64位大小字符串，明文21位以内都是生成64，大于21，则相应增大）
 	 */
 	public static String encrypt(String pwd) {
 		if (skeySpec == null) {
@@ -220,8 +264,7 @@ public final class AesEncrypt {
 	public static void genKeyFile() throws Exception {
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(128);
-		java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(
-				new java.io.FileOutputStream("BeetleACE.key"));
+		java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(new java.io.FileOutputStream("BeetleACE.key"));
 		out.writeObject(keyGen.generateKey());
 		out.close();
 

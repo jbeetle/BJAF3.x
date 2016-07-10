@@ -62,8 +62,12 @@ public class WebRPCService extends WebServiceController {
 			//为了方便编程，约定[...ByCurrentUserId]结尾命名的方法（服务），第一个参数为当前用户UserId
 			if (face.endsWith("ByCurrentUserId")) {
 				paramObjs[0] = userid;
+				logger.debug("deal {},firstParam:{}",face,paramObjs[0]);
 			}
-			Object value = ClassUtil.invoke(faceImpObj, action, paramObjs);
+			logger.debug("faceImpObj:{}", faceImpObj);
+			logger.debug("paramObjs:{}", paramObjs);
+			//Object value = ClassUtil.invoke(faceImpObj, action, paramObjs);
+			Object value = ClassUtil.invokeSimple(faceImpObj, action, paramObjs);
 			ModelData md = new ModelData();
 			md.setData(value);
 			if (rf.value() == WebService.ReturnDataFormat.JSON.value()) {

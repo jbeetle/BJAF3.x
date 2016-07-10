@@ -52,8 +52,7 @@ public final class ClassUtil {
 	 * @return
 	 * @throws IOException
 	 */
-	public static Class<?>[] findImpClass(Class<?> clazz, String jarfile,
-			ClassLoader loader) throws IOException {
+	public static Class<?>[] findImpClass(Class<?> clazz, String jarfile, ClassLoader loader) throws IOException {
 		JarFile jarFile = new JarFile(jarfile);
 		Enumeration<?> ee = jarFile.entries();
 		ArrayList<Class<?>> result = new ArrayList<Class<?>>();
@@ -106,11 +105,9 @@ public final class ClassUtil {
 	 * @throws IOException
 	 */
 	@SuppressWarnings("rawtypes")
-	public static Class[] getClasses(String packageName)
-			throws ClassNotFoundException, IOException {
+	public static Class[] getClasses(String packageName) throws ClassNotFoundException, IOException {
 		String path = packageName.replace('.', '/');
-		Enumeration<URL> resources = ClassUtil.class.getClassLoader()
-				.getResources(path);
+		Enumeration<URL> resources = ClassUtil.class.getClassLoader().getResources(path);
 		List<File> dirs = new ArrayList<File>();
 		while (resources.hasMoreElements()) {
 			URL resource = resources.nextElement();
@@ -124,8 +121,7 @@ public final class ClassUtil {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private static List<Class> findClasses(File directory, String packageName)
-			throws ClassNotFoundException {
+	private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
 		List<Class> classes = new ArrayList<Class>();
 		if (!directory.exists()) {
 			return classes;
@@ -133,13 +129,10 @@ public final class ClassUtil {
 		File[] files = directory.listFiles();
 		for (File file : files) {
 			if (file.isDirectory()) {
-				classes.addAll(findClasses(file,
-						packageName + "." + file.getName()));
+				classes.addAll(findClasses(file, packageName + "." + file.getName()));
 			} else if (file.getName().endsWith(".class")) {
-				classes.add(Class.forName(packageName
-						+ '.'
-						+ file.getName().substring(0,
-								file.getName().length() - 6)));
+				classes.add(
+						Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
 			}
 		}
 		return classes;
@@ -154,8 +147,7 @@ public final class ClassUtil {
 	 * @throws IOException
 	 */
 	@SuppressWarnings("rawtypes")
-	public static Class[] findImpClass(Class clazz, String jarfile)
-			throws IOException {
+	public static Class[] findImpClass(Class clazz, String jarfile) throws IOException {
 		JarFile jarFile = new JarFile(jarfile);
 		ArrayList<Class> result = new ArrayList<Class>();
 		try {
@@ -236,13 +228,11 @@ public final class ClassUtil {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	public static Object newInstance(final String className,
-			final Class[] constrParamTypes, final Object[] constrParamValues)
-			throws Exception {
+	public static Object newInstance(final String className, final Class[] constrParamTypes,
+			final Object[] constrParamValues) throws Exception {
 		Object instance;
 		try {
-			instance = loadClass(className).getConstructor(constrParamTypes)
-					.newInstance(constrParamValues);
+			instance = loadClass(className).getConstructor(constrParamTypes).newInstance(constrParamValues);
 
 			if (instance == null) {
 				return null;
@@ -262,13 +252,11 @@ public final class ClassUtil {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	public static Object invoke(final Object object, final String methodName,
-			final Class[] methodParamTypes, final Object[] methodParamValues)
-			throws Exception {
+	public static Object invoke(final Object object, final String methodName, final Class[] methodParamTypes,
+			final Object[] methodParamValues) throws Exception {
 		Object result = null;
 		try {
-			result = object.getClass().getMethod(methodName, methodParamTypes)
-					.invoke(object, methodParamValues);
+			result = object.getClass().getMethod(methodName, methodParamTypes).invoke(object, methodParamValues);
 		} catch (InvocationTargetException ite) {
 			Throwable t = ite.getTargetException();
 			if (t instanceof Exception) {
@@ -280,6 +268,7 @@ public final class ClassUtil {
 		}
 		return result;
 	}
+
 	public static Method getClassMethod(Class<?> c, String methodName) {
 		Method[] ms = c.getMethods();
 		for (int i = 0; i < ms.length; i++) {
@@ -290,6 +279,7 @@ public final class ClassUtil {
 		}
 		return null;
 	}
+
 	public static Method getMethod(Object o, String methodName) {
 		if ((methodName == null) || (o == null)) {
 			return null;
@@ -305,17 +295,24 @@ public final class ClassUtil {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	public static Object invoke(Object obj, String method, Object[] params,
-			Class[] param_types) throws IllegalAccessException,
-			NoSuchMethodException, InvocationTargetException {
+	public static Object invoke(Object obj, String method, Object[] params, Class[] param_types)
+			throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		Method m = obj.getClass().getMethod(method, param_types);
+		return m.invoke(obj, params);
+	}
+
+	public static Object invokeSimple(Object obj, String methodName, Object[] params)
+			throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+		Method m = getClassMethod(obj.getClass(), methodName);
+		if (m == null) {
+			throw new NoSuchMethodException(obj.getClass().getName() + "." + methodName + ",not found!");
+		}
 		return m.invoke(obj, params);
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	public static Object invoke(Object obj, String method, Object[] params)
-			throws IllegalAccessException, NoSuchMethodException,
-			InvocationTargetException {
+			throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		Method[] all_methods = obj.getClass().getMethods();
 		Method method2invoke = null;
 		// find method with the same name and matching argument types
@@ -350,8 +347,7 @@ public final class ClassUtil {
 				t += params[i].getClass().getName();
 			}
 			t += ")";
-			throw new NoSuchMethodException(obj.getClass().getName() + "."
-					+ method + t);
+			throw new NoSuchMethodException(obj.getClass().getName() + "." + method + t);
 		}
 
 		// finally, invoke founded method
@@ -395,47 +391,50 @@ public final class ClassUtil {
 		String f = d + b;
 		return f;
 	}
+
 	/**
 	 * 获取某个包下面所有的接口及其实现类（只能返回一个实现）
-	 * @param packName 包名
+	 * 
+	 * @param packName
+	 *            包名
 	 * @return
 	 */
 	public static Map<Class<?>, Class<?>> getPackAllInterfaceImplMap(String packName) {
-		Map<Class<?>, Class<?>> classkvMap=new HashMap<Class<?>, Class<?>>();
-		List<Class<?>> interfaceList=new ArrayList<Class<?>>();
-		List<Class<?>> impList=new ArrayList<Class<?>>();
-		try {	
+		Map<Class<?>, Class<?>> classkvMap = new HashMap<Class<?>, Class<?>>();
+		List<Class<?>> interfaceList = new ArrayList<Class<?>>();
+		List<Class<?>> impList = new ArrayList<Class<?>>();
+		try {
 			@SuppressWarnings("rawtypes")
-			Class[] ca=getClasses(packName);
-			for(int i=0;i<ca.length;i++){
-				//System.out.println(ca[i]);
-				if(ca[i].isInterface()){
+			Class[] ca = getClasses(packName);
+			for (int i = 0; i < ca.length; i++) {
+				// System.out.println(ca[i]);
+				if (ca[i].isInterface()) {
 					interfaceList.add(ca[i]);
-				}else{
+				} else {
 					impList.add(ca[i]);
 				}
 			}
-			for(int i=0;i<impList.size();i++){
-				Class<?> imp=impList.get(i);
+			for (int i = 0; i < impList.size(); i++) {
+				Class<?> imp = impList.get(i);
 				@SuppressWarnings("rawtypes")
-				Class[] ff=imp.getInterfaces();
-				if(ff==null||ff.length==0){
+				Class[] ff = imp.getInterfaces();
+				if (ff == null || ff.length == 0) {
 					continue;
 				}
-				for(int j=0;j<interfaceList.size();j++){
-					Class<?> face=interfaceList.get(j);
-					//System.out.println(ff[0]);
-					//System.out.println(face);
-					if(ff[0].equals(face)){
+				for (int j = 0; j < interfaceList.size(); j++) {
+					Class<?> face = interfaceList.get(j);
+					// System.out.println(ff[0]);
+					// System.out.println(face);
+					if (ff[0].equals(face)) {
 						classkvMap.put(face, imp);
 						break;
 					}
 				}
 			}
-			//System.out.println(classkvMap);
-		}  catch (Exception e) {
+			// System.out.println(classkvMap);
+		} catch (Exception e) {
 			e.printStackTrace();
-		}finally{
+		} finally {
 			interfaceList.clear();
 			impList.clear();
 		}

@@ -16,9 +16,9 @@ public class Claims implements java.io.Serializable {
 	 */
 	private String iss;
 	/**
-	 * 断言失效时间，单位：秒
+	 * 断言时间戳
 	 */
-	private Long exp;
+	private Long time;
 	/*
 	 * 客户端唯一标识
 	 */
@@ -35,14 +35,6 @@ public class Claims implements java.io.Serializable {
 
 	public void setIss(String iss) {
 		this.iss = iss;
-	}
-
-	public Long getExp() {
-		return exp;
-	}
-
-	public void setExp(Long exp) {
-		this.exp = exp;
 	}
 
 	public String getClientId() {
@@ -69,9 +61,17 @@ public class Claims implements java.io.Serializable {
 		this.userAgent = userAgent;
 	}
 
+	public Long getTime() {
+		return time;
+	}
+
+	public void setTime(Long time) {
+		this.time = time;
+	}
+
 	@Override
 	public String toString() {
-		return "Claims [iss=" + iss + ", exp=" + exp + ", clientId=" + clientId + ", clientType=" + clientType
+		return "Claims [iss=" + iss + ", time=" + time + ", clientId=" + clientId + ", clientType=" + clientType
 				+ ", userAgent=" + userAgent + "]";
 	}
 
@@ -81,8 +81,8 @@ public class Claims implements java.io.Serializable {
 		int result = 1;
 		result = prime * result + ((clientId == null) ? 0 : clientId.hashCode());
 		result = prime * result + ((clientType == null) ? 0 : clientType.hashCode());
-		result = prime * result + ((exp == null) ? 0 : exp.hashCode());
 		result = prime * result + ((iss == null) ? 0 : iss.hashCode());
+		result = prime * result + ((time == null) ? 0 : time.hashCode());
 		result = prime * result + ((userAgent == null) ? 0 : userAgent.hashCode());
 		return result;
 	}
@@ -106,15 +106,15 @@ public class Claims implements java.io.Serializable {
 				return false;
 		} else if (!clientType.equals(other.clientType))
 			return false;
-		if (exp == null) {
-			if (other.exp != null)
-				return false;
-		} else if (!exp.equals(other.exp))
-			return false;
 		if (iss == null) {
 			if (other.iss != null)
 				return false;
 		} else if (!iss.equals(other.iss))
+			return false;
+		if (time == null) {
+			if (other.time != null)
+				return false;
+		} else if (!time.equals(other.time))
 			return false;
 		if (userAgent == null) {
 			if (other.userAgent != null)

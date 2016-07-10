@@ -37,6 +37,7 @@ public abstract class OpenApi extends WebRPCService {
 		private Claims claims;
 		private String token;
 		private long timeOut;
+		private long updateTime;
 
 		public Claims getClaims() {
 			return claims;
@@ -53,8 +54,12 @@ public abstract class OpenApi extends WebRPCService {
 			this.timeOut = timeOut;
 		}
 
+		public void setUpdateTime(long updateTime) {
+			this.updateTime = updateTime;
+		}
+
 		public boolean checkExipred() {
-			long x = claims.getExp() - System.currentTimeMillis();
+			long x = System.currentTimeMillis() - updateTime;
 			if (x >= this.timeOut) {
 				return true;
 			}
@@ -62,7 +67,8 @@ public abstract class OpenApi extends WebRPCService {
 		}
 	}
 
-	private static final Map<String, UCDTO> tokenCache = new java.util.concurrent.ConcurrentHashMap<String, UCDTO>(1024);
+	private static final Map<String, UCDTO> tokenCache = new java.util.concurrent.ConcurrentHashMap<String, UCDTO>(
+			1024);
 
 	private static final class Monitor extends ThreadImp {
 
@@ -172,36 +178,36 @@ public abstract class OpenApi extends WebRPCService {
 	 * 登录成功返回一个token和一个状态码code，成功为1001，失败为非1001
 	 * 
 	 * @param wi
-	 * @return {"token":"xxxxxxx","code":1001,"msg":"OK"}
+	 * @return {"token":"xxxxxxx","serverTime":7758885,"code":1001,"msg":"OK"}
 	 * @throws ControllerException
 	 */
 	public ModelData login(WebInput wi) throws ControllerException {
 		String clientId = getClientId(wi);
 		if (clientId == null) {
-			new ControllerException(406, "Unable to identify the source of the request");
+			throw new ControllerException(406, "Unable to identify the source of the request");
 		}
 		String clientType = wi.getParameter("$clientType");
 		if (clientType == null || clientType.trim().length() == 0) {
-			new ControllerException(406, "Unable to identify the source of the request");
+			throw new ControllerException(406, "Unable to identify the source of the request");
 		}
 		if (!clientType.equalsIgnoreCase(Claims.ClientType.BROWSER.toString())
 				&& !clientType.equalsIgnoreCase(Claims.ClientType.APP.toString())) {
-			new ControllerException(406, "Unable to identify the source of the request");
+			throw new ControllerException(406, "Unable to identify the source of the request");
 		}
 		String userAgent = getUserAgent(wi);
 		if (clientType.equalsIgnoreCase(Claims.ClientType.BROWSER.toString())) {
 			if (userAgent == null || userAgent.trim().length() == 0) {
-				new ControllerException(406, "Unable to identify the source of the request");
+				throw new ControllerException(406, "Unable to identify the source of the request");
 			}
 		}
 		String username = wi.getParameter("$username");
 		String password = wi.decryptFieldValueByRsaPrivateKey("$password");
 		if (password == null || password.trim().length() == 0) {
-			new ControllerException(401, "Users can not verify through");
+			throw new ControllerException(401, "Users can not verify through");
 		}
 		boolean f = verifyUser(username, password);
 		if (!f) {
-			new ControllerException(401, "Users can not verify through");
+			throw new ControllerException(401, "Users can not verify through");
 		}
 		logger.info("user[{}]verify OK", username);
 		String uid = this.getUserId(username);
@@ -213,9 +219,9 @@ public abstract class OpenApi extends WebRPCService {
 		claims.setClientId(clientId);
 		claims.setClientType(clientType);
 		long timeout = AppProperties.getAsInt("web_openApi_token_expire", 60) * 1000;
-		long exp = System.currentTimeMillis() + timeout;
-		claims.setExp(exp);
-		claims.setUserAgent(userAgent);
+		// long exp = System.currentTimeMillis() + timeout;
+		// claims.setExp(exp);
+		claims.setTime(System.currentTimeMillis());
 		claims.setIss(uid);
 		String claimsJson = ObjectUtil.objectToJsonWithJackson(claims);
 		if (claimsJson == null) {
@@ -225,6 +231,7 @@ public abstract class OpenApi extends WebRPCService {
 			logger.info("user[{}]login err", username);
 			return md.asJSON();
 		}
+		logger.debug("claimsJson:{}",claimsJson);
 		String claimsCiphertext = wi.encryptByRsaPublicKey(claimsJson);
 		String claimsCiphertextMd5 = Coder.md5(claimsCiphertext);
 		String tokenStr = claimsCiphertext + "." + claimsCiphertextMd5;
@@ -233,10 +240,11 @@ public abstract class OpenApi extends WebRPCService {
 		// claimsCiphertextMd5);
 		//
 		UCDTO udto = new UCDTO(claims, tokenStr, timeout);
+		udto.setUpdateTime(claims.getTime());
 		tokenCache.put(uid, udto);
 		//
-
 		md.put("token", tokenStr);
+		md.put("serverTime", claims.getTime());
 		md.put("code", 1001);
 		md.put("msg", "OK");
 		logger.info("user login OK[{},{}]", username, tokenStr);
@@ -265,58 +273,61 @@ public abstract class OpenApi extends WebRPCService {
 		return verifyToken_(wi);
 	}
 
-	private String verifyToken_(WebInput wi) throws ControllerException {
+	private static String verifyToken_(WebInput wi) throws ControllerException {
 		String token = wi.getHeader("X-JWT-Token");
 		if (token == null || token.trim().length() == 0) {
-			new ControllerException(401, "token can not verify through");
+			throw new ControllerException(401, "token can not verify through");
 		}
+		logger.debug("header[X-JWT-Token]:{}", token);
 		String[] km = token.split(".");
 		String claimsCiphertext = km[0];
 		String claimsCiphertextMd5 = km[1];
 		String claimsCiphertextMd5_ = Coder.md5(claimsCiphertext);
 		if (!claimsCiphertextMd5_.equals(claimsCiphertextMd5)) {
-			new ControllerException(401, "token can not verify through");
+			throw new ControllerException(401, "token can not verify through");
 		}
 		String claimsJson = wi.decryptByRsaPrivateKey(claimsCiphertext);
 		if (claimsJson == null) {
-			new ControllerException(401, "token can not verify through");
+			throw new ControllerException(401, "token can not verify through");
 		}
 		Claims claims = ObjectUtil.jsonToObjectWithJackson(claimsJson, Claims.class);
 		if (claims == null) {
-			new ControllerException(401, "token can not verify through");
+			throw new ControllerException(401, "token can not verify through");
 		}
 		try {
 			UCDTO udto = tokenCache.get(claims.getIss());
 			if (udto == null) {
-				new ControllerException(401, "token can not verify through");
+				throw new ControllerException(401, "token can not verify through");
 			}
 			if (!udto.getToken().equals(token)) {
-				new ControllerException(401, "token can not verify through");
+				throw new ControllerException(401, "token can not verify through");
 			}
 			String[] userkm = udto.getToken().split(".");
 			if (!userkm[1].equals(claimsCiphertextMd5_)) {
-				new ControllerException(401, "token can not verify through");
+				throw new ControllerException(401, "token can not verify through");
 			}
 			// 比较当前请求信息与登录是的信息比较，如果存在不一致则可能请求客户端发生了变化
 			Claims userClaims = udto.getClaims();
 			if (userClaims.getClientType().equals(Claims.ClientType.BROWSER.toString())) {
 				String userAgent = getUserAgent(wi);
 				if (userAgent == null || userAgent.trim().length() == 0) {
-					new ControllerException(406, "Unable to identify the source of the request");
+					throw new ControllerException(406, "Unable to identify the source of the request");
 				}
 				if (!userClaims.getUserAgent().equals(Coder.md5(userAgent))) {
-					new ControllerException(406, "Unable to identify the source of the request");
+					throw new ControllerException(406, "Unable to identify the source of the request");
 				}
 			}
 			String clientId = getClientId(wi);
 			if (clientId == null) {
-				new ControllerException(406, "Unable to identify the source of the request");
+				throw new ControllerException(406, "Unable to identify the source of the request");
 			}
 			if (!userClaims.getClientId().equals(clientId)) {
-				new ControllerException(406, "Unable to identify the source of the request");
+				throw new ControllerException(406, "Unable to identify the source of the request");
 			}
 			if (udto.checkExipred()) {
-				new ControllerException(408, "the request expired");
+				throw new ControllerException(408, "the request expired");
+			} else {//
+				udto.setUpdateTime(System.currentTimeMillis());
 			}
 		} catch (Exception e) {
 			if (e instanceof ControllerException) {
@@ -324,7 +335,7 @@ public abstract class OpenApi extends WebRPCService {
 			} else {
 				logger.error("logout err", e);
 			}
-			new ControllerException(401, "token can not verify through");
+			throw new ControllerException(401, "token can not verify through");
 		}
 		return claims.getIss();
 	}
