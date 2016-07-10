@@ -115,14 +115,18 @@ public abstract class OpenApi extends WebRPCService {
 		start();
 	}
 
-	static String[] parseStr(String token) {
-		String[] xx = new String[2];
-		int i = token.lastIndexOf('.');
-		String y = token.substring(0, i);
-		String z = token.substring(i + 1);
-		xx[0] = y;
-		xx[1] = z;
-		return xx;
+	static String[] parseStr(String token) throws ControllerException {
+		try {
+			String[] xx = new String[2];
+			int i = token.lastIndexOf('.');
+			String y = token.substring(0, i);
+			String z = token.substring(i + 1);
+			xx[0] = y;
+			xx[1] = z;
+			return xx;
+		} catch (Exception e) {
+			throw new ControllerException(401, "token can not verify through");
+		}
 	}
 
 	static String getUserAgent(WebInput wi) {
