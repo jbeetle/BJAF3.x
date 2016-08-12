@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+  <DataSources>
+    <default>
+      <item name="server-address" value="www.mc2e.cc" />
+      <item name="server-port" value="6379" />
+      <item name="database" value="0" />
+      <item name="mask-imp" value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
+      <!-- 登录密码，采取mask{xxx}格式代表值是掩码，此时必须提供mask-imp实现类 -->
+      <item name="password" value="mask{bec09268bf6802a30dadef63cd34d490ca9d620eb1580489e3c888f49cec9904}" />
+      <item name="max-total" value="30" />
+      <item name="max-idle" value="10" />
+      <item name="min-idle" value="5" />
+      <item name="max-wait" value="30000" />
+      <item name="test-on-borrow" value="true" />
+    </default>
+    <xxx>
+      <item name="server-address" value="" />
+      <item name="server-port" value="" />
+      <item name="database" value="1" />
+      <item name="mask-imp" value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
+      <item name="password" value="760224" />
+      <item name="max-total" value="100" />
+      <item name="max-idle" value="5" />
+      <item name="max-wait" value="30000" />
+      <item name="test-on-borrow" value="true" />
+    </xxx>
+  </DataSources>
+</Config>

@@ -12,6 +12,7 @@ import com.beetle.framework.web.controller.draw.IDraw;
 public class DrawPieController implements IDraw {
 
 	public DrawInfo draw(WebInput wi) throws ControllerException {
+		
 		int width = wi.getParameterAsInteger("width");
 		int height = wi.getParameterAsInteger("height");
 		DefaultPieDataset pie = new DefaultPieDataset();
