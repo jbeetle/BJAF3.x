@@ -6,13 +6,14 @@ Beetle J2EE Application Framework Version 3，Powerful, simple and easy to use
 	* 组件装配及引用
 	* 支付AOP编程
 	* 注解编程（InjectField/Aop/ServiceTransaction） 
-* JDBC持久层
+* 持久层
 	* 多种数据源（包括XA数据源）及连接池，灵活配置，支持数据库密码加密处理
 	* 数据存取操作器，增删查改无需编写代码，简单易用（TableOperator/QueryOperator/UpdateOperator） 
 	* 支持各种数据库的分页功能（包括：Mysql/Oracle/SqlServer/Sysbase/PostgreSql/FireBird/H2等）
 	* 支持数据库序列功能
 	* 组合查询功能，无需动态拼接查询条件，提高开发效率
 	* 透明防止SQL注入
+	* NOSQL支持Redis的常用封装，支持String\Map\List\自定义DTO对象简易操作及本地内存优化及连接池优化
 * Service业务层
 	* Service RPC
 		* 同步、异步调用，支持单连接双向通信
