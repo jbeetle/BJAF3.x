@@ -47,15 +47,13 @@ public class ViewFactory {
 	private final static Object locker = new Object();
 	private static AppLogger logger = AppLogger.getInstance(ViewFactory.class);
 
-	public final static void dealWithFreeMarkerFtl(ServletContext app,
-			HttpServletRequest request, HttpServletResponse response,
-			String url, String viewName, Map<String, Object> viewData) {
+	public final static void dealWithFreeMarkerFtl(ServletContext app, HttpServletRequest request,
+			HttpServletResponse response, String url, String viewName, Map<String, Object> viewData) {
 		Template t = getTemplate(app, url, viewName);
 		genContent(response, viewData, t, request);
 	}
 
-	private static Template getTemplate(ServletContext app, String url,
-			String viewName) {
+	private static Template getTemplate(ServletContext app, String url, String viewName) {
 		Object obj = templateCache.get(viewName);
 		if (obj != null) {
 			return (Template) obj;
@@ -86,13 +84,12 @@ public class ViewFactory {
 		}
 	}
 
-	private static void genContent(HttpServletResponse response,
-			Map<String, Object> viewData, Template t, HttpServletRequest request) {
+	private static void genContent(HttpServletResponse response, Map<String, Object> viewData, Template t,
+			HttpServletRequest request) {
 		// Merge the data-model and the template
 		try {
 			Writer out = response.getWriter();
-			t.setEncoding((String) request
-					.getAttribute(CommonUtil.WEB_ENCODE_CHARSET));
+			t.setEncoding((String) request.getAttribute(CommonUtil.WEB_ENCODE_CHARSET));
 			t.process(viewData, out);
 		} catch (Exception e) {
 			System.err.print("Error while processing FreeMarker template");
@@ -113,16 +110,15 @@ public class ViewFactory {
 	 *            请求对象HttpServletRequest
 	 * @throws ServletException
 	 */
-	public final static void transferDataForView(Map<String, Object> modeldata,
-			HttpServletRequest request) throws ServletException {
+	public final static void transferDataForView(Map<String, Object> modeldata, HttpServletRequest request)
+			throws ServletException {
 		if (modeldata != null) {
 			Map<String, Object> tempMap = new HashMap<String, Object>(modeldata);
 			putModelsToRequest(tempMap, request);
 		}
 	}
 
-	private static void putModelsToRequest(Map<String, Object> model,
-			HttpServletRequest request) {
+	private static void putModelsToRequest(Map<String, Object> model, HttpServletRequest request) {
 		Set<?> entrys = model.entrySet();
 		Iterator<?> it = entrys.iterator();
 		while (it.hasNext()) {
@@ -148,14 +144,11 @@ public class ViewFactory {
 	 */
 	public static void loadViewConfigInfo(ServletContext app) {
 		synchronized (locker) {
-			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME,
-					"mappings.views.standard", "sItem", "name", "url",
+			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME, "mappings.views.standard", "sItem", "name", "url",
 					viewCache);
-			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME,
-					"mappings.views.freemarker", "fItem", "name", "url",
-					viewCache);
-			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME,
-					"mappings.module", "mItem", "filename", "active",
+			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME, "mappings.views.freemarker", "fItem", "name",
+					"url", viewCache);
+			CommonUtil.fill_DataMap(app, WebConst.WEB_VIEW_FILENAME, "mappings.module", "mItem", "filename", "active",
 					moduleItemMap);
 			// 加载其它文件的数据
 			if (!moduleItemMap.isEmpty()) {
@@ -168,12 +161,9 @@ public class ViewFactory {
 					String active = (String) e.getValue();
 					if (active.equalsIgnoreCase("true")) {
 						// standard
-						CommonUtil.fill_DataMap(app, fn,
-								"mappings.views.standard", "sItem", "name",
-								"url", viewCache);
-						CommonUtil.fill_DataMap(app, fn,
-								"mappings.views.freemarker", "fItem", "name",
-								"url", viewCache);
+						CommonUtil.fill_DataMap(app, fn, "mappings.views.standard", "sItem", "name", "url", viewCache);
+						CommonUtil.fill_DataMap(app, fn, "mappings.views.freemarker", "fItem", "name", "url",
+								viewCache);
 
 					}
 				}
@@ -182,8 +172,7 @@ public class ViewFactory {
 			// get no session define
 			InputStream in2;
 			in2 = app.getResourceAsStream(WebConst.WEB_VIEW_FILENAME);
-			String nsViewName = XMLReader.getTagContent(in2,
-					"mappings.views.DisabledSessionView");
+			String nsViewName = XMLReader.getTagContent(in2, "mappings.views.DisabledSessionView");
 			if (nsViewName != null && !nsViewName.equals("")) {
 				String url = viewCache.get(nsViewName);
 				viewCache.put(CommonUtil.DISABLED_SESSION_VIEW, url);
@@ -198,8 +187,7 @@ public class ViewFactory {
 			// get err view define
 			InputStream in3;
 			in3 = app.getResourceAsStream(WebConst.WEB_VIEW_FILENAME);
-			String errViewName = XMLReader.getTagContent(in3,
-					"mappings.views.ErrorView");
+			String errViewName = XMLReader.getTagContent(in3, "mappings.views.ErrorView");
 			if (errViewName != null && !errViewName.equals("")) {
 				String url = viewCache.get(errViewName);
 				viewCache.put("Beetle_ErrorView_19760224", url);
@@ -249,9 +237,7 @@ public class ViewFactory {
 							url = c;
 							viewCache.put(name, url);
 						} else {
-							throw new AppRuntimeException(
-									"sorry,not support this url format[" + c
-											+ "]");
+							throw new AppRuntimeException("sorry,not support this url format[" + c + "]");
 						}
 					}
 				} catch (MalformedURLException e) {
@@ -260,15 +246,37 @@ public class ViewFactory {
 			} else {
 				int i = name.indexOf('.');
 				if (i >= 0) {// 此视图名称为具体的url
-					url = name;
-					viewCache.put(url, url);// 缓存起来，key-value一样
+					// url = name;
+					url = dealContextVar(url, app.getContextPath());
+					viewCache.put(name, url);// 缓存起来，key-value一样
 				} else {
-					throw new com.beetle.framework.AppRuntimeException("找不到视图[" + name
-							+ "]所对应的服务器文件，请检查你的视图文件是否已配置");
+					throw new com.beetle.framework.AppRuntimeException("找不到视图[" + name + "]所对应的服务器文件，请检查你的视图文件是否已配置");
 				}
 			}
 		}
 		return url;
+	}
+
+	private static String dealContextVar(String x, String z) {
+		String y;
+		String t = "${context}";
+		int i = x.indexOf(t);
+		if (i == -1) {
+			y = x;
+		} else {
+			String x1 = x.substring(0, i);
+			String x2 = "";
+			if (i == 0) {
+				x2 = x.substring(t.length());
+			} else {
+				x2 = x.substring(1 + t.length());
+			}
+			y = x1 + z + x2;
+			if (y.startsWith("//")) {
+				y = y.substring(1);
+			}
+		}
+		return y;
 	}
 
 	/**
