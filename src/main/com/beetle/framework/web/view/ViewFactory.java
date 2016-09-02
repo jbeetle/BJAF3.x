@@ -221,7 +221,7 @@ public class ViewFactory {
 		String url = viewCache.get(name);
 		if (url == null) {
 			// eg:$|xpath|ypath|zcontroller.ctrl
-			if (name.indexOf('$') >= 0) {
+			if (name.indexOf('$') >= 0 && name.indexOf("${context}") == -1) {
 				String b = CommonUtil.formatPath(name);
 				b = b.replace('|', '/');
 				try {
@@ -247,7 +247,7 @@ public class ViewFactory {
 				int i = name.indexOf('.');
 				if (i >= 0) {// 此视图名称为具体的url
 					// url = name;
-					url = dealContextVar(url, app.getContextPath());
+					url = dealContextVar(name, app.getContextPath());
 					viewCache.put(name, url);// 缓存起来，key-value一样
 				} else {
 					throw new com.beetle.framework.AppRuntimeException("找不到视图[" + name + "]所对应的服务器文件，请检查你的视图文件是否已配置");
