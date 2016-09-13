@@ -55,8 +55,7 @@ import com.beetle.framework.web.view.ViewFactory;
 
 final public class ControllerHelper {
 
-	private static AppLogger logger = AppLogger
-			.getInstance(ControllerHelper.class);
+	private static AppLogger logger = AppLogger.getInstance(ControllerHelper.class);
 	private final static String const_ftl = "ftl";
 	private static final Map<String, MethodEx> methodCache = new ConcurrentHashMap<String, MethodEx>();
 
@@ -123,16 +122,14 @@ final public class ControllerHelper {
 
 		@Override
 		public String toString() {
-			return "MethodEx [method=" + method + ", viewCtrl=" + viewCtrl
-					+ ", wSCtrl=" + wSCtrl + ", ajaxCtrl=" + ajaxCtrl
-					+ ", uploadCtrl=" + uploadCtrl + ", drawCtrl=" + drawCtrl
-					+ "]";
+			return "MethodEx [method=" + method + ", viewCtrl=" + viewCtrl + ", wSCtrl=" + wSCtrl + ", ajaxCtrl="
+					+ ajaxCtrl + ", uploadCtrl=" + uploadCtrl + ", drawCtrl=" + drawCtrl + "]";
 		}
 
 	}
 
-	public static MethodEx getActionMethod(String ctrlname, String actionName,
-			Object o, Class<?> methodParameter) throws ControllerException {
+	public static MethodEx getActionMethod(String ctrlname, String actionName, Object o, Class<?> methodParameter)
+			throws ControllerException {
 		final String key = ctrlname + actionName;
 		MethodEx mex = methodCache.get(key);
 		if (mex == null) {
@@ -141,8 +138,7 @@ final public class ControllerHelper {
 					mex = methodCache.get(key);
 				} else {
 					try {
-						Method method = o.getClass().getMethod(actionName,
-								new Class[] { methodParameter });
+						Method method = o.getClass().getMethod(actionName, new Class[] { methodParameter });
 						mex = new MethodEx(method);
 						if (method.isAnnotationPresent(ViewCtrl.class)) {
 							mex.setViewCtrl(true);
@@ -157,7 +153,7 @@ final public class ControllerHelper {
 						logger.debug("cache key:{}", key);
 						logger.debug("cache method:{}", mex);
 					} catch (Exception e) {
-						throw new ControllerException(e);
+						throw new ControllerException(404,e.getMessage());
 					}
 				}
 			}
@@ -177,14 +173,12 @@ final public class ControllerHelper {
 	 * logger.debug("cache method:{}", method); } catch (Exception e) { throw
 	 * new ControllerException(e); } } } } return method; }
 	 */
-	private static void dealModelAndForward(View view,
-			HttpServletRequest request, HttpServletResponse response,
+	private static void dealModelAndForward(View view, HttpServletRequest request, HttpServletResponse response,
 			ServletContext app) throws IOException, ServletException {
 		String viewName = view.getViewname();
 		String url = ViewFactory.getViewUrlByName(app, viewName);
 		if (logger.isDebugEnabled()) {
-			logger.debug("-->controllerName:"
-					+ request.getAttribute(CommonUtil.controllname));
+			logger.debug("-->controllerName:" + request.getAttribute(CommonUtil.controllname));
 			logger.debug("-->viewName:" + viewName);
 			logger.debug("-->viewURL:" + url);
 			logger.debug("-->viewData:{}", view.getData());
@@ -194,8 +188,7 @@ final public class ControllerHelper {
 		ControllerFactory.mapCtrlView(request, viewName);
 		String ext = CommonUtil.getExt(url);
 		if (ext.equalsIgnoreCase(const_ftl)) { // freeMarker
-			ViewFactory.dealWithFreeMarkerFtl(app, request, response, url,
-					viewName, view.getData());
+			ViewFactory.dealWithFreeMarkerFtl(app, request, response, url, viewName, view.getData());
 		} else { // html/jsp
 			ViewFactory.transferDataForView(view.getData(), request);
 			RequestDispatcher rd = request.getRequestDispatcher(url);
@@ -206,8 +199,7 @@ final public class ControllerHelper {
 		}
 	}
 
-	public static void doService(HttpServletRequest request,
-			HttpServletResponse response, ServletContext app)
+	public static void doService(HttpServletRequest request, HttpServletResponse response, ServletContext app)
 			throws ControllerException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("-------->MainController Execute Report<--------");
@@ -226,8 +218,7 @@ final public class ControllerHelper {
 			logger.debug("ControllerImp:{}", imp);
 			view = imp.dealRequest(request, response);
 			if (view != null) {
-				if (view.getViewname().equals(
-						AbnormalViewControlerImp.abnormalViewName)) { // 流视图
+				if (view.getViewname().equals(AbnormalViewControlerImp.abnormalViewName)) { // 流视图
 					OutputStream out = response.getOutputStream();
 					out.flush();
 					out.close();
@@ -235,18 +226,13 @@ final public class ControllerHelper {
 					dealModelAndForward(view, request, response, app);
 				}
 			} else {
-				throw new ControllerException(
-						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+				throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 						"View can not be null [please make sure your controller class,the 'View perform(WebInput webInput)' method can't  raise the return null View Object case !]");
 			}
-
 		} catch (ControllerException se) {
-			//logger.error(se);
 			throw se;
 		} catch (Throwable se) {
-			//logger.error(se);
-			throw new ControllerException(
-					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se);
+			throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se);
 		} finally {
 			if (view != null) {
 				view.clear();
