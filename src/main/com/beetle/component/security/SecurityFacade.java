@@ -94,7 +94,7 @@ public class SecurityFacade {
 				file = "file:" + file;
 				logger.info("load from[{}]", file);
 			} else {
-				file = "classpath:" + file; 
+				file = "classpath:" + file;
 				logger.info("load from[{}]", file);
 			}
 			Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory(file);
@@ -105,6 +105,12 @@ public class SecurityFacade {
 
 	public static Subject getSubject() {
 		return SecurityUtils.getSubject();
+	}
+
+	public static Session getSession() {
+		Subject subject = getSubject();
+		Session s = subject.getSession();
+		return s;
 	}
 
 	public static LoginStatus login(String userName, String password) {
