@@ -17,6 +17,7 @@ import org.apache.shiro.util.Factory;
 import com.beetle.component.security.dto.SecUsers;
 import com.beetle.component.security.service.PermissionService;
 import com.beetle.component.security.service.RoleService;
+import com.beetle.component.security.service.SecurityServiceException;
 import com.beetle.component.security.service.UserService;
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
@@ -107,10 +108,76 @@ public class SecurityFacade {
 		return SecurityUtils.getSubject();
 	}
 
+	/**
+	 * 将当前已经做过身份验证（或曾经验证过）的用户找出来放进会话中
+	 * 如果不符合上面2个情况，则不会创建，返回false
+	 * @return
+	 */
+	public static boolean putAuthenticatedUserIntoSession() {
+		if (isAuthenticated() || isRemembered()) {
+			String username = (String) SecurityFacade.getSubject().getPrincipal();
+			try {
+				SecUsers user = SecurityFacade.getUserService().findByUsername(username);
+				SecurityFacade.getSession().setAttribute("APP_LOGINED_USER", user);
+			} catch (SecurityServiceException e) {
+				logger.error(username, e);
+				return false;
+			}
+		} else {
+			return false;
+		}
+		return true;
+	}
+
 	public static Session getSession() {
 		Subject subject = getSubject();
 		Session s = subject.getSession();
 		return s;
+	}
+
+	/**
+	 * 当前用户是否已经进行了身份验证
+	 * 
+	 * @return
+	 */
+	public static boolean isAuthenticated() {
+		return getSubject().isAuthenticated();
+	}
+
+	/**
+	 * 当前用户是否是通过记住我登录的
+	 * 
+	 * @return
+	 */
+	public static boolean isRemembered() {
+		return getSubject().isRemembered();
+	}
+
+	/*
+	 * 如果登录成功会启动shiro的记住我功能
+	 */
+	public static LoginStatus loginAndRememberMe(String userName, String password) {
+		Subject subject = getSubject();
+		UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
+		try {
+			token.setRememberMe(true);
+			subject.login(token);
+			if (subject.isAuthenticated()) {
+				return LoginStatus.Success;
+			}
+		} catch (UnknownAccountException e) {
+			return LoginStatus.FailWithUnknownUsername;
+		} catch (IncorrectCredentialsException e) {
+			return LoginStatus.FailWithErrorPassowrd;
+		} catch (LockedAccountException e) {
+			return LoginStatus.FailWithLocked;
+		} catch (ExcessiveAttemptsException e) {
+			return LoginStatus.FailWithLimitRetryCount;
+		} catch (Exception e) {
+			logger.error("logger err", e);
+			return LoginStatus.FailWithunknownReason;
+		}
+		return LoginStatus.FailWithunknownReason;
 	}
 
 	public static LoginStatus login(String userName, String password) {
@@ -136,7 +203,7 @@ public class SecurityFacade {
 		return LoginStatus.FailWithunknownReason;
 	}
 
-	public static PermissionService getPermissionservice() {
+	public static PermissionService getPermissionService() {
 		return permissionService;
 	}
 
@@ -147,7 +214,7 @@ public class SecurityFacade {
 	 */
 	public static SecUsers getUserFromSession() {
 		Subject subject = getSubject();
-		Session s = subject.getSession();
+		Session s = subject.getSession(false);
 		if (s != null) {
 			SecUsers user = (SecUsers) s.getAttribute("APP_LOGINED_USER");
 			return user;
@@ -155,11 +222,11 @@ public class SecurityFacade {
 		return null;
 	}
 
-	public static RoleService getRoleservice() {
+	public static RoleService getRoleService() {
 		return roleService;
 	}
 
-	public static UserService getUserservice() {
+	public static UserService getUserService() {
 		return userService;
 	}
 
