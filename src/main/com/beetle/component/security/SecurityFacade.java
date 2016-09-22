@@ -109,8 +109,8 @@ public class SecurityFacade {
 	}
 
 	/**
-	 * 将当前已经做过身份验证（或曾经验证过）的用户找出来放进会话中
-	 * 如果不符合上面2个情况，则不会创建，返回false
+	 * 将当前已经做过身份验证（或曾经验证过）的用户找出来放进会话中 如果不符合上面2个情况，则不会创建，返回false
+	 * 
 	 * @return
 	 */
 	public static boolean putAuthenticatedUserIntoSession() {
@@ -119,6 +119,8 @@ public class SecurityFacade {
 			try {
 				SecUsers user = SecurityFacade.getUserService().findByUsername(username);
 				SecurityFacade.getSession().setAttribute("APP_LOGINED_USER", user);
+				logger.debug("isAuthenticated:{},isRemembered:{}", isAuthenticated(), isRemembered());
+				logger.debug("put user:{} into session", user.getUserId());
 			} catch (SecurityServiceException e) {
 				logger.error(username, e);
 				return false;

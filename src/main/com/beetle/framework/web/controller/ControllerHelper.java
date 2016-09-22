@@ -130,6 +130,10 @@ final public class ControllerHelper {
 
 	public static MethodEx getActionMethod(String ctrlname, String actionName, Object o, Class<?> methodParameter)
 			throws ControllerException {
+		int z = actionName.indexOf(';');
+		if (z > 0) {
+			actionName = actionName.substring(0, z);
+		}
 		final String key = ctrlname + actionName;
 		MethodEx mex = methodCache.get(key);
 		if (mex == null) {
@@ -153,7 +157,7 @@ final public class ControllerHelper {
 						logger.debug("cache key:{}", key);
 						logger.debug("cache method:{}", mex);
 					} catch (Exception e) {
-						throw new ControllerException(404,e.getMessage());
+						throw new ControllerException(404, e.getMessage());
 					}
 				}
 			}
