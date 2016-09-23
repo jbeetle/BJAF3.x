@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN" "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd" >
+<!-- Configuration file for UrlRewriteFilter http://www.tuckey.org/urlrewrite/ -->
+<urlrewrite>
+  <rule>
+    <from>/door/([A-Za-z0-9]+)/</from>
+    <to type="forward">/ctrl/$SysDoorController.ctrl?$action=$1</to>
+  </rule>
+   <rule>
+    <from>/home/([A-Za-z0-9]+)/</from>
+    <to type="forward">/ctrl/$home.HomeController.ctrl?$action=$1</to>
+  </rule> 
+  <rule>
+    <from>/ws/([A-Za-z0-9]+)/([A-Za-z0-9]+)</from>
+    <to type="forward">%{context-path}/$ServiceExposeController.service?$interface=$1&amp;$method=$2</to>
+  </rule>
+  <rule>
+    <from>/openapi/login/</from>
+    <to type="forward">%{context-path}/$OpenApiProxyController.service?$action=login</to>
+  </rule>
+  <rule>
+    <from>/openapi/logout/</from>
+    <to type="forward">%{context-path}/$OpenApiProxyController.service?$action=logout</to>
+  </rule>
+  <rule>
+    <from>/openapi/([A-Za-z0-9]+)/([A-Za-z0-9]+)</from>
+    <to type="forward">%{context-path}/$OpenApiProxyController.service?$interface=$1&amp;$method=$2</to>
+  </rule>
+</urlrewrite>

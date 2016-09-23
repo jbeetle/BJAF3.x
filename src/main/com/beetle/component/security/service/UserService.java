@@ -79,4 +79,5 @@ public interface UserService {
 	int lockUser(long userid) throws SecurityServiceException;
 
 	int unlockUser(long userid) throws SecurityServiceException;
+	
 }

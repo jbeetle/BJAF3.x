@@ -82,7 +82,7 @@ public class SecUsersImpl implements SecUsersDao {
 		Set<String> ss = new HashSet<String>();
 		for (int i = 0; i < rows; i++) {
 			String v = (String) q.getResultValueOfARow(i, "permission");
-			ss.add(v);
+			ss.add(v.trim());
 		}
 		return ss;
 	}
