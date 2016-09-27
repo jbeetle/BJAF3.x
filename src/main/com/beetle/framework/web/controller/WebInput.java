@@ -206,6 +206,7 @@ public class WebInput {
 		if (ck != null) {
 			ck.setMaxAge(0);
 			ck.setValue("");
+			ck.setPath("/");
 			this.addCookie(ck);
 		}
 	}
@@ -219,6 +220,21 @@ public class WebInput {
 	 */
 	public void addCookie(Cookie cookie) {
 		response.addCookie(cookie);
+	}
+
+	/**
+	 * 根据cookie名称删除此cookie，如果cookie不存在，则跳过（不处理）
+	 * 
+	 * @param cookieName
+	 */
+	public void deleteCookie(String cookieName) {
+		Cookie ck = getCookie(cookieName);
+		if (ck != null) {
+			ck.setMaxAge(0);
+			ck.setValue("");
+			ck.setPath("/");
+			this.addCookie(ck);
+		}
 	}
 
 	public void addHeader(String key, String value) {
