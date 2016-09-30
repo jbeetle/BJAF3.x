@@ -11,6 +11,11 @@ import com.beetle.component.security.persistence.SecUsersDao;
 import com.beetle.framework.persistence.access.operator.DBOperatorException;
 import com.beetle.framework.persistence.access.operator.QueryOperator;
 import com.beetle.framework.persistence.access.operator.TableOperator;
+import com.beetle.framework.persistence.pagination.PageParameter;
+import com.beetle.framework.persistence.pagination.PageParameter.QueryMode;
+import com.beetle.framework.persistence.pagination.PageResult;
+import com.beetle.framework.persistence.pagination.PaginationOperator;
+import com.beetle.framework.resource.define.PageList;
 
 public class SecUsersImpl implements SecUsersDao {
 
@@ -101,6 +106,26 @@ public class SecUsersImpl implements SecUsersDao {
 		fd.put("userId", userid);
 		fd.put("locked", lock);
 		return operator.update(fd);
+	}
+
+	@Override
+	public PageList<SecUsers> compositeQuery(long userid, String username, int lock, int pageNumber, int pageSize)
+			throws DBOperatorException {
+		PageParameter pp = new PageParameter(QueryMode.CompositeSQL);
+		pp.setCacheRecordAmountFlag(true);
+		pp.setDataSourceName(Helper.DATASOURCE);
+		pp.setPageNumber(pageNumber);
+		pp.setPageSize(pageSize);
+		pp.setUserSql("select * from sec_users");
+		pp.addParameter("userId", "=", userid);
+		pp.addParameter("lock", "=", lock);
+		pp.addParameter("username", "like", "%" + username + "%");
+		PageResult pr = PaginationOperator.access(pp);
+		try {
+			return pr.getPageList(SecUsers.class);
+		} finally {
+			pr.clearAll();
+		}
 	}
 
 }
