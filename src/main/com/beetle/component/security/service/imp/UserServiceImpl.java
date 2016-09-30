@@ -9,6 +9,7 @@ import com.beetle.component.security.persistence.SecUsersRolesDao;
 import com.beetle.component.security.service.SecurityServiceException;
 import com.beetle.component.security.service.UserService;
 import com.beetle.framework.persistence.access.operator.DBOperatorException;
+import com.beetle.framework.resource.define.PageList;
 import com.beetle.framework.resource.dic.def.InjectField;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
 
@@ -146,6 +147,16 @@ public class UserServiceImpl implements UserService {
 	public int unlockUser(long userid) throws SecurityServiceException {
 		try {
 			return userDao.updateLock(userid, 0);
+		} catch (DBOperatorException e) {
+			throw new SecurityServiceException(e);
+		}
+	}
+
+	@Override
+	public PageList<SecUsers> compositeQuery(long userid, String username, int lock, int pageNumber, int pageSize)
+			throws SecurityServiceException {
+		try {
+			return userDao.compositeQuery(userid, username, lock, pageNumber, pageSize);
 		} catch (DBOperatorException e) {
 			throw new SecurityServiceException(e);
 		}
