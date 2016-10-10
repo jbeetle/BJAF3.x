@@ -98,6 +98,6 @@ public interface UserService {
 	 * @return
 	 * @throws DBOperatorException
 	 */
-	PageList<SecUsers> compositeQuery(long userid, String username, int lock, int pageNumber, int pageSize)
+	PageList<SecUsers> compositeQuery(Long userid, String username, Integer lock, int pageNumber, int pageSize)
 			throws SecurityServiceException;
 }

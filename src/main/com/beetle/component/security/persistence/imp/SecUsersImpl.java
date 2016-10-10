@@ -109,7 +109,7 @@ public class SecUsersImpl implements SecUsersDao {
 	}
 
 	@Override
-	public PageList<SecUsers> compositeQuery(long userid, String username, int lock, int pageNumber, int pageSize)
+	public PageList<SecUsers> compositeQuery(Long userid, String username, Integer lock, int pageNumber, int pageSize)
 			throws DBOperatorException {
 		PageParameter pp = new PageParameter(QueryMode.CompositeSQL);
 		pp.setCacheRecordAmountFlag(true);
@@ -118,8 +118,8 @@ public class SecUsersImpl implements SecUsersDao {
 		pp.setPageSize(pageSize);
 		pp.setUserSql("select * from sec_users");
 		pp.addParameter("userId", "=", userid);
-		pp.addParameter("lock", "=", lock);
-		pp.addParameter("username", "like", "%" + username + "%");
+		pp.addParameter("locked", "=", lock);
+		pp.addParameter("username", "like", username == null ? null : "%" + username + "%");
 		PageResult pr = PaginationOperator.access(pp);
 		try {
 			return pr.getPageList(SecUsers.class);

@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public PageList<SecUsers> compositeQuery(long userid, String username, int lock, int pageNumber, int pageSize)
+	public PageList<SecUsers> compositeQuery(Long userid, String username, Integer lock, int pageNumber, int pageSize)
 			throws SecurityServiceException {
 		try {
 			return userDao.compositeQuery(userid, username, lock, pageNumber, pageSize);
