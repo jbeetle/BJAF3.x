@@ -16,7 +16,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.Time;
@@ -323,20 +322,22 @@ public class WebInput {
 	 */
 	public String getParameter(String name) {
 		String r = request.getParameter(name);
-		if (request.getMethod().toLowerCase().equals(CommonUtil.GET_STR)) {
-			String info = (String) request.getAttribute(CommonUtil.WEB_SERVER_INFO);
-			if (info != null) {
-				if (info.indexOf(CommonUtil.TOMCAT_STR) > 0) {
-					try {
-						if (r != null) {
-							r = new String(r.getBytes("8859_1"));
-						}
-					} catch (UnsupportedEncodingException ex) {
-						r = request.getParameter(name);
-					}
-				}
-			}
-		}
+		// 当年针对tomcat低版本做编码转换解决乱码问题，现在tomcat已经成熟，注释掉提供性能，2016-10-10
+		// if (request.getMethod().toLowerCase().equals(CommonUtil.GET_STR)) {
+		// String info = (String)
+		// request.getAttribute(CommonUtil.WEB_SERVER_INFO);
+		// if (info != null) {
+		// if (info.indexOf(CommonUtil.TOMCAT_STR) > 0) {
+		// try {
+		// if (r != null) {
+		// r = new String(r.getBytes("8859_1"));
+		// }
+		// } catch (UnsupportedEncodingException ex) {
+		// r = request.getParameter(name);
+		// }
+		// }
+		// }
+		// }
 		if (r != null) {
 			r = r.trim();
 			return WebUtil.xssFilter(r);
@@ -399,34 +400,36 @@ public class WebInput {
 		return WebUtil.decodeURL(this.getParameter(name), charset);
 	}
 
-	/**
-	 * 如果值为空，则会返回0
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public float getParameterAsFloat(String name) {
+	public Float getParameterAsFloat(String name) {
 		String r = request.getParameter(name);
 		if (r == null) {
-			return 0;
+			return null;
 		} else if (r.trim().equals("")) {
-			return 0;
+			return null;
 		}
-		return Float.parseFloat(r.trim());
+		return Float.valueOf(r.trim());
+		// return Float.parseFloat(r.trim());
 	}
 
-	public float getParameterAsFloat(String name, float defaultValue) {
+	public Float getParameterAsFloat(String name, float defaultValue) {
 		String r = request.getParameter(name);
 		if (r == null) {
 			return defaultValue;
 		} else if (r.trim().equals("")) {
 			return defaultValue;
 		}
-		return Float.parseFloat(r.trim());
+		return Float.valueOf(r.trim());
+		// return Float.parseFloat(r.trim());
 	}
 
-	public int getParameterAsInteger(String name) {
-		return getParameterAsInt(name);
+	public Integer getParameterAsInteger(String name) {
+		String r = request.getParameter(name);
+		if (r == null) {
+			return null;
+		} else if (r.trim().equals("")) {
+			return null;
+		}
+		return Integer.valueOf(r.trim());
 	}
 
 	public int getParameterAsInteger(String name, int defaultValue) {
@@ -436,64 +439,49 @@ public class WebInput {
 		} else if (r.trim().equals("")) {
 			return defaultValue;
 		}
-		return Integer.parseInt(r.trim());
+		// return Integer.parseInt(r.trim());
+		return Integer.valueOf(r.trim());
 	}
 
-	private int getParameterAsInt(String name) {
-		String r = request.getParameter(name);
-		if (r == null) {
-			return 0;
-		} else if (r.trim().equals("")) {
-			return 0;
-		}
-		return Integer.parseInt(r.trim());
-	}
-
-	public double getParameterAsDouble(String name, double defaultValue) {
+	public Double getParameterAsDouble(String name, double defaultValue) {
 		String r = request.getParameter(name);
 		if (r == null) {
 			return defaultValue;
 		} else if (r.trim().equals("")) {
 			return defaultValue;
 		}
-
-		else {
-			return Double.parseDouble(r.trim());
-		}
+		return Double.valueOf(r.trim());
 	}
 
-	public double getParameterAsDouble(String name) {
+	public Double getParameterAsDouble(String name) {
 		String r = request.getParameter(name);
 		if (r == null) {
-			return 0;
+			return null;
 		} else if (r.trim().equals("")) {
-			return 0;
+			return null;
 		}
-
-		else {
-			return Double.parseDouble(r.trim());
-		}
+		return Double.valueOf(r.trim());
 	}
 
-	public long getParameterAsLong(String name, long defaultValue) {
+	public Long getParameterAsLong(String name, long defaultValue) {
 		String r = request.getParameter(name);
 		if (r == null) {
 			return defaultValue;
 		} else if (r.trim().equals("")) {
 			return defaultValue;
 		} else {
-			return Long.parseLong(r.trim());
+			return Long.valueOf(r.trim());
 		}
 	}
 
-	public long getParameterAsLong(String name) {
+	public Long getParameterAsLong(String name) {
 		String r = request.getParameter(name);
 		if (r == null) {
-			return 0;
+			return null;
 		} else if (r.trim().equals("")) {
-			return 0;
+			return null;
 		} else {
-			return Long.parseLong(r.trim());
+			return Long.valueOf(r.trim());
 		}
 	}
 
@@ -773,7 +761,7 @@ public class WebInput {
 						// System.out.println("key="+key+"
 						// value="+this.getParameter(key));
 						if (tstr.equals(Integer.class.toString())) {
-							ObjectUtil.setValue(key, obj, getParameterAsInt(key));
+							ObjectUtil.setValue(key, obj, getParameterAsInteger(key));
 						} else if (tstr.equals(Long.class.toString())) {
 							ObjectUtil.setValue(key, obj, getParameterAsLong(key));
 						} else if (tstr.equals(Float.class.toString())) {

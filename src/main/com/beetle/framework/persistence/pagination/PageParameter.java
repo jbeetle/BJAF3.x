@@ -171,12 +171,15 @@ public class PageParameter {
 	}
 
 	/**
-	 * 设置当前显示第几页的页号
+	 * 设置当前显示第几页的页号 页面从1开始算
 	 * 
 	 * @param pageNumber
 	 *            int
 	 */
 	public void setPageNumber(int pageNumber) {
+		if (pageNumber <= 0) {
+			pageNumber = 1;
+		}
 		this.pageNumber = pageNumber;
 	}
 
