@@ -15,6 +15,9 @@ package com.beetle.framework.web.controller;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -212,7 +215,21 @@ final public class ControllerHelper {
 			logger.debug("-->pathInfo:" + request.getPathInfo());
 			logger.debug("-->queryString:" + request.getQueryString());
 			logger.debug("-->requestURI:" + request.getRequestURI());
-			logger.debug("-->request params:{}", request.getParameterMap());
+			// logger.debug("-->request params:{}", request.getParameterMap());
+			logger.debug("-->request params begin:<---");
+			Map<String, String[]> pp = request.getParameterMap();
+			Iterator<Map.Entry<String, String[]>> it = pp.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, String[]> kv = it.next();
+				logger.debug("key:{}", kv.getKey());
+				List<String> vs = new ArrayList<String>();
+				for (int i = 0; i < kv.getValue().length; i++) {
+					vs.add(kv.getValue()[i]);
+				}
+				logger.debug("value:{}", vs);
+				vs.clear();
+			}
+			logger.debug("-->request params end.<---");
 			logger.debug("-->session:{}", request.getSession(false));
 		}
 		request.setAttribute(CommonUtil.app_Context, app);
