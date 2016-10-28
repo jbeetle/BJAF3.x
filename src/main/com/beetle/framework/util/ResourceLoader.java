@@ -20,6 +20,7 @@ public class ResourceLoader {
 	 * @return 输入流
 	 * @throws IOException
 	 */
+	@SuppressWarnings("resource")
 	public static InputStream getResourceFromJarFile(String jarFileName,
 			String resUrl) throws IOException {
 		JarFile jarFile = new JarFile(jarFileName);

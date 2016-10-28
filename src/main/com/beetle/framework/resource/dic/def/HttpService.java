@@ -11,7 +11,36 @@ import java.lang.annotation.Target;
  */
 @Retention(RUNTIME)
 @Target({ ElementType.METHOD })
-public @interface WebService {
+public @interface HttpService {// authentication
+	/**
+	 * 服务是否要验证
+	 *
+	 */
+	public static enum Authentication {
+		/**
+		 * YES
+		 */
+		YES(0),
+		/**
+		 * NO
+		 */
+		NO(1);
+
+		private final int value;
+
+		private Authentication(int value) {
+			this.value = value;
+		}
+
+		public int value() {
+			return this.value;
+		}
+	}
+
+	/**
+	 * 返回的数据格式
+	 *
+	 */
 	public static enum ReturnDataFormat {
 		/**
 		 * JSON
@@ -34,4 +63,6 @@ public @interface WebService {
 	}
 
 	public abstract ReturnDataFormat returnDataFormat() default ReturnDataFormat.JSON;
+
+	public abstract Authentication authentication() default Authentication.YES;
 }

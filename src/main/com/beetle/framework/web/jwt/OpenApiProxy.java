@@ -14,7 +14,6 @@ import com.beetle.framework.util.encrypt.Coder;
 import com.beetle.framework.util.thread.ThreadImp;
 import com.beetle.framework.web.controller.ControllerException;
 import com.beetle.framework.web.controller.WebInput;
-import com.beetle.framework.web.controller.service.WebRPCService;
 import com.beetle.framework.web.view.ModelData;
 
 /**
@@ -26,12 +25,13 @@ import com.beetle.framework.web.view.ModelData;
  * 本代理支持服务参数的Java的基本类型，如果非基本类型的话，可重载fillParamters自己填充<br>
  * 另外，为了方便编程和安全性，如果服务要使用到登录的userid的值，如果服务命名以[ByCurrentUserId]结尾，在第一个参数注入userid值
  * <br>
+ * 注：本代理拒绝了http的get方法，只能采取post方法
  * 
  * @author yuhaodong@gmail.com
  *
  */
-public abstract class OpenApi extends WebRPCService {
-	private static final Logger logger = AppLogger.getLogger(OpenApi.class);
+public abstract class OpenApiProxy extends WebRPCService {
+	private static final Logger logger = AppLogger.getLogger(OpenApiProxy.class);
 
 	private static class UCDTO {
 		private Claims claims;
@@ -109,13 +109,13 @@ public abstract class OpenApi extends WebRPCService {
 		}
 	}
 
-	public OpenApi() {
+	public OpenApiProxy() {
 		super();
 		this.disableGetMethod();
 		start();
 	}
 
-	static String[] parseStr(String token) throws ControllerException {
+	private static String[] parseStr(String token) throws ControllerException {
 		try {
 			String[] xx = new String[2];
 			int i = token.lastIndexOf('.');
@@ -129,7 +129,14 @@ public abstract class OpenApi extends WebRPCService {
 		}
 	}
 
-	static String getUserAgent(WebInput wi) {
+	/**
+	 * 获取客户端浏览器的用户Agent信息，此信息会写入Token，作为识别客户端身份的一个因素，参与校验<br>
+	 * 如果不希望校验或更好的条件可重载此方法返回一个固定的值
+	 * 
+	 * @param wi
+	 * @return
+	 */
+	protected String getUserAgent(WebInput wi) {
 		String userAgent = wi.getHeader("User-Agent");
 		if (userAgent == null || userAgent.trim().length() == 0) {
 			userAgent = wi.getHeader("user-agent");
@@ -137,7 +144,20 @@ public abstract class OpenApi extends WebRPCService {
 		return userAgent;
 	}
 
-	static String getClientId(WebInput req) {
+	/**
+	 * 本方法会尝试识别出一个唯一的客户端标示，但不保证百分百唯一<br>
+	 * 此信息会写入Token，作为识别客户端身份的一个因素，参与校验<br>
+	 * 如果不希望校验或更好的条件可重载此方法返回一个固定的值或按照自己的逻辑生成一个识别<br>
+	 * 注，本方法从这个变量获取值并串起来作为唯一标示<br>
+	 * req.getHeader("X-Forwarded-For");<br>
+	 * req.getHeader("x-real-ip");<br>
+	 * req.getRemoteAddr();<br>
+	 * req.getHeader("X-Client-Id");<br>
+	 * 
+	 * @param req
+	 * @return
+	 */
+	protected String getClientId(WebInput req) {
 		String ip1 = req.getHeader("X-Forwarded-For");
 		String ip2 = req.getHeader("x-real-ip");
 		String ip3 = req.getRemoteAddr();
@@ -273,7 +293,7 @@ public abstract class OpenApi extends WebRPCService {
 	 * @throws ControllerException
 	 */
 	public ModelData logout(WebInput wi) throws ControllerException {
-		String uid = verifyToken(wi);
+		String uid = verify(wi);
 		tokenCache.remove(uid);
 		logger.info("logout[{}] remove ok", uid);
 		ModelData md = new ModelData();
@@ -283,11 +303,11 @@ public abstract class OpenApi extends WebRPCService {
 	}
 
 	@Override
-	protected String verifyToken(WebInput wi) throws ControllerException {
+	protected String verify(WebInput wi) throws ControllerException {
 		return verifyToken_(wi);
 	}
 
-	private static String verifyToken_(WebInput wi) throws ControllerException {
+	private String verifyToken_(WebInput wi) throws ControllerException {
 		String token = wi.getHeader("X-JWT-Token");
 		if (token == null || token.trim().length() == 0) {
 			throw new ControllerException(401, "token can not verify through");
