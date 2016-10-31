@@ -12,7 +12,11 @@
  */
 package com.beetle.framework.util.cache;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class WeakCache implements ICache {
 

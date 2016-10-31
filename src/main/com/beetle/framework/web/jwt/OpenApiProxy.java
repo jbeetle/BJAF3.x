@@ -3,13 +3,14 @@ package com.beetle.framework.web.jwt;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.util.ObjectUtil;
+import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.encrypt.Coder;
 import com.beetle.framework.util.thread.ThreadImp;
 import com.beetle.framework.web.controller.ControllerException;
@@ -33,7 +34,8 @@ import com.beetle.framework.web.view.ModelData;
 public abstract class OpenApiProxy extends WebRPCService {
 	private static final Logger logger = AppLogger.getLogger(OpenApiProxy.class);
 
-	private static class UCDTO {
+	public static class UCDTO implements java.io.Serializable {
+		private static final long serialVersionUID = 1L;
 		private Claims claims;
 		private String token;
 		private long timeOut;
@@ -67,8 +69,8 @@ public abstract class OpenApiProxy extends WebRPCService {
 		}
 	}
 
-	private static final Map<String, UCDTO> tokenCache = new java.util.concurrent.ConcurrentHashMap<String, UCDTO>(
-			1024);
+	// <String, UCDTO>
+	private static final ICache tokenCache = CacheFactory.createCache();
 
 	private static final class Monitor extends ThreadImp {
 
@@ -79,11 +81,24 @@ public abstract class OpenApiProxy extends WebRPCService {
 		@Override
 		protected void routine() throws Throwable {
 			List<String> keyList = new ArrayList<String>();
-			Iterator<UCDTO> it = tokenCache.values().iterator();
+			// Iterator<UCDTO> it = tokenCache.values().iterator();
+			// while (it.hasNext()) {
+			// UCDTO dto = it.next();
+			// if (dto.checkExipred()) {
+			// keyList.add(dto.getClaims().getIss());
+			// }
+			// }
+			Set<?> keys = tokenCache.keySet();
+			Iterator<?> it = keys.iterator();
 			while (it.hasNext()) {
-				UCDTO dto = it.next();
-				if (dto.checkExipred()) {
-					keyList.add(dto.getClaims().getIss());
+				String key = it.next().toString();
+				try {
+					UCDTO dto = (UCDTO) tokenCache.get(key);
+					if (dto.checkExipred()) {
+						keyList.add(dto.getClaims().getIss());
+					}
+				} catch (Exception e) {
+					//处理库有可能出现的其缓存对象的问题
 				}
 			}
 			for (String key : keyList) {
@@ -101,7 +116,8 @@ public abstract class OpenApiProxy extends WebRPCService {
 			synchronized (tokenCache) {
 				if (monitorFlag == 0) {
 					monitorFlag = 1;
-					Monitor m = new Monitor("OpenApi-Monitor", 1000 * 30);
+					Monitor m = new Monitor("OpenApi-Monitor",
+							AppProperties.getAsInt("web_openApi_token_check", 30 * 1000));
 					m.startAsDaemon();
 					logger.info("OpenApi-Monitor started!");
 				}
@@ -329,7 +345,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 			throw new ControllerException(401, "token can not verify through");
 		}
 		try {
-			UCDTO udto = tokenCache.get(claims.getIss());
+			UCDTO udto = (UCDTO) tokenCache.get(claims.getIss());
 			if (udto == null) {
 				throw new ControllerException(401, "token can not verify through");
 			}
@@ -362,6 +378,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 				throw new ControllerException(408, "the request expired");
 			} else {//
 				udto.setUpdateTime(System.currentTimeMillis());
+				tokenCache.put(claims.getIss(), udto);//针对远程的，必须写回redis与jvm不用写不一样
 			}
 		} catch (Exception e) {
 			if (e instanceof ControllerException) {

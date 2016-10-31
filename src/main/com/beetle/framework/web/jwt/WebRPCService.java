@@ -124,6 +124,7 @@ public class WebRPCService extends WebServiceController {
 					return md.asXML();
 				}
 			} catch (Exception e) {
+				//
 				throw new ControllerException("lookup face[" + face + "] err", e);
 			}
 		} else {// 本身线程安全，没有适合粒度的锁，这里不做锁处理
@@ -168,6 +169,8 @@ public class WebRPCService extends WebServiceController {
 				Object value = methodReal.invoke(faceImpObj, paramObjs);
 				ModelData md = new ModelData();
 				md.setData(value);
+				colaCache.put(callkey, cola);
+				logger.debug("cache:{},{}", callkey, cola);
 				if (rf.value() == HttpService.ReturnDataFormat.JSON.value()) {
 					cola.isJson = true;
 					return md.asJSON();
@@ -179,8 +182,10 @@ public class WebRPCService extends WebServiceController {
 			} catch (Exception e) {
 				throw new ControllerException("lookup face[" + face + "] err", e);
 			} finally {
-				colaCache.put(callkey, cola);
-				logger.debug("cache:{},{}", callkey, cola);
+				//在异常情况下不要缓存，例如第一次验证不过的时候，一定等有一次正常无异常操作以后再缓存，
+				//这样就可以包装缓存的对象都是正确的
+				//colaCache.put(callkey, cola);
+				//logger.debug("cache:{},{}", callkey, cola);
 			}
 		}
 	}

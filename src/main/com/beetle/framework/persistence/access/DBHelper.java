@@ -311,7 +311,8 @@ public class DBHelper {
 		}
 
 		StringTokenizer qst = new StringTokenizer(l_urlArgs, "&");
-		for (int count = 0; qst.hasMoreTokens(); count++) {
+		for (@SuppressWarnings("unused")
+		int count = 0; qst.hasMoreTokens(); count++) {
 			String token = qst.nextToken();
 			int l_pos = token.indexOf(61);
 			if (l_pos == -1) {
