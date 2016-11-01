@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.beetle.framework.AppRuntimeException;
@@ -56,8 +57,7 @@ public abstract class FacadeController extends ControllerImp {
 		}
 
 		@Override
-		public ModelData defaultAction(WebInput webInput)
-				throws ControllerException {
+		public ModelData defaultAction(WebInput webInput) throws ControllerException {
 			try {
 				return (ModelData) md.invoke(mFather, webInput);
 			} catch (Exception e) {
@@ -77,8 +77,7 @@ public abstract class FacadeController extends ControllerImp {
 		}
 
 		@Override
-		public View processUpload(UploadForm uploadForm)
-				throws ControllerException {
+		public View processUpload(UploadForm uploadForm) throws ControllerException {
 			try {
 				return (View) md.invoke(mFather, uploadForm);
 			} catch (Exception e) {
@@ -114,8 +113,7 @@ public abstract class FacadeController extends ControllerImp {
 		if (actionName == null || actionName.length() == 0) {
 			throw new ControllerException("must set '$action' value!");
 		}
-		MethodEx mex = ControllerHelper.getActionMethod(
-				webInput.getControllerName(), actionName, this, WebInput.class);
+		MethodEx mex = ControllerHelper.getActionMethod(webInput.getControllerName(), actionName, this, WebInput.class);
 		try {
 			// webInput.getRequest().setAttribute("$action", null);
 			if (mex.isViewCtrl()) {
@@ -127,19 +125,23 @@ public abstract class FacadeController extends ControllerImp {
 				return wsc.perform(webInput);
 			} else if (mex.isUploadCtrl()) {
 				UploadController uc = new UploadController();
-				webInput.getRequest().setAttribute("UPLOAD_CTRL_IOBJ",
-						new FUC(mex.getMethod(), this));
+				webInput.getRequest().setAttribute("UPLOAD_CTRL_IOBJ", new FUC(mex.getMethod(), this));
 				return uc.perform(webInput);
 			} else if (mex.isDrawCtrl()) {
 				DrawController dc = new DrawController();
-				webInput.getRequest().setAttribute("DRAW_CTRL_IOBJ",
-						new DPC(mex.getMethod(), this));
+				webInput.getRequest().setAttribute("DRAW_CTRL_IOBJ", new DPC(mex.getMethod(), this));
 				return dc.perform(webInput);
 			} else {
-				throw new AppRuntimeException(actionName
-						+ ",method not Annotation ctrl type!");
+				throw new AppRuntimeException(actionName + ",method not Annotation ctrl type!");
 			}
 		} catch (Exception e) {
+			if (e instanceof InvocationTargetException) {
+				InvocationTargetException ieg = (InvocationTargetException) e;
+				// throw (ControllerException) ieg.getTargetException();
+				if (ieg.getTargetException() instanceof ControllerException) {
+					throw (ControllerException) e;
+				}
+			}
 			throw new ControllerException(e);
 		}
 	}
@@ -148,18 +150,15 @@ public abstract class FacadeController extends ControllerImp {
 		throw new ControllerException("not implements yet!");
 	}
 
-	public ModelData sampleWSAction(WebInput webInput)
-			throws ControllerException {
+	public ModelData sampleWSAction(WebInput webInput) throws ControllerException {
 		throw new ControllerException("not implements yet!");
 	}
 
-	public View sampleUploadAction(UploadForm uploadForm)
-			throws ControllerException {
+	public View sampleUploadAction(UploadForm uploadForm) throws ControllerException {
 		throw new ControllerException("not implements yet!");
 	}
 
-	public DrawInfo sampleDrawAction(WebInput webInput)
-			throws ControllerException {
+	public DrawInfo sampleDrawAction(WebInput webInput) throws ControllerException {
 		throw new ControllerException("not implements yet!");
 	}
 }

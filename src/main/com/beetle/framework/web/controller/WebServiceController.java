@@ -138,7 +138,10 @@ public abstract class WebServiceController extends AbnormalViewControlerImp {
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {
 					InvocationTargetException ieg = (InvocationTargetException) e;
-					throw (ControllerException) ieg.getTargetException();
+					// throw (ControllerException) ieg.getTargetException();
+					if (ieg.getTargetException() instanceof ControllerException) {
+						throw (ControllerException) e;
+					}
 				}
 				throw new ControllerException(e);
 			}
