@@ -13,6 +13,8 @@ import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.queue.BlockQueue;
 import com.beetle.framework.web.jwt.OpenApiProxy.UCDTO;
 
+import redis.clients.jedis.Jedis;
+
 /**
  * 针对jwt的redis缓存做一点的优化，例如频繁获取从内存获取 put操作用异步处理等
  *
@@ -86,13 +88,8 @@ class RedisCache implements ICache {
 	@Override
 	public Object get(Object key) {
 		// return ro.getAsDTO(key.toString());
-		try {
-			UCDTO uto = ro.getWithCache(key.toString(), UCDTO.class, this.time);
-			return uto;
-		} catch (Exception e) {
-			logger.error(key.toString(), e);
-			return null;
-		}
+		UCDTO uto = ro.getWithCache(key.toString(), UCDTO.class, this.time);
+		return uto;
 	}
 
 	@Override
@@ -104,10 +101,13 @@ class RedisCache implements ICache {
 
 	@Override
 	public void clear() {
+		Jedis jd = ro.getJedisInstanceFromPool();
 		try {
-			ro.getJedisInstanceFromPool().flushDB();
+			jd.flushDB();
 		} catch (Exception e) {
 			logger.error("clear", e);
+		} finally {
+			jd.close();
 		}
 	}
 
@@ -118,16 +118,26 @@ class RedisCache implements ICache {
 
 	@Override
 	public boolean isEmpty() {
-		long i = ro.getJedisInstanceFromPool().dbSize();
-		if (i > 0) {
-			return true;
+		Jedis jd = ro.getJedisInstanceFromPool();
+		try {
+			long i = jd.dbSize();
+			if (i > 0) {
+				return true;
+			}
+			return false;
+		} finally {
+			jd.close();
 		}
-		return false;
 	}
 
 	@Override
 	public Set<?> keySet() {
-		return ro.getJedisInstanceFromPool().keys("*");
+		Jedis jd = ro.getJedisInstanceFromPool();
+		try {
+			return jd.keys("*");
+		} finally {
+			jd.close();
+		}
 	}
 
 	@Override
@@ -144,8 +154,13 @@ class RedisCache implements ICache {
 
 	@Override
 	public int size() {
-		Long i = ro.getJedisInstanceFromPool().dbSize();
-		return i.intValue();
+		Jedis jd = ro.getJedisInstanceFromPool();
+		try {
+			Long i = jd.dbSize();
+			return i.intValue();
+		} finally {
+			jd.close();
+		}
 	}
 
 	@Override
