@@ -44,7 +44,9 @@ public interface IUpload {
    * 执行上传
    *
    * @param uploadForm 上传的form参数对象
-   * @return 返回视图对象
+   * @return 返回视图对象，如果有时候只想获取到视图的ModelData数据而不想跳转到一个新页面，<br>
+   * 那么只能返回的视图对象的视图名称设置为null或者""就可以了，这样用户获取到的ModelData，跟webService<br>
+   * 控制器一样
    * @throws ServletException
    */
   View processUpload(UploadForm uploadForm) throws ControllerException;

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.beetle.framework.log.AppLogger;
-import com.beetle.framework.util.ClassUtil;
 import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.cache.StrongCache;
 import com.beetle.framework.util.file.XMLReader;
@@ -245,10 +244,10 @@ public class ControllerFactory {
 			logger.debug("loading new Controller class....{}", javaPath);
 		}
 		Class<?> ct = Class.forName(javaPath);
-		if (!ClassUtil.isRootSubClassOf(ct, ControllerImp.class)) {// 安全保护
-			throw new ControllerException(HttpServletResponse.SC_FORBIDDEN,
-					"Illegal request, don't fooling around!");
-		}
+//		if (!ClassUtil.isRootSubClassOf(ct, ControllerImp.class)) {// 安全保护
+//			throw new ControllerException(HttpServletResponse.SC_FORBIDDEN,
+//					"Illegal request, don't fooling around!");
+//		}
 		try {
 			ControllerImp ctrlImp;
 			Object ctrlObj = ct.newInstance();

@@ -86,27 +86,24 @@ public class UploadController extends ControllerImp {
 	 * @return
 	 * @throws ControllerException
 	 */
-	private View doupload(WebInput webInput, HttpServletRequest request)
-			throws ControllerException {
+	private View doupload(WebInput webInput, HttpServletRequest request) throws ControllerException {
 		UploadForm fp = null;
-		DiskFileItemFactory factory = new DiskFileItemFactory(); 
+		DiskFileItemFactory factory = new DiskFileItemFactory();
 		ServletFileUpload sfu = new ServletFileUpload(factory);
 		List<?> fileItems = null;
 		try {
-			IUpload upload = (IUpload) webInput.getRequest().getAttribute(
-					"UPLOAD_CTRL_IOBJ");
+			IUpload upload = (IUpload) webInput.getRequest().getAttribute("UPLOAD_CTRL_IOBJ");
 			if (upload == null) {
-				upload = UploadFactory.getUploadInstance(webInput
-						.getControllerName(), (String) webInput.getRequest()
-						.getAttribute(CommonUtil.controllerimpclassname)); // 2007-03-21
+				upload = UploadFactory.getUploadInstance(webInput.getControllerName(),
+						(String) webInput.getRequest().getAttribute(CommonUtil.controllerimpclassname)); // 2007-03-21
 			}
-			long sizeMax = webInput.getParameterAsLong("sizeMax");
+			long sizeMax = webInput.getParameterAsLong("sizeMax", 0);
 			if (sizeMax == 0) {
 				sfu.setSizeMax(IUpload.sizeMax);
 			} else {
 				sfu.setSizeMax(sizeMax);
 			}
-			int sizeThreshold = webInput.getParameterAsInteger("sizeThreshold");
+			int sizeThreshold = webInput.getParameterAsInteger("sizeThreshold",0);
 			if (sizeThreshold == 0) {
 				factory.setSizeThreshold(IUpload.sizeThreshold);
 			} else {
@@ -124,11 +121,9 @@ public class UploadController extends ControllerImp {
 					fileList.add(new FileObj(fi));
 				}
 			}
-			fp = new UploadForm(fileList, fieldMap, request,
-					webInput.getResponse());
+			fp = new UploadForm(fileList, fieldMap, request, webInput.getResponse());
 			View view = upload.processUpload(fp);
-			if (view.getViewname() == null
-					|| view.getViewname().trim().equals("")) {
+			if (view.getViewname() == null || view.getViewname().trim().equals("")) {
 				// view.setViewName(AbnormalViewControlerImp.abnormalViewName);
 				//
 				UpService us = new UpService(view);
@@ -136,8 +131,7 @@ public class UploadController extends ControllerImp {
 			}
 			return view;
 		} catch (Exception ex) {
-			throw new ControllerException(WebConst.WEB_EXCEPTION_CODE_UPLOAD,
-					ex);
+			throw new ControllerException(WebConst.WEB_EXCEPTION_CODE_UPLOAD, ex);
 		} finally {
 			if (fileItems != null) {
 				fileItems.clear();
@@ -158,8 +152,7 @@ public class UploadController extends ControllerImp {
 		}
 
 		@Override
-		public ModelData defaultAction(WebInput webInput)
-				throws ControllerException {
+		public ModelData defaultAction(WebInput webInput) throws ControllerException {
 			return vw.getMd();
 		}
 
