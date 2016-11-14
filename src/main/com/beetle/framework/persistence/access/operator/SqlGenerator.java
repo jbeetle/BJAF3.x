@@ -79,6 +79,11 @@ class SqlGenerator {
 				sb.append(",");
 			}
 		}
+		String s = sb.toString();
+		if (s.endsWith(",")) {
+			s = s.substring(0, s.length() - 1);
+			return s;
+		}
 		return sb.toString();
 	}
 
@@ -90,6 +95,12 @@ class SqlGenerator {
 			if (i < l.length - 1) {
 				sb.append(",");
 			}
+		}
+		// return sb.toString();
+		String s = sb.toString();
+		if (s.endsWith(",")) {
+			s = s.substring(0, s.length() - 1);
+			return s;
 		}
 		return sb.toString();
 	}
