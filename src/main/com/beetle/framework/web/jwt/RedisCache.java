@@ -20,7 +20,7 @@ import redis.clients.jedis.Jedis;
  *
  */
 class RedisCache implements ICache {
-	private static final Logger logger = AppLogger.getLogger(Logger.class);
+	private static final Logger logger = AppLogger.getLogger(RedisCache.class);
 	private final RedisOperator ro;
 	private final BlockQueue queue;
 	private final int time;
@@ -70,9 +70,11 @@ class RedisCache implements ICache {
 					try {
 						if (kv.getOptType() == 1) {
 							ro.put(kv.getKey(), kv.getValue());
+							ro.removeLocalCache(kv.getKey());// 如果有新的就清除本地缓存
 							logger.debug("key:{},put redis", kv.getKey());
 						} else if (kv.getOptType() == 2) {
 							ro.del(kv.getKey());
+							ro.removeLocalCache(kv.getKey());// 如果有新的就清除本地缓存
 							logger.debug("key:{},del redis", kv.getKey());
 						}
 					} catch (Exception e) {

@@ -320,6 +320,15 @@ public class RedisOperator {
 		}
 	}
 
+	/*
+	 * 如果用了getWithCache方法回在本地内存中缓存值提高性能，有时候我们需要人为的去掉这个缓存值，<br>
+	 * 则可采取这个方法
+	 */
+	public void removeLocalCache(String key) {
+		String key_ = key + "-" + db;
+		localCache.remove(key_);
+	}
+
 	/**
 	 * 第一次从服务器获取值回存储在本地内存中，这个值在本地内存中没有过期之前都会从本地内存中获取<br>
 	 * 以提高性能，减少服务器调用；在本地过期后，又重新从服务器端获取，以此类推
