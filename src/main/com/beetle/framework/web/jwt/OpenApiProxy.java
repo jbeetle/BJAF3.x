@@ -14,8 +14,10 @@ import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.encrypt.Coder;
 import com.beetle.framework.util.thread.ThreadImp;
 import com.beetle.framework.web.controller.ControllerException;
+import com.beetle.framework.web.controller.UploadController;
 import com.beetle.framework.web.controller.WebInput;
 import com.beetle.framework.web.view.ModelData;
+import com.beetle.framework.web.view.View;
 
 /**
  * 采取JWT模式代替Session的API的验证模式<br>
@@ -27,7 +29,10 @@ import com.beetle.framework.web.view.ModelData;
  * 另外，为了方便编程和安全性，如果服务要使用到登录的userid的值，如果服务命名以[ByCurrentUserId]结尾，在第一个参数注入userid值
  * <br>
  * 注：本代理拒绝了http的get方法，只能采取post方法
- * 
+ * 功能：<br>
+ * 1,支持业务服务层的Service直接暴露为web服务，直接省去一个个编写控制器<br>
+ * 服务需要声明HttpService注解<br>
+ * 2,如果添加请求处理动作，直接添加一个动作就可以，参考webservice控制器
  * @author yuhaodong@gmail.com
  *
  */
@@ -98,7 +103,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 						keyList.add(dto.getClaims().getIss());
 					}
 				} catch (Exception e) {
-					//处理库有可能出现的其缓存对象的问题
+					// 处理库有可能出现的其缓存对象的问题
 				}
 			}
 			for (String key : keyList) {
@@ -309,13 +314,35 @@ public abstract class OpenApiProxy extends WebRPCService {
 	 * @throws ControllerException
 	 */
 	public ModelData logout(WebInput wi) throws ControllerException {
-		String uid = verify(wi);
-		tokenCache.remove(uid);
-		logger.info("logout[{}] remove ok", uid);
+		try {
+			String uid = verify(wi);
+			tokenCache.remove(uid);
+			logger.info("logout[{}] remove ok", uid);
+		} catch (ControllerException e) {
+			// 已经过期了再调logout校验不过会抛异常
+			logger.warn("logout err:code:{},msg:{}", e.getErrCode(), e.getMessage());
+		}
 		ModelData md = new ModelData();
 		md.put("code", 1001);
 		md.put("msg", "OK");
 		return md.asJSON();
+	}
+
+	/**
+	 * 上传文件接口，此接口需要登录验证（登录验证后才能使用）<br>
+	 * 文件上传接口IUpload实现类必须在页面通过参数“$upload”注册
+	 * @param wi
+	 * @return
+	 * @throws ControllerException
+	 */
+	public ModelData upload(WebInput wi) throws ControllerException {
+		String uid = verify(wi);
+		wi.bindJwtTokenLoginUserIdInRequest(uid);
+		logger.debug("uid:{}",uid);
+		logger.debug("$upload:{}",wi.getParameter("$upload"));
+		UploadController udc = new UploadController();
+		View view = udc.perform(wi);
+		return view.getMd().asJSON();
 	}
 
 	@Override
@@ -378,7 +405,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 				throw new ControllerException(408, "the request expired");
 			} else {//
 				udto.setUpdateTime(System.currentTimeMillis());
-				tokenCache.put(claims.getIss(), udto);//针对远程的，必须写回redis与jvm不用写不一样
+				tokenCache.put(claims.getIss(), udto);// 针对远程的，必须写回redis与jvm不用写不一样
 			}
 		} catch (Exception e) {
 			if (e instanceof ControllerException) {

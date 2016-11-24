@@ -24,7 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.slf4j.Logger;
 
+import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.common.WebConst;
 import com.beetle.framework.web.controller.upload.FileObj;
@@ -57,6 +59,8 @@ import com.beetle.framework.web.view.View;
  * @version 1.0
  */
 public class UploadController extends ControllerImp {
+	private static final Logger logger = AppLogger.getLogger(UploadController.class);
+
 	public UploadController() {
 		super();
 		this.setCacheSeconds(0);
@@ -94,16 +98,29 @@ public class UploadController extends ControllerImp {
 		try {
 			IUpload upload = (IUpload) webInput.getRequest().getAttribute("UPLOAD_CTRL_IOBJ");
 			if (upload == null) {
-				upload = UploadFactory.getUploadInstance(webInput.getControllerName(),
-						(String) webInput.getRequest().getAttribute(CommonUtil.controllerimpclassname)); // 2007-03-21
+				logger.debug("get upload from :{}", webInput.getControllerName());
+				String ctrlimpName = (String) webInput.getRequest().getAttribute(CommonUtil.controllerimpclassname);
+				if (ctrlimpName != null)
+					upload = UploadFactory.getUploadInstance(webInput.getControllerName(), ctrlimpName); // 2007-03-21
 			}
+			if (upload == null) {
+				String uploadclass = webInput.getParameter("$upload");
+				if (uploadclass == null || uploadclass.trim().length() == 0) {
+					throw new ControllerException("upload dealer can't not found!");
+				}
+				String uploadclass_ = ControllerFactory.composeClassImpName(webInput.getRequest(), uploadclass);
+				logger.debug("uploadclass:{}", uploadclass);
+				logger.debug("uploadclass_:{}", uploadclass_);
+				upload = UploadFactory.getUploadInstance(uploadclass, uploadclass_);
+			}
+			logger.debug("IUpload:{}", upload);
 			long sizeMax = webInput.getParameterAsLong("sizeMax", 0);
 			if (sizeMax == 0) {
 				sfu.setSizeMax(IUpload.sizeMax);
 			} else {
 				sfu.setSizeMax(sizeMax);
 			}
-			int sizeThreshold = webInput.getParameterAsInteger("sizeThreshold",0);
+			int sizeThreshold = webInput.getParameterAsInteger("sizeThreshold", 0);
 			if (sizeThreshold == 0) {
 				factory.setSizeThreshold(IUpload.sizeThreshold);
 			} else {
@@ -131,6 +148,7 @@ public class UploadController extends ControllerImp {
 			}
 			return view;
 		} catch (Exception ex) {
+			logger.error("upload", ex);
 			throw new ControllerException(WebConst.WEB_EXCEPTION_CODE_UPLOAD, ex);
 		} finally {
 			if (fileItems != null) {

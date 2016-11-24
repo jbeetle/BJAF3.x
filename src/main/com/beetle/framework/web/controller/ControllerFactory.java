@@ -61,8 +61,7 @@ public class ControllerFactory {
 	private static volatile ICutBackAction backCall = null;
 	private static String globalPreCallStr = null;
 	private static String globalBackCallStr = null;
-	private static AppLogger logger = AppLogger
-			.getInstance(ControllerFactory.class);
+	private static AppLogger logger = AppLogger.getInstance(ControllerFactory.class);
 
 	/**
 	 * 返回系统所有控制（包括标准、虚拟、ajax等） 每次都是动态生产一个map
@@ -81,37 +80,31 @@ public class ControllerFactory {
 		return m;
 	}
 
-	static ICutBackAction getControllerGlobalBackCall()
-			throws ControllerException {
+	static ICutBackAction getControllerGlobalBackCall() throws ControllerException {
 		if (backCall == null) {
 			if (globalBackCallStr == null || globalBackCallStr.equals("")) {
 				return null;
 			}
 			try {
-				backCall = (ICutBackAction) Class.forName(
-						globalBackCallStr.trim()).newInstance();
+				backCall = (ICutBackAction) Class.forName(globalBackCallStr.trim()).newInstance();
 			} catch (Exception ex) {
-				throw new ControllerException(
-						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+				throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
 			}
 		}
 		return backCall;
 	}
 
-	static ICutFrontAction getControllerGlobalPreCall()
-			throws ControllerException {
+	static ICutFrontAction getControllerGlobalPreCall() throws ControllerException {
 		// logger.debug("globalPreCallStr:{}", globalPreCallStr);
 		if (preCall == null) {
 			if (globalPreCallStr == null || globalPreCallStr.equals("")) {
 				return null;
 			}
 			try {
-				preCall = (ICutFrontAction) Class.forName(
-						globalPreCallStr.trim()).newInstance();
+				preCall = (ICutFrontAction) Class.forName(globalPreCallStr.trim()).newInstance();
 			} catch (Exception ex) {
 				// logger.error(ex);
-				throw new ControllerException(
-						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+				throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
 			}
 		}
 		return preCall;
@@ -120,16 +113,14 @@ public class ControllerFactory {
 	private static String getGlobalBackCallStr(ServletContext application) {
 		InputStream in2;
 		in2 = application.getResourceAsStream(WebConst.WEB_CONTROLLER_FILENAME);
-		String a = XMLReader.getTagContent(in2,
-				"mappings.controllers.cutting.ctrlBackAction");
+		String a = XMLReader.getTagContent(in2, "mappings.controllers.cutting.ctrlBackAction");
 		return a;
 	}
 
 	private static String getGlobalPreCallStr(ServletContext application) {
 		InputStream in2;
 		in2 = application.getResourceAsStream(WebConst.WEB_CONTROLLER_FILENAME);
-		String precallName = XMLReader.getTagContent(in2,
-				"mappings.controllers.cutting.ctrlFrontAction");
+		String precallName = XMLReader.getTagContent(in2, "mappings.controllers.cutting.ctrlFrontAction");
 		return precallName;
 	}
 
@@ -141,8 +132,8 @@ public class ControllerFactory {
 	 * @return
 	 * @throws ServletException
 	 */
-	public static ControllerImp findController(ServletContext application,
-			HttpServletRequest request) throws ControllerException {
+	public static ControllerImp findController(ServletContext application, HttpServletRequest request)
+			throws ControllerException {
 		// only name
 		String ctlName = CommonUtil.analysePath(request.getServletPath());
 		final String zerokey;
@@ -166,28 +157,29 @@ public class ControllerFactory {
 				// request.setAttribute(CommonUtil.controllname, key);
 				return (ControllerImp) cacheCtrl.get(zerokey);
 			}
-			String prefix = (String) request
-					.getAttribute(CommonUtil.WEB_CTRL_PREFIX);
-			if (prefix == null)
-				prefix = "";
-			String javaPath = (prefix + zerokey).replace(
-					CommonUtil.RIGHT_SLASHDOT, CommonUtil.DOT);
-			javaPath = CommonUtil.delLastDot(javaPath);
+			String javaPath = composeClassImpName(request, zerokey);
 			request.setAttribute(CommonUtil.controllerimpclassname, javaPath);
 			logger.debug("controllerimpclassname:{}", javaPath);
 			synchronized (zerokey) {
 				try {
 					return newControllerFromClass(zerokey, javaPath);
 				} catch (ClassNotFoundException nofe) {
-					return lookForConfigFileToCreate(application, request,
-							ctlName);
+					return lookForConfigFileToCreate(application, request, ctlName);
 				}
 			}
 		}
 	}
 
-	private static ControllerImp lookForConfigFileToCreate(
-			ServletContext application, HttpServletRequest request,
+	static String composeClassImpName(HttpServletRequest request, final String zerokey) {
+		String prefix = (String) request.getAttribute(CommonUtil.WEB_CTRL_PREFIX);
+		if (prefix == null)
+			prefix = "";
+		String javaPath = (prefix + zerokey).replace(CommonUtil.RIGHT_SLASHDOT, CommonUtil.DOT);
+		javaPath = CommonUtil.delLastDot(javaPath);
+		return javaPath;
+	}
+
+	private static ControllerImp lookForConfigFileToCreate(ServletContext application, HttpServletRequest request,
 			String ctlname) throws ControllerException {
 		// 从配置文件中寻找并新建
 		// request.setAttribute(CommonUtil.controllname, path);
@@ -217,8 +209,7 @@ public class ControllerFactory {
 		String className = getControllerClassByUrlPath(application, ctlname);
 		if (className == null) {
 			throw new ControllerException(HttpServletResponse.SC_NOT_FOUND,
-					"controller not found![" + ctlname
-							+ "]please check your controller config file");
+					"controller not found![" + ctlname + "]please check your controller config file");
 		}
 		request.setAttribute(CommonUtil.controllerimpclassname, className);
 		try {
@@ -233,21 +224,20 @@ public class ControllerFactory {
 			return imp;
 		} catch (Exception ex) {
 			logger.error(ex);
-			throw new ControllerException(
-					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+			throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
 		}
 	}
 
-	private static ControllerImp newControllerFromClass(String key,
-			String javaPath) throws ControllerException, ClassNotFoundException {
+	private static ControllerImp newControllerFromClass(String key, String javaPath)
+			throws ControllerException, ClassNotFoundException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("loading new Controller class....{}", javaPath);
 		}
 		Class<?> ct = Class.forName(javaPath);
-//		if (!ClassUtil.isRootSubClassOf(ct, ControllerImp.class)) {// 安全保护
-//			throw new ControllerException(HttpServletResponse.SC_FORBIDDEN,
-//					"Illegal request, don't fooling around!");
-//		}
+		// if (!ClassUtil.isRootSubClassOf(ct, ControllerImp.class)) {// 安全保护
+		// throw new ControllerException(HttpServletResponse.SC_FORBIDDEN,
+		// "Illegal request, don't fooling around!");
+		// }
 		try {
 			ControllerImp ctrlImp;
 			Object ctrlObj = ct.newInstance();
@@ -271,8 +261,7 @@ public class ControllerFactory {
 			return ctrlImp;
 		} catch (Exception e) {
 			logger.error(e);
-			throw new ControllerException(
-					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
+			throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
 		}
 	}
 
@@ -283,8 +272,7 @@ public class ControllerFactory {
 	 *            ServletContext
 	 * @return Map
 	 */
-	public static Map<String, String> getStandartControllerConfigs(
-			ServletContext app) {
+	public static Map<String, String> getStandartControllerConfigs(ServletContext app) {
 		if (!initFlag) {
 			loadConfigInfo(app);
 			initFlag = true;
@@ -313,21 +301,18 @@ public class ControllerFactory {
 		}
 		String filename = WebConst.WEB_CONTROLLER_FILENAME;
 		// virtual
-		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.virtual",
-				"vItem", "name", "view", virtualTable);
+		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.virtual", "vItem", "name", "view", virtualTable);
 		// standard
-		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.standard",
-				"sItem", "name", "class", standardTable);
+		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.standard", "sItem", "name", "class",
+				standardTable);
 		// ws
-		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.service",
-				"wsItem", "name", "class", serviceTable);
+		CommonUtil.fill_DataMap(app, filename, "mappings.controllers.service", "wsItem", "name", "class", serviceTable);
 		// ...获取全局回叫实现类
 
 		globalPreCallStr = getGlobalPreCallStr(app);
 		globalBackCallStr = getGlobalBackCallStr(app);
 		// 获取module数据..
-		CommonUtil.fill_DataMap(app, filename, "mappings.module", "mItem",
-				"filename", "active", moduleItemMap);
+		CommonUtil.fill_DataMap(app, filename, "mappings.module", "mItem", "filename", "active", moduleItemMap);
 		// 加载其它文件的数据
 
 		if (!moduleItemMap.isEmpty()) {
@@ -340,17 +325,14 @@ public class ControllerFactory {
 				String active = (String) e.getValue();
 				if (active.equalsIgnoreCase("true")) {
 					// virtual
-					CommonUtil.fill_DataMap(app, fn,
-							"mappings.controllers.virtual", "vItem", "name",
-							"view", virtualTable);
+					CommonUtil.fill_DataMap(app, fn, "mappings.controllers.virtual", "vItem", "name", "view",
+							virtualTable);
 					// standard
-					CommonUtil.fill_DataMap(app, fn,
-							"mappings.controllers.standard", "sItem", "name",
-							"class", standardTable);
+					CommonUtil.fill_DataMap(app, fn, "mappings.controllers.standard", "sItem", "name", "class",
+							standardTable);
 					// ws
-					CommonUtil.fill_DataMap(app, fn,
-							"mappings.controllers.service", "wsItem", "name",
-							"class", serviceTable);
+					CommonUtil.fill_DataMap(app, fn, "mappings.controllers.service", "wsItem", "name", "class",
+							serviceTable);
 				}
 			}
 		}
@@ -365,15 +347,11 @@ public class ControllerFactory {
 	 * 初始化默认管理的控制器
 	 */
 	private static void initDefaultCtrl() {
-		zeroConfig.put("framework.web.manage.ManageController",
-				"com.beetle.framework.web.manage.ManageController");// 注册管理控制器
+		zeroConfig.put("framework.web.manage.ManageController", "com.beetle.framework.web.manage.ManageController");// 注册管理控制器
 
 		try {
-			cacheCtrl.put(
-					"framework.web.manage.ManageController",
-					Class.forName(
-							"com.beetle.framework.web.manage.ManageController")
-							.newInstance());
+			cacheCtrl.put("framework.web.manage.ManageController",
+					Class.forName("com.beetle.framework.web.manage.ManageController").newInstance());
 		} catch (Exception e) {
 			logger.error(e);
 		}
@@ -399,8 +377,7 @@ public class ControllerFactory {
 		return virtualTable.get(urlPath);
 	}
 
-	private static String getControllerClassByUrlPath(ServletContext app,
-			String url) {
+	private static String getControllerClassByUrlPath(ServletContext app, String url) {
 		if (!initFlag) {
 			loadConfigInfo(app);
 			initFlag = true;
@@ -419,11 +396,9 @@ public class ControllerFactory {
 	 * @param viewName
 	 */
 	static void mapCtrlView(HttpServletRequest request, String viewName) {
-		String flag = (String) request
-				.getAttribute(CommonUtil.CTRL_VIEW_MAP_ENABLED);
+		String flag = (String) request.getAttribute(CommonUtil.CTRL_VIEW_MAP_ENABLED);
 		if (flag != null && flag.equalsIgnoreCase(CommonUtil.TRUE_STR)) {
-			String ctrlname = (String) request
-					.getAttribute(CommonUtil.controllname);
+			String ctrlname = (String) request.getAttribute(CommonUtil.controllname);
 			if (!controllerViewConfig.containsKey(ctrlname)) {
 				createTipSet(ctrlname);
 			}

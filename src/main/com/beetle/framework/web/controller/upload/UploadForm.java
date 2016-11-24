@@ -47,8 +47,8 @@ public class UploadForm {
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 
-	public UploadForm(List<FileObj> fileList, Map<String, String> fieldMap,
-			HttpServletRequest request, HttpServletResponse response) {
+	public UploadForm(List<FileObj> fileList, Map<String, String> fieldMap, HttpServletRequest request,
+			HttpServletResponse response) {
 		this.fileList = fileList;
 		this.fieldMap = fieldMap;
 		this.request = request;
@@ -111,6 +111,14 @@ public class UploadForm {
 
 	public Collection<String> getAllFieldValues() {
 		return fieldMap.values();
+	}
+
+	/**
+	 * 针对jwt验证，获取登录用户id，如果不存在返回未null
+	 * @return
+	 */
+	public String getJwtTokenLoginUserId() {
+		return (String) request.getAttribute("getJwtTokenLoginUserId");
 	}
 
 	/**

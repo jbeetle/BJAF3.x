@@ -286,6 +286,10 @@ public class WebInput {
 		return request.getSession();
 	}
 
+	/**
+	 * 针对jwt验证，获取登录用户id，如果不存在返回未null
+	 * @return
+	 */
 	public String getJwtTokenLoginUserId() {
 		return (String) request.getAttribute("getJwtTokenLoginUserId");
 	}

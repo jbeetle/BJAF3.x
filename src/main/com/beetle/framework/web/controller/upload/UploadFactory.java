@@ -92,7 +92,7 @@ private final static Object locker = new Object();
 				 */
 			} catch (Exception e) {
 				upload = null;
-				throw new ServletException(e);
+				//throw new ServletException(e);
 			}
 		}
 		return (IUpload) upload;

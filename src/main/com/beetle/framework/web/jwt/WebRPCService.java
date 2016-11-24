@@ -22,7 +22,7 @@ import com.beetle.framework.web.view.ModelData;
  */
 public class WebRPCService extends WebServiceController {
 
-	private static final String web_ws_servicePrefix = "web_ws_servicePrefix";
+	private static final String web_ws_servicePrefix = "web_openApi_ws_servicePrefix";
 	private final static AppLogger logger = AppLogger.getInstance(WebRPCService.class);
 	private final static Map<String, Cola> colaCache = new HashMap<String, Cola>();
 
@@ -182,10 +182,10 @@ public class WebRPCService extends WebServiceController {
 			} catch (Exception e) {
 				throw new ControllerException("lookup face[" + face + "] err", e);
 			} finally {
-				//在异常情况下不要缓存，例如第一次验证不过的时候，一定等有一次正常无异常操作以后再缓存，
-				//这样就可以包装缓存的对象都是正确的
-				//colaCache.put(callkey, cola);
-				//logger.debug("cache:{},{}", callkey, cola);
+				// 在异常情况下不要缓存，例如第一次验证不过的时候，一定等有一次正常无异常操作以后再缓存，
+				// 这样就可以包装缓存的对象都是正确的
+				// colaCache.put(callkey, cola);
+				// logger.debug("cache:{},{}", callkey, cola);
 			}
 		}
 	}
