@@ -1,7 +1,6 @@
 package com.beetle.framework.resource.dic.aop;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +59,7 @@ public class InnerHandler implements InvocationHandler {
 		private final Object[] args;
 		private final int pos;
 
-		public ExeTransTask(Object targetImp, Method method, Object[] args,
-				int pos) {
+		public ExeTransTask(Object targetImp, Method method, Object[] args, int pos) {
 			super();
 			this.targetImp = targetImp;
 			this.method = method;
@@ -75,10 +73,9 @@ public class InnerHandler implements InvocationHandler {
 			try {
 				ServiceTransaction.Manner manner = BeanVO.getFromTrans(method);
 				if (manner.equals(ServiceTransaction.Manner.REQUIRED)) {
-					com.beetle.framework.business.common.tst.aop.ServiceTransactionInterceptor
-							.invokeRequired(targetImp, method, args);
-				} else if (manner
-						.equals(ServiceTransaction.Manner.REQUIRES_NEW)) {
+					com.beetle.framework.business.common.tst.aop.ServiceTransactionInterceptor.invokeRequired(targetImp,
+							method, args);
+				} else if (manner.equals(ServiceTransaction.Manner.REQUIRES_NEW)) {
 					com.beetle.framework.business.common.tst.aop.ServiceTransactionInterceptor
 							.invokeRequiresNew(targetImp, method, args);
 				}
@@ -103,8 +100,7 @@ public class InnerHandler implements InvocationHandler {
 	}
 
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args)
-			throws Throwable {
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		AopInterceptor interceptor = getInterceptor(method);
 		if (interceptor != null) {
 			if (interceptor.interrupt()) {
@@ -113,13 +109,19 @@ public class InnerHandler implements InvocationHandler {
 			interceptor.before(method, args);
 		}
 		//
-		Object targetImp = DIContainer.Inner
-				.getBeanFromDIBeanCache(targetImpFace.getName());
+		Object targetImp = DIContainer.Inner.getBeanFromDIBeanCache(targetImpFace.getName());
 		Object rs = null;
 		if (BeanVO.existInTrans(method)) {
 			rs = dealWithTrans(method, args, targetImp, rs);
 		} else {
-			rs = dealWithoutTrans(method, args, targetImp, rs);
+			try {
+				rs = dealWithoutTrans(method, args, targetImp, rs);
+			} catch (Exception e) {
+				if (e instanceof java.lang.reflect.InvocationTargetException) {
+					throw ((java.lang.reflect.InvocationTargetException) e).getTargetException();
+				}
+				throw e;
+			}
 		}
 		//
 		if (interceptor != null) {
@@ -128,14 +130,10 @@ public class InnerHandler implements InvocationHandler {
 		return rs;
 	}
 
-	private static Object dealWithTrans(Method method, Object[] args,
-			Object targetImp, Object rs) throws Throwable {
-		if (BeanVO.existInAsync(method)
-				&& !AppContext.getInstance().exist(
-						Thread.currentThread().getId())) {
+	private static Object dealWithTrans(Method method, Object[] args, Object targetImp, Object rs) throws Throwable {
+		if (BeanVO.existInAsync(method) && !AppContext.getInstance().exist(Thread.currentThread().getId())) {
 			TaskExecutor te = new TaskExecutor();
-			te.addSubRoutine(new ExeTransTask(targetImp, method, args, BeanVO
-					.getFromAsync(method)));
+			te.addSubRoutine(new ExeTransTask(targetImp, method, args, BeanVO.getFromAsync(method)));
 			te.runRoutine();
 		} else {
 			ServiceTransaction.Manner manner = BeanVO.getFromTrans(method);
@@ -150,15 +148,10 @@ public class InnerHandler implements InvocationHandler {
 		return rs;
 	}
 
-	private static Object dealWithoutTrans(Method method, Object[] args,
-			Object targetImp, Object rs) throws IllegalAccessException,
-			InvocationTargetException {
-		if (BeanVO.existInAsync(method)
-				&& !AppContext.getInstance().exist(
-						Thread.currentThread().getId())) {
+	private static Object dealWithoutTrans(Method method, Object[] args, Object targetImp, Object rs) throws Throwable {
+		if (BeanVO.existInAsync(method) && !AppContext.getInstance().exist(Thread.currentThread().getId())) {
 			TaskExecutor te = new TaskExecutor();
-			te.addSubRoutine(new ExeTask(targetImp, method, args, BeanVO
-					.getFromAsync(method)));
+			te.addSubRoutine(new ExeTask(targetImp, method, args, BeanVO.getFromAsync(method)));
 			te.runRoutine();
 		} else {
 			rs = method.invoke(targetImp, args);
