@@ -124,7 +124,7 @@ public abstract class ControllerImp {
 			int cur = pv.getCur();
 			if (cur > max) {
 				throw new ControllerException(
-						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						HttpServletResponse.SC_NOT_ACCEPTABLE,
 						"exceeding this controller's request parallel amount limit,do it later,please!");
 			} else {
 				cur = cur + 1;
@@ -173,8 +173,11 @@ public abstract class ControllerImp {
 			long now = System.currentTimeMillis();
 			long cmp = this.avoidSubmitSeconds * 1000;
 			if (now - old <= cmp) { // 如果是在设置的时间内提交请求的话，则直接中断请求
+//				throw new ControllerException(
+//						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+//						"Don't submit the same request repeating！");
 				throw new ControllerException(
-						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						HttpServletResponse.SC_NOT_ACCEPTABLE,
 						"Don't submit the same request repeating！");
 			} else {
 				cookie.setMaxAge(-1); // 删除请求
