@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * 服务属性（字段）注入注解
- * 
+ * 服务属性（字段）注入注解<br>
+ * 支持引入DAO和Service接口<br>
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

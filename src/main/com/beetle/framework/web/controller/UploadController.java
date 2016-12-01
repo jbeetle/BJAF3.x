@@ -95,6 +95,7 @@ public class UploadController extends ControllerImp {
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		ServletFileUpload sfu = new ServletFileUpload(factory);
 		List<?> fileItems = null;
+		boolean openApiCase = false;
 		try {
 			IUpload upload = (IUpload) webInput.getRequest().getAttribute("UPLOAD_CTRL_IOBJ");
 			if (upload == null) {
@@ -108,6 +109,7 @@ public class UploadController extends ControllerImp {
 				if (uploadclass == null || uploadclass.trim().length() == 0) {
 					throw new ControllerException("upload dealer can't not found!");
 				}
+				openApiCase = true;
 				String uploadclass_ = ControllerFactory.composeClassImpName(webInput.getRequest(), uploadclass);
 				logger.debug("uploadclass:{}", uploadclass);
 				logger.debug("uploadclass_:{}", uploadclass_);
@@ -143,6 +145,9 @@ public class UploadController extends ControllerImp {
 			if (view.getViewname() == null || view.getViewname().trim().equals("")) {
 				// view.setViewName(AbnormalViewControlerImp.abnormalViewName);
 				//
+				if (openApiCase) {
+					return view;
+				}
 				UpService us = new UpService(view);
 				return us.perform(webInput);
 			}
