@@ -184,6 +184,7 @@ public class ThroughputPipe<T> {
 	 * @param values
 	 * @throws PipeFullException
 	 */
+	@SuppressWarnings("unchecked")
 	public void put(T... values) throws PipeFullException {
 		for (T v : values) {
 			try {

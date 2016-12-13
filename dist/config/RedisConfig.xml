@@ -13,6 +13,7 @@
       <item name="min-idle" value="5" />
       <item name="max-wait" value="30000" />
       <item name="test-on-borrow" value="true" />
+      <item name="subscribe-listener" value="test.redis.MyListener" />
     </default>
     <mc2e>
        <item name="server-address" value="www.mc2e.cc" />

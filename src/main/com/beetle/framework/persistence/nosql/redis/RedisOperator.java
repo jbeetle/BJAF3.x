@@ -28,12 +28,14 @@ public class RedisOperator {
 	private static final Logger logger = AppLogger.getLogger(RedisOperator.class);
 	private final JedisPool thePool;
 	private final String db;
+	private final String subscribeListener;
 
 	public RedisOperator(String dataSourceName) {
 		super();
 		this.dataSourceName = dataSourceName;
 		this.thePool = initPool(this.dataSourceName);
 		this.db = RedisConfig.getFrameworkDS(dataSourceName, "database");
+		this.subscribeListener = RedisConfig.getFrameworkDS(dataSourceName, "subscribe-listener");
 	}
 
 	public static void initializeDataSourcesPool() {
@@ -107,6 +109,7 @@ public class RedisOperator {
 		super();
 		this.thePool = initPool(dataSourceName);
 		this.db = RedisConfig.getFrameworkDS(dataSourceName, "database");
+		this.subscribeListener = RedisConfig.getFrameworkDS(dataSourceName, "subscribe-listener");
 	}
 
 	/*
@@ -321,12 +324,15 @@ public class RedisOperator {
 	}
 
 	/*
-	 * 如果用了getWithCache方法回在本地内存中缓存值提高性能，有时候我们需要人为的去掉这个缓存值，<br>
-	 * 则可采取这个方法
+	 * 如果用了getWithCache方法回在本地内存中缓存值提高性能，有时候我们需要人为的去掉这个缓存值，<br> 则可采取这个方法
 	 */
 	public void removeLocalCache(String key) {
 		String key_ = key + "-" + db;
 		localCache.remove(key_);
+	}
+
+	public String getSubscribeListener() {
+		return this.subscribeListener;
 	}
 
 	/**

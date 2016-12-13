@@ -288,6 +288,7 @@ public class WebInput {
 
 	/**
 	 * 针对jwt验证，获取登录用户id，如果不存在返回未null
+	 * 
 	 * @return
 	 */
 	public String getJwtTokenLoginUserId() {
@@ -402,6 +403,16 @@ public class WebInput {
 
 	public String getParameterWithDecode(String name, String charset) {
 		return WebUtil.decodeURL(this.getParameter(name), charset);
+	}
+
+	/**
+	 * 获取页面输入参数原始值（没有做任何xxs等处理）<br>
+	 * 为了安全性，一般不推荐使用，除非要做特殊处理的时候才可以使用
+	 * @param name
+	 * @return
+	 */
+	public String getParameterOriginalValue(String name) {
+		return request.getParameter(name);
 	}
 
 	public Float getParameterAsFloat(String name) {
