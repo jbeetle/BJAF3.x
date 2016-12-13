@@ -10,24 +10,26 @@ import redis.clients.jedis.Jedis;
 
 public class PubSubManager {
 	private final RedisOperator rot;
+	private final ClientListener clientListener;
 	private static final Logger logger = AppLogger.getLogger(PubSubManager.class);
 	private static BlockQueue queue = new BlockQueue();
 
 	public PubSubManager(RedisOperator rot) {
 		super();
 		this.rot = rot;
-		final PubSubManager psm=this;
+		final PubSubManager psm = this;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while(true){
-					Object o=queue.pop();
-					String topic=(String)o;
-					logger.debug("topic:{},resubscribe",topic);
+				while (true) {
+					Object o = queue.pop();
+					String topic = (String) o;
+					logger.debug("topic:{},resubscribe", topic);
 					psm.subscribe(topic);
 				}
 			}
 		}).start();
+		this.clientListener = new ClientListener(rot.getSubscribeListener());
 	}
 
 	/**
@@ -36,13 +38,14 @@ public class PubSubManager {
 	 * @param topic
 	 */
 	public void subscribe(final String topic) {
+		final PubSubManager psm = this;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				Jedis jd = null;
 				try {
 					jd = rot.getJedisInstanceFromPool();
-					jd.subscribe(ClientListener.getInstance(rot.getSubscribeListener()), topic);// 会阻塞
+					jd.subscribe(psm.clientListener, topic);// 会阻塞
 				} catch (Exception e) {
 					queue.push(topic);
 					logger.debug("queue push:{}", topic);

@@ -8,21 +8,9 @@ import redis.clients.jedis.JedisPubSub;
 
 public class ClientListener extends JedisPubSub {
 	private static final Logger logger = AppLogger.getLogger(ClientListener.class);
-	private static ClientListener instance;
 	private SubscribeListener listener;
 
-	public static ClientListener getInstance(String listenerImp) {
-		if (instance == null) {
-			synchronized (logger) {
-				if (instance == null) {
-					instance = new ClientListener(listenerImp);
-				}
-			}
-		}
-		return instance;
-	}
-
-	private ClientListener(String listenerImp) {
+	public ClientListener(String listenerImp) {
 		try {
 			Object o = Class.forName(listenerImp).newInstance();
 			this.listener = (SubscribeListener) o;
@@ -65,7 +53,7 @@ public class ClientListener extends JedisPubSub {
 		if (logger.isDebugEnabled()) {
 			logger.debug("onSubscribe,channel:{},subscribedChannels:{}", channel, subscribedChannels);
 		}
-		listener.onSubscribe(channel, subscribedChannels);		
+		listener.onSubscribe(channel, subscribedChannels);
 	}
 
 	@Override
