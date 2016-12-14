@@ -14,7 +14,12 @@ public class PubSubManager {
 	private static final Logger logger = AppLogger.getLogger(PubSubManager.class);
 	private static BlockQueue queue = new BlockQueue();
 
-	public PubSubManager(RedisOperator rot) {
+	/**
+	 * @param rot
+	 * @param subscribeListenerImpl,如果此值为空，则会从RedisConfig.xml文件读取<br>
+	 * subscribe-listener属性配置
+	 */
+	public PubSubManager(RedisOperator rot, String subscribeListenerImpl) {
 		super();
 		this.rot = rot;
 		final PubSubManager psm = this;
@@ -29,7 +34,11 @@ public class PubSubManager {
 				}
 			}
 		}).start();
-		this.clientListener = new ClientListener(rot.getSubscribeListener());
+		if (subscribeListenerImpl != null && subscribeListenerImpl.trim().length() > 0) {
+			this.clientListener = new ClientListener(subscribeListenerImpl);
+		} else {
+			this.clientListener = new ClientListener(rot.getSubscribeListener());
+		}
 	}
 
 	/**
@@ -74,4 +83,9 @@ public class PubSubManager {
 			}
 		}
 	}
+
+	public RedisOperator getRedisOperator() {
+		return rot;
+	}
+
 }
