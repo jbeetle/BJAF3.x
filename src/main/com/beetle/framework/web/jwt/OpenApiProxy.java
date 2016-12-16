@@ -24,20 +24,24 @@ import com.beetle.framework.web.view.View;
  * 1，客户首先调用login登陆进行用户身份验证，通过了返回一个唯一的token<br>
  * 2，后续每次请求都要http的header属性[X-JWT-Token]设置此token，相当于每次都要提交此Token到服务器校验<br>
  * 3,调用logout注销，销毁token<br>
- * 同时，OpenApi类也是服务代理，支持@WebService注解，在接口上标记即可直接暴露为WebService<br>
+ * 同时，OpenApi类也是服务代理，支持@HttpService注解，在接口上标记即可直接暴露为WebService<br>
  * 本代理支持服务参数的Java的基本类型，如果非基本类型的话，可重载fillParamters自己填充<br>
  * 另外，为了方便编程和安全性，如果服务要使用到登录的userid的值，如果服务命名以[ByCurrentUserId]结尾，在第一个参数注入userid值
  * <br>
- * 注：本代理拒绝了http的get方法，只能采取post方法
- * 功能：<br>
+ * 注：本代理拒绝了http的get方法，只能采取post方法 功能：<br>
  * 1,支持业务服务层的Service直接暴露为web服务，直接省去一个个编写控制器<br>
  * 服务需要声明HttpService注解<br>
  * 2,如果添加请求处理动作，直接添加一个动作就可以，参考webservice控制器
+ * 
  * @author yuhaodong@gmail.com
  *
  */
 public abstract class OpenApiProxy extends WebRPCService {
 	private static final Logger logger = AppLogger.getLogger(OpenApiProxy.class);
+	private static final String web_openApi_token_expire_enabled = "web_openApi_token_expire_enabled";
+	private static final long localCacheTime = AppProperties.getAsInt("web_openApi_redis_local_cache", 5) * 1000;
+	private static final boolean clientSrcCheckFlag = AppProperties.getAsBoolean("web_openApi_token_client_enabled",
+			false);
 
 	public static class UCDTO implements java.io.Serializable {
 		private static final long serialVersionUID = 1L;
@@ -65,7 +69,15 @@ public abstract class OpenApiProxy extends WebRPCService {
 			this.updateTime = updateTime;
 		}
 
+		public long getUpdateTime() {
+			return updateTime;
+		}
+
 		public boolean checkExipred() {
+			boolean cf = AppProperties.getAsBoolean(web_openApi_token_expire_enabled, true);
+			if (!cf) {
+				return false;// 永远不过期
+			}
 			long x = System.currentTimeMillis() - updateTime;
 			if (x >= this.timeOut) {
 				return true;
@@ -117,6 +129,10 @@ public abstract class OpenApiProxy extends WebRPCService {
 	private static int monitorFlag = 0;
 
 	private static void start() {
+		boolean cf = AppProperties.getAsBoolean(web_openApi_token_expire_enabled, true);
+		if (!cf) {
+			return;
+		}
 		if (monitorFlag == 0) {
 			synchronized (tokenCache) {
 				if (monitorFlag == 0) {
@@ -179,6 +195,9 @@ public abstract class OpenApiProxy extends WebRPCService {
 	 * @return
 	 */
 	protected String getClientId(WebInput req) {
+		if (!clientSrcCheckFlag) {
+			return "127.0.0.1";
+		}
 		String ip1 = req.getHeader("X-Forwarded-For");
 		String ip2 = req.getHeader("x-real-ip");
 		String ip3 = req.getRemoteAddr();
@@ -331,6 +350,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 	/**
 	 * 上传文件接口，此接口需要登录验证（登录验证后才能使用）<br>
 	 * 文件上传接口IUpload实现类必须在页面通过参数“$upload”注册
+	 * 
 	 * @param wi
 	 * @return
 	 * @throws ControllerException
@@ -338,8 +358,8 @@ public abstract class OpenApiProxy extends WebRPCService {
 	public ModelData upload(WebInput wi) throws ControllerException {
 		String uid = verify(wi);
 		wi.bindJwtTokenLoginUserIdInRequest(uid);
-		logger.debug("uid:{}",uid);
-		logger.debug("$upload:{}",wi.getParameter("$upload"));
+		logger.debug("uid:{}", uid);
+		logger.debug("$upload:{}", wi.getParameter("$upload"));
 		UploadController udc = new UploadController();
 		View view = udc.perform(wi);
 		return view.getMd().asJSON();
@@ -404,8 +424,12 @@ public abstract class OpenApiProxy extends WebRPCService {
 			if (udto.checkExipred()) {
 				throw new ControllerException(408, "the request expired");
 			} else {//
-				udto.setUpdateTime(System.currentTimeMillis());
-				tokenCache.put(claims.getIss(), udto);// 针对远程的，必须写回redis与jvm不用写不一样
+				long nowTime = System.currentTimeMillis();
+				long txt = nowTime - udto.getUpdateTime();
+				if (txt > localCacheTime) {
+					udto.setUpdateTime(nowTime);
+					tokenCache.put(claims.getIss(), udto);// 针对远程的，必须写回redis与jvm不用写不一样
+				}
 			}
 		} catch (Exception e) {
 			if (e instanceof ControllerException) {
