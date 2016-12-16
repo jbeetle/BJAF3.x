@@ -14,6 +14,7 @@ package com.beetle.framework.web;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -204,6 +205,9 @@ final public class GlobalDispatchServlet extends HttpServlet {
 		try {
 			ControllerHelper.doService(request, response, this.getServletContext());
 		} catch (ControllerException e) {
+			String errMsg = URLEncoder.encode(e.getErrMsg(), response.getCharacterEncoding());	
+			response.setHeader("errCode", e.getErrCode() + "");
+			response.setHeader("errMsg", errMsg);
 			if (e.getErrCode() > 0) {
 				response.setStatus(e.getErrCode());
 				response.setHeader("STATUS_CODE_INFO", e.getMessage());

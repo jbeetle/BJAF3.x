@@ -22,27 +22,36 @@ package com.beetle.framework;
 
 public class AppException extends Exception {
 	protected int errCode = -100000;
+	protected String errMsg = "err";
 
 	public int getErrCode() {
 		return errCode;
 	}
 
+	public String getErrMsg() {
+		return errMsg;
+	}
+
 	public AppException(String message, Throwable cause) {
 		super(message, cause);
+		this.errMsg = message;
 	}
 
 	public AppException(int errCode, String message, Throwable cause) {
-		super(errCode + ":" + message, cause);
+		super(message, cause);
 		this.errCode = errCode;
+		this.errMsg = message;
 	}
 
 	public AppException(String message) {
 		super(message);
+		this.errMsg = message;
 	}
 
 	public AppException(int errCode, String message) {
-		super(errCode + ":" + message);
+		super(message);
 		this.errCode = errCode;
+		this.errMsg = message;
 	}
 
 	public AppException(Throwable cause) {

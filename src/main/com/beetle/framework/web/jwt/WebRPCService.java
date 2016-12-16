@@ -1,11 +1,13 @@
 package com.beetle.framework.web.jwt;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.beetle.framework.AppException;
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.log.AppLogger;
@@ -125,7 +127,23 @@ public class WebRPCService extends WebServiceController {
 				}
 			} catch (Exception e) {
 				//
-				throw new ControllerException("lookup face[" + face + "] err", e);
+				if (e instanceof InvocationTargetException) {
+					InvocationTargetException ieg = (InvocationTargetException) e;
+					// throw (ControllerException) ieg.getTargetException();
+					if (ieg.getTargetException() instanceof AppException) {
+						// throw (ControllerException) e;
+						AppException appe = (AppException) ieg.getTargetException();
+						throw new ControllerException(appe.getErrCode(), appe.getMessage(), appe.getCause());
+					} else if (ieg.getTargetException() instanceof AppRuntimeException) {
+						AppRuntimeException appe = (AppRuntimeException) ieg.getTargetException();
+						throw new ControllerException(appe.getErrCode(), appe.getMessage(), appe.getCause());
+					} else {
+						throw new ControllerException(ieg.getTargetException());
+					}
+				}
+				// throw new ControllerException(e);
+				//
+				throw new ControllerException("lookup face2[" + face + "] err", e);
 			}
 		} else {// 本身线程安全，没有适合粒度的锁，这里不做锁处理
 			try {
@@ -180,7 +198,23 @@ public class WebRPCService extends WebServiceController {
 			} catch (ControllerException e) {
 				throw e;
 			} catch (Exception e) {
-				throw new ControllerException("lookup face[" + face + "] err", e);
+				//
+				if (e instanceof InvocationTargetException) {
+					InvocationTargetException ieg = (InvocationTargetException) e;
+					// throw (ControllerException) ieg.getTargetException();
+					if (ieg.getTargetException() instanceof AppException) {
+						// throw (ControllerException) e;
+						AppException appe = (AppException) ieg.getTargetException();
+						throw new ControllerException(appe.getErrCode(), appe.getMessage(), appe.getCause());
+					} else if (ieg.getTargetException() instanceof AppRuntimeException) {
+						AppRuntimeException appe = (AppRuntimeException) ieg.getTargetException();
+						throw new ControllerException(appe.getErrCode(), appe.getMessage(), appe.getCause());
+					} else {
+						throw new ControllerException(ieg.getTargetException());
+					}
+				}
+				//
+				throw new ControllerException("lookup face1[" + face + "] err", e);
 			} finally {
 				// 在异常情况下不要缓存，例如第一次验证不过的时候，一定等有一次正常无异常操作以后再缓存，
 				// 这样就可以包装缓存的对象都是正确的
