@@ -31,6 +31,7 @@ import com.beetle.framework.web.view.View;
  * 注：本代理拒绝了http的get方法，只能采取post方法 功能：<br>
  * 1,支持业务服务层的Service直接暴露为web服务，直接省去一个个编写控制器<br>
  * 服务需要声明HttpService注解<br>
+ * 另外，Service的异常状态码和异常描述信息Proxy会写入http的响应header中，浏览器端通过"errCode"和"errMsg"那个key获取<br>
  * 2,如果添加请求处理动作，直接添加一个动作就可以，参考webservice控制器
  * 
  * @author yuhaodong@gmail.com
@@ -232,7 +233,7 @@ public abstract class OpenApiProxy extends WebRPCService {
 	 * @param password
 	 * @return true成功，false失败
 	 */
-	protected abstract boolean verifyUser(String userName, String password);
+	protected abstract boolean verifyUser(String userName, String password) throws ControllerException;
 
 	/**
 	 * 获取用户唯一标识

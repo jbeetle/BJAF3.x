@@ -45,7 +45,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 public final class AppLogger {
 	private Logger logger;
 	private final static Map<String, AppLogger> loggerCache = new ConcurrentHashMap<String, AppLogger>();
-
+	private final static Object lock = new Object();
 	public AppLogger(URL url, String name) {
 		try {
 			LogConfigReader.init(url);
@@ -120,7 +120,7 @@ public final class AppLogger {
 		if (loggerCache.containsKey(key)) {
 			return loggerCache.get(key);
 		}
-		synchronized (loggerCache) {
+		synchronized (lock) {
 			AppLogger al = loggerCache.get(key);
 			if (al == null) {
 				al = new AppLogger(logClass);
@@ -141,7 +141,7 @@ public final class AppLogger {
 		if (loggerCache.containsKey(name)) {
 			return loggerCache.get(name);
 		}
-		synchronized (loggerCache) {
+		synchronized (lock) {
 			AppLogger al = loggerCache.get(name);
 			if (al == null) {
 				al = new AppLogger(name);

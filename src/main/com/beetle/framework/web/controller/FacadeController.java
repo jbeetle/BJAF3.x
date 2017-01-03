@@ -139,7 +139,7 @@ public abstract class FacadeController extends ControllerImp {
 				InvocationTargetException ieg = (InvocationTargetException) e;
 				// throw (ControllerException) ieg.getTargetException();
 				if (ieg.getTargetException() instanceof ControllerException) {
-					throw (ControllerException) e;
+					throw (ControllerException) ieg.getTargetException();
 				}
 			}
 			throw new ControllerException(e);

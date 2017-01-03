@@ -351,10 +351,6 @@ public class ReleBinder {
 	private void dealInject(Element e) throws ClassNotFoundException {
 		String face = e.valueOf("@interface");
 		String imp = e.valueOf("@implement");
-		boolean f = face.toLowerCase().matches(".*\\.dao\\..*");
-		if (f) {
-			DAO_CHECK.add(face);
-		}
 		String singleton = e.valueOf("@singleton");
 		boolean sf = false;
 		if (singleton == null || singleton.trim().length() == 0) {
@@ -370,6 +366,10 @@ public class ReleBinder {
 		if (face == null || face.trim().length() == 0) {
 			bind(Class.forName(imp.trim()), sf);
 		} else {
+			boolean f = face.toLowerCase().matches(".*\\.dao\\..*");
+			if (f) {
+				DAO_CHECK.add(face);
+			}
 			if (Class.forName(face.trim()).isAssignableFrom(Class.forName(imp.trim()))) {
 				bind(Class.forName(face.trim()), Class.forName(imp.trim()), sf);
 			} else {

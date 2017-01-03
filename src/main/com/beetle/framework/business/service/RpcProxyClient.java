@@ -92,8 +92,7 @@ public class RpcProxyClient {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((hostname == null) ? 0 : hostname.hashCode());
+			result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
 			result = prime * result + port;
 			return result;
 		}
@@ -121,9 +120,9 @@ public class RpcProxyClient {
 	private final static List<Host> hosts = new ArrayList<RpcProxyClient.Host>();
 	private final static String rpc_client_proxyInvoke = "rpc_client_proxyInvoke";
 	private final static Map<String, Object> serviceProxyCache = new ConcurrentHashMap<String, Object>();
+	private final static Object lock = new Object();
 
-	public static <T> T lookup(final Class<T> interfaceClass,
-			boolean withShortConnection) {
+	public static <T> T lookup(final Class<T> interfaceClass, boolean withShortConnection) {
 		String pi = AppProperties.get(rpc_client_proxyInvoke);
 		if (pi != null && pi.equalsIgnoreCase("jvm")) {
 			// return lookupAop(interfaceClass);
@@ -134,14 +133,11 @@ public class RpcProxyClient {
 			}
 			if (hosts.size() == 1) {
 				Host host = hosts.get(0);//
-				return remoteLookup(interfaceClass, host.getHostname(),
-						host.getPort(), withShortConnection);
+				return remoteLookup(interfaceClass, host.getHostname(), host.getPort(), withShortConnection);
 			} else if (hosts.size() > 1) {
-				return remoteLookup(interfaceClass, null, -1000,
-						withShortConnection);
+				return remoteLookup(interfaceClass, null, -1000, withShortConnection);
 			} else {
-				throw new RpcClientException(
-						"Please check the [rpc_client_remoteAddress] value is correct or not");
+				throw new RpcClientException("Please check the [rpc_client_remoteAddress] value is correct or not");
 			}
 		}
 	}
@@ -152,8 +148,7 @@ public class RpcProxyClient {
 			Host host = hosts.get(i);
 			if (!host.isInitflag()) {
 				host.setInitflag(true);
-				boolean ff = ServiceClient.getInstance(host.hostname,
-						host.getPort()).checkServerConnection();
+				boolean ff = ServiceClient.getInstance(host.hostname, host.getPort()).checkServerConnection();
 				if (!ff) {
 					host.setDie(true);
 					host.setDieTime(System.currentTimeMillis());
@@ -172,8 +167,7 @@ public class RpcProxyClient {
 		}
 		int x = OtherUtil.randomInt(0, tmp.size());
 		if (tmp.isEmpty()) {
-			throw new RpcClientException(RpcConst.ERR_CODE_HOST_DIE_EXCEPTION,
-					"all host server has died!");
+			throw new RpcClientException(RpcConst.ERR_CODE_HOST_DIE_EXCEPTION, "all host server has died!");
 		}
 		Host h = tmp.get(x);
 		try {
@@ -248,33 +242,26 @@ public class RpcProxyClient {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T remoteLookup(final Class<T> interfaceClass,
-			final String host, final int port, boolean withShortConnection) {
-		final String key = genKey(interfaceClass.getName(), 'r',
-				withShortConnection);
+	public static <T> T remoteLookup(final Class<T> interfaceClass, final String host, final int port,
+			boolean withShortConnection) {
+		final String key = genKey(interfaceClass.getName(), 'r', withShortConnection);
 		if (serviceProxyCache.containsKey(key)) {
 			return (T) serviceProxyCache.get(key);
 		}
-		synchronized (serviceProxyCache) {
+		synchronized (lock) {//这个锁有点粗，找不到合适的锁，但也只会影响到多并发首次请求的性能
 			T t = (T) serviceProxyCache.get(key);
 			if (t == null) {
 				if (!interfaceClass.isInterface())
-					throw new IllegalArgumentException("The "
-							+ interfaceClass.getName()
-							+ " must be interface class!");
-				t = (T) Proxy.newProxyInstance(
-						interfaceClass.getClassLoader(),
-						new Class<?>[] { interfaceClass },
-						new ServiceProxyHandler(host, port, interfaceClass
-								.getName(), withShortConnection));
+					throw new IllegalArgumentException("The " + interfaceClass.getName() + " must be interface class!");
+				t = (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass },
+						new ServiceProxyHandler(host, port, interfaceClass.getName(), withShortConnection));
 				serviceProxyCache.put(key, t);
 			}
 			return t;
 		}
 	}
 
-	private static String genKey(String classname, char callflag,
-			boolean withShortConnection) {
+	private static String genKey(String classname, char callflag, boolean withShortConnection) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(classname);
 		sb.append(callflag);
@@ -289,8 +276,7 @@ public class RpcProxyClient {
 		private boolean withShortConnection;
 		private static final Counter COUNTER = new Counter(2009521l);
 
-		public ServiceProxyHandler(String host, int port, String interfacename,
-				boolean withShortConnection) {
+		public ServiceProxyHandler(String host, int port, String interfacename, boolean withShortConnection) {
 			super();
 			this.host = host;
 			this.port = port;
@@ -307,8 +293,7 @@ public class RpcProxyClient {
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args)
-				throws Throwable {
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			RpcRequest req = new RpcRequest();
 			req.setId(COUNTER.increaseAndGet());
 			req.setIface(interfacename);
@@ -323,15 +308,13 @@ public class RpcProxyClient {
 			} else {
 				try {
 					Host host = getOkHost();
-					client = ServiceClient.getInstance(host.getHostname(),
-							host.getPort());
+					client = ServiceClient.getInstance(host.getHostname(), host.getPort());
 				} catch (RpcClientException e) {
 					if (e.getErrCode() == RpcConst.ERR_CODE_HOST_DIE_EXCEPTION) {// 所有连接都是死光了
 						Locker lock = new Locker();
 						lock.lockForTime(RpcConst.CLIENT_HOST_CHECK_TIME);
 						Host host = getOkHost();
-						client = ServiceClient.getInstance(host.getHostname(),
-								host.getPort());
+						client = ServiceClient.getInstance(host.getHostname(), host.getPort());
 					} else {
 						throw e;
 					}
@@ -342,8 +325,7 @@ public class RpcProxyClient {
 					return client.invokeWithShortConnect(req);
 				} catch (RpcClientException rce) {
 					if (rce.getErrCode() == RpcConst.ERR_CODE_CONN_EXCEPTION) {
-						lockForTime(AppProperties.getAsInt(
-								"rpc_client_retry_waitForTime", 1000 * 10));
+						lockForTime(AppProperties.getAsInt("rpc_client_retry_waitForTime", 1000 * 10));
 						return client.invokeWithShortConnect(req);
 					} else {
 						throw rce;
@@ -354,8 +336,7 @@ public class RpcProxyClient {
 				return client.invokeWithLongConnect(req);
 			} catch (RpcClientException rce) {
 				if (rce.getErrCode() == RpcConst.ERR_CODE_CONN_EXCEPTION) {
-					lockForTime(AppProperties.getAsInt(
-							"rpc_client_retry_waitForTime", 1000 * 10));
+					lockForTime(AppProperties.getAsInt("rpc_client_retry_waitForTime", 1000 * 10));
 					return client.invokeWithLongConnect(req);
 				} else {
 					throw rce;

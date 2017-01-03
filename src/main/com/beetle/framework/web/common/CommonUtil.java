@@ -46,6 +46,7 @@ import com.beetle.framework.util.file.XMLReader;
  */
 
 public class CommonUtil extends WebUtil {
+	private static final Object lock=new Object();
 	public static final String WEB_ENCODE_CHARSET = "WEB_ENCODE_CHARSET";
 	public static final String WEB_SERVER_INFO = "WEB_SERVER_INFO";
 	// public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
@@ -119,7 +120,7 @@ public class CommonUtil extends WebUtil {
 
 	public static final String getRsaPublicKey(ServletContext app) throws IOException {
 		if (public_key == null) {
-			synchronized (WEB_ENCODE_CHARSET) {
+			synchronized (lock) {
 				if (public_key != null) {
 					return public_key;
 				}
@@ -139,7 +140,7 @@ public class CommonUtil extends WebUtil {
 
 	public static final String getRsaPrivateKey(ServletContext app) throws IOException {
 		if (private_key == null) {
-			synchronized (WEB_ENCODE_CHARSET) {
+			synchronized (lock) {
 				if (private_key != null) {
 					return private_key;
 				}
