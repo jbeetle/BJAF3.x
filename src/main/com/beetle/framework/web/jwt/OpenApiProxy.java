@@ -349,6 +349,26 @@ public abstract class OpenApiProxy extends WebRPCService {
 	}
 
 	/**
+	 * 校验请求的合法性（包括了有效期的校验）<br>
+	 * 校验不通，抛异常，通过检查http的状态码来识别校验不过的原因<br>
+	 * 如果建议通过则会返回此请求已登录的用户uid
+	 * 
+	 * @param wi
+	 * @return code:1001,删除成功<br>
+	 *         uid:xxx
+	 * @throws ControllerException
+	 */
+	public ModelData verifyRequest(WebInput wi) throws ControllerException {
+		String uid = verify(wi);
+		logger.debug("uid:{}", uid);
+		ModelData md = new ModelData();
+		md.put("code", 1001);
+		md.put("uid", uid);
+		md.put("msg", "OK");
+		return md.asJSON();
+	}
+
+	/**
 	 * 上传文件接口，此接口需要登录验证（登录验证后才能使用）<br>
 	 * 文件上传接口IUpload实现类必须在页面通过参数“$upload”注册
 	 * 

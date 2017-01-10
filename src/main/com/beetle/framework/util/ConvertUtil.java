@@ -14,16 +14,17 @@
  */
 package com.beetle.framework.util;
 
+import static java.lang.System.arraycopy;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Date;
 
-import static java.lang.System.arraycopy;
+public final class ConvertUtil {
 
-public class ConvertUtil {
-
-	private static char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7',
-			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	private static char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+			'F' };
 
 	/**
 	 * Returns a hex string representation of a 8 bit integer. Very fast.
@@ -45,8 +46,7 @@ public class ConvertUtil {
 	}
 
 	public static Date toDateByFormat(String dateString, String formatStr) {
-		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
-				formatStr);
+		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(formatStr);
 		try {
 			return sdf.parse(dateString);
 		} catch (ParseException ex) {
@@ -56,9 +56,24 @@ public class ConvertUtil {
 	}
 
 	public static String dateFormat(java.util.Date date, String formatStr) {
-		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
-				formatStr);
+		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(formatStr);
 		return sdf.format(date);
+	}
+
+	/**
+	 * ISO-8859-1，转换utf-8，同时兼容来源有可能非ISO-8859-1编码的
+	 * @param source
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static String toUtf8String(String source) throws UnsupportedEncodingException {
+		if (source == null) {
+			return null;
+		}
+		if (source.equals(new String(source.getBytes("ISO-8859-1"), "ISO-8859-1"))) {
+			return new String(source.getBytes("ISO-8859-1"), "UTF-8");
+		}
+		return source;
 	}
 
 	public static String convertHexStr(String inStr) {
@@ -115,8 +130,7 @@ public class ConvertUtil {
 	}
 
 	//
-	public static String convertUTF8String2Unicode(String instr)
-			throws IOException {
+	public static String convertUTF8String2Unicode(String instr) throws IOException {
 		int charindex = instr.length();
 		int actualValue;
 		int inputValue;
