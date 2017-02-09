@@ -46,8 +46,7 @@ public class DBConfig {
 		Document doc = null;
 		try {
 			List<String> myList = new ArrayList<String>();
-			doc = XMLReader.getXmlDoc(AppProperties.getAppHome()
-					+ "DBConfig.xml");
+			doc = XMLReader.getXmlDoc(AppProperties.getAppHome() + "DBConfig.xml");
 			Element root = doc.getRootElement();
 			for (Iterator<?> i = root.elementIterator("DataSources"); i.hasNext();) {
 				Element e = (Element) i.next();
@@ -91,11 +90,9 @@ public class DBConfig {
 	public static String getExtensionValue(String dsName, String keyName) {
 		if (!extensionCache.containsKey(dsName)) {
 			if (dsName.trim().length() == 0) {
-				throw new ConnectionException(
-						"err,must set a datasource first!");
+				throw new ConnectionException("err,must set a datasource first!");
 			}
-			Map<String, String> m = readeConfig(
-					"Config.Extensions." + dsName.trim(), "name", "value");
+			Map<String, String> m = readeConfig("Config.Extensions." + dsName.trim(), "name", "value");
 			extensionCache.put(dsName, m);
 			// m.clear();
 		}
@@ -106,11 +103,12 @@ public class DBConfig {
 	public static String getFrameworkDS(String dsName, String keyName) {
 		if (!dbPool.containsKey(dsName)) {
 			if (dsName.trim().length() == 0) {
-				throw new ConnectionException(
-						"err,must set a datasource first!");
+				throw new ConnectionException("err,must set a datasource first!");
 			}
-			Map<String, String> m = readeConfig(
-					"Config.DataSources." + dsName.trim(), "name", "value");
+			Map<String, String> m = readeConfig("Config.DataSources." + dsName.trim(), "name", "value");
+			if (m == null || m.isEmpty()) {
+				throw new ConnectionException(dsName + " not found! must set it first!");
+			}
 			dbPool.put(dsName, m);
 			// m.clear();
 		}
@@ -132,19 +130,16 @@ public class DBConfig {
 	public final static String decodeDatasourcePassword(String dataSourceName) {
 		String pwd = DBConfig.getFrameworkDS(dataSourceName, "password");
 		if (pwd == null) {
-			throw new AppRuntimeException(dataSourceName
-					+ "'s [password] can not be null! ");
+			throw new AppRuntimeException(dataSourceName + "'s [password] can not be null! ");
 		}
 		if (pwd.startsWith("mask{") && pwd.endsWith("}")) {
 			String imp = DBConfig.getFrameworkDS(dataSourceName, "mask-imp");
 			if (imp == null || imp.trim().length() == 0) {
-				throw new AppRuntimeException(dataSourceName
-						+ "'s [mask-imp] can not be null,must be setted! ");
+				throw new AppRuntimeException(dataSourceName + "'s [mask-imp] can not be null,must be setted! ");
 			}
 			try {
 				pwd = pwd.substring(5, pwd.length() - 1);
-				pwd = ((IPasswordMask) Class.forName(imp).newInstance())
-						.decode(pwd);
+				pwd = ((IPasswordMask) Class.forName(imp).newInstance()).decode(pwd);
 			} catch (Exception e) {
 				throw new AppRuntimeException(e);
 			}
@@ -152,8 +147,7 @@ public class DBConfig {
 		return pwd;
 	}
 
-	private final static Map<String, String> readeConfig(String v1, String v2,
-			String v3) {
+	private final static Map<String, String> readeConfig(String v1, String v2, String v3) {
 		Map<String, String> m = null;
 		File f = null;
 		try {
@@ -164,15 +158,11 @@ public class DBConfig {
 				markCfgInfo(f, filename);
 				//
 				m = XMLReader.getProperties(filename, v1, v2, v3);
-				AppLogger.getInstance(DBConfig.class).info(
-						"from file:[" + f.getPath() + "]");
+				AppLogger.getInstance(DBConfig.class).info("from file:[" + f.getPath() + "]");
 			} else {
-				m = XMLReader.getProperties(
-						ResourceLoader.getResAsStream(filename), v1, v2, v3);
-				AppLogger.getInstance(DBConfig.class).info(
-						"from jar:["
-								+ ResourceLoader.getClassLoader().toString()
-								+ "]");
+				m = XMLReader.getProperties(ResourceLoader.getResAsStream(filename), v1, v2, v3);
+				AppLogger.getInstance(DBConfig.class)
+						.info("from jar:[" + ResourceLoader.getClassLoader().toString() + "]");
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();

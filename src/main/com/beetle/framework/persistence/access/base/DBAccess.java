@@ -12,6 +12,8 @@
  */
 package com.beetle.framework.persistence.access.base;
 
+import com.beetle.framework.log.AppLogger;
+
 /**
  * <p>Title: </p>
  * <p>Description: 数据库访问方法实现类</p>
@@ -29,7 +31,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+
 public class DBAccess {
+	// 添加数据库异常日志，很多时候外部调用者并不捕捉异常，导致有时候很难定位问题，所以框架层面做必要的记录以便跟进问题,2017-1-11
+	private static final Logger logger = AppLogger.getLogger(DBAccess.class);
 
 	public static void queryForOneConnection(IAccessManner selectAccessManner, ResultSetHandler handlerImp,
 			Connection con, int maxRow) throws DBAccessException {
@@ -53,6 +59,7 @@ public class DBAccess {
 				}
 			}
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -85,6 +92,7 @@ public class DBAccess {
 			}
 		} catch (SQLException sqle) {
 			// logger.error("run[" + selectAccessManner + "]err", sqle);
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -107,6 +115,7 @@ public class DBAccess {
 			ps.clearBatch();
 			return r;
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -124,6 +133,7 @@ public class DBAccess {
 			ps.clearBatch();
 			return r;
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -142,6 +152,7 @@ public class DBAccess {
 			reRowNum = ps.executeUpdate();
 			return reRowNum;
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -169,6 +180,7 @@ public class DBAccess {
 			}
 			return id;
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
@@ -190,6 +202,7 @@ public class DBAccess {
 			reRowNum = ps.executeUpdate();
 			return reRowNum;
 		} catch (SQLException sqle) {
+			logger.error(sqle.getMessage(), sqle);
 			throw new DBAccessException("execute sql err!", sqle);
 		} finally {
 			try {
