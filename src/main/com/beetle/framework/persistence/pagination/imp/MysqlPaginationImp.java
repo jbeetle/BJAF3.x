@@ -167,11 +167,14 @@ public class MysqlPaginationImp implements IPagination {
 						int i = whereStr.lastIndexOf("and");
 						whereStr = whereStr.substring(0, i);
 						String tmpSql = pInfo.getUserSql().toLowerCase();
-						final String usersql;
+						String usersql = "";
 						if (tmpSql.indexOf("where") > 1) {
 							usersql = pInfo.getUserSql() + " and " + whereStr;
 						} else {
 							usersql = pInfo.getUserSql() + " where " + whereStr;
+						}
+						if (pInfo.getOrderExpression().length() > 1) {
+							usersql = usersql + " " + pInfo.getOrderExpression().toLowerCase();
 						}
 						StringBuffer sb2 = new StringBuffer();
 						sb2.append(usersql);

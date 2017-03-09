@@ -4,6 +4,6 @@ Ant-Version: Apache Ant 1.8.1
 
 Name: com/beetle/framework/
 Implementation-Title: j2ee framework
-Implementation-Version: 3.0.3 build_521
+Implementation-Version: 3.0.4 build_726
 Implementation-Vendor: "BeetleSoftware, Henry Yu, yuhaodong@gmail.com"
 

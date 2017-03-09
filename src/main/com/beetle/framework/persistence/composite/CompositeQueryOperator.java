@@ -23,6 +23,11 @@ import java.util.List;
  * 组合条件查询，设置sql语句时，无需指定组合条件参数（查询器会自己拼接），支持无输入参数的where条件语句
  */
 public class CompositeQueryOperator extends QueryOperator {
+	public CompositeQueryOperator() {
+		super();
+		orderExpression = "";
+	}
+
 	public void addParameter(Object value) {
 		throw new DBOperatorException(
 				"uses the [addParameter(String parameterName, Object value)]instead this methods!");
@@ -34,7 +39,18 @@ public class CompositeQueryOperator extends QueryOperator {
 				"uses the [addParameter(String parameterName, Object value)]instead this methods!");
 	}
 
+	// order表达式(order by xxx desc)
+	private String orderExpression = "";
 	// select * from a where (? is null or p1=?) and (? is null or p2=?) and ...
+
+	/**
+	 * 设置sql查询结果集的排序表达式，如："order by xxx desc"
+	 * 
+	 * @param orderExpression
+	 */
+	public void setOrderExpression(String orderExpression) {
+		this.orderExpression = orderExpression;
+	}
 
 	private List<V> paramList = new LinkedList<V>();
 
@@ -100,11 +116,14 @@ public class CompositeQueryOperator extends QueryOperator {
 			whereStr = whereStr.substring(0, i);
 			//
 			String tmpSql = this.getSql().toLowerCase();
-			final String sql;
+			String sql = "";
 			if (tmpSql.indexOf("where") > 1) {
 				sql = this.getSql() + " and " + whereStr;
 			} else {
 				sql = this.getSql() + " where " + whereStr;
+			}
+			if (orderExpression.length() > 1) {
+				sql = sql + " " + orderExpression.toLowerCase();
 			}
 			this.setSql(sql);
 			//
@@ -113,10 +132,6 @@ public class CompositeQueryOperator extends QueryOperator {
 			paramList.clear();
 		}
 		super.accessImp();
-	}
-
-	public CompositeQueryOperator() {
-		super();
 	}
 
 }

@@ -72,14 +72,35 @@ public class PageParameter {
 
 	private List<SqlParameter> sqlParameters = new LinkedList<SqlParameter>();
 	private List<V> paramList = new LinkedList<V>();
+	// order表达式(order by xxx desc)
+	private String orderExpression = "";
 
 	public PageParameter() {
 		this.queryMode = QueryMode.NormalSQL;
+		orderExpression = "";
 	}
 
 	public PageParameter(QueryMode queryMode) {
 		super();
 		this.queryMode = queryMode;
+		orderExpression = "";
+	}
+
+	/**
+	 * 设置sql查询结果集的排序表达式，如："order by xxx desc"<br>
+	 * 只针对QueryMode为CompositeSQL模式
+	 * 
+	 * @param orderExpression
+	 */
+	public void setOrderExpression(String orderExpression) {
+		if (this.queryMode == QueryMode.NormalSQL) {
+			throw new DBOperatorException("QueryMode.NormalSQL can't use this methods!");
+		}
+		this.orderExpression = orderExpression;
+	}
+
+	public String getOrderExpression() {
+		return orderExpression;
 	}
 
 	/**
