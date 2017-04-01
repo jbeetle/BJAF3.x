@@ -120,13 +120,58 @@ public final class ClassUtil {
 		return classes.toArray(new Class[classes.size()]);
 	}
 
+	/**
+	 * @param jarFileName
+	 * @param packageName
+	 * @return
+	 * @throws IOException
+	 */
 	@SuppressWarnings("rawtypes")
-	private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+	public static Class[] findClassesInJar(String jarFileName, String packageName) throws IOException {
+		JarFile jarFile = new JarFile(jarFileName);
+		ArrayList<Class> result = new ArrayList<Class>();
+		try {
+			Enumeration ee = jarFile.entries();
+			while (ee.hasMoreElements()) {
+				String entry = ee.nextElement().toString();
+				if (entry.endsWith(".class") && entry.indexOf('$') == -1) {
+					String clazzName = entry.replace('/', '.');
+					clazzName = clazzName.substring(0, clazzName.length() - 6);
+					if (!clazzName.startsWith(packageName)) {
+						continue;
+					}
+					Class testClass = null;
+					try {
+						testClass = Class.forName(clazzName);
+						result.add(testClass);
+					} catch (Error e) {
+
+					} catch (ClassNotFoundException e) {
+						// e.printStackTrace();
+					}
+					if (testClass == null) {
+						continue;
+					}
+				}
+			}
+			Class[] cls = result.toArray(new Class[result.size()]);
+			return cls;
+		} finally {
+			result.clear();
+			jarFile.close();
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
 		List<Class> classes = new ArrayList<Class>();
 		if (!directory.exists()) {
 			return classes;
 		}
 		File[] files = directory.listFiles();
+		if (files == null) {
+			return classes;
+		}
 		for (File file : files) {
 			if (file.isDirectory()) {
 				classes.addAll(findClasses(file, packageName + "." + file.getName()));
@@ -390,6 +435,56 @@ public final class ClassUtil {
 		String d = c.substring(jj);
 		String f = d + b;
 		return f;
+	}
+
+	/**
+	 * 获取某个包下面所有的接口及其实现类（只能返回一个实现）
+	 * 
+	 * @param packName
+	 *            包名
+	 * @param jarFilename
+	 * @return
+	 */
+	public static Map<Class<?>, Class<?>> getPackAllInterfaceImplMap(String packName, String jarFilename) {
+		Map<Class<?>, Class<?>> classkvMap = new HashMap<Class<?>, Class<?>>();
+		List<Class<?>> interfaceList = new ArrayList<Class<?>>();
+		List<Class<?>> impList = new ArrayList<Class<?>>();
+		try {
+			@SuppressWarnings("rawtypes")
+			Class[] ca = findClassesInJar(jarFilename,packName);
+			for (int i = 0; i < ca.length; i++) {
+				// System.out.println(ca[i]);
+				if (ca[i].isInterface()) {
+					interfaceList.add(ca[i]);
+				} else {
+					impList.add(ca[i]);
+				}
+			}
+			for (int i = 0; i < impList.size(); i++) {
+				Class<?> imp = impList.get(i);
+				@SuppressWarnings("rawtypes")
+				Class[] ff = imp.getInterfaces();
+				if (ff == null || ff.length == 0) {
+					continue;
+				}
+				for (int j = 0; j < interfaceList.size(); j++) {
+					Class<?> face = interfaceList.get(j);
+					// System.out.println(ff[0]);
+					// System.out.println(face);
+					if (ff[0].equals(face)) {
+						classkvMap.put(face, imp);
+						break;
+					}
+				}
+			}
+			// System.out.println(classkvMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			interfaceList.clear();
+			impList.clear();
+		}
+		return classkvMap;
 	}
 
 	/**

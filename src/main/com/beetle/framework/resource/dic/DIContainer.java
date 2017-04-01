@@ -15,6 +15,7 @@ package com.beetle.framework.resource.dic;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class DIContainer {
 	private final static Map<String, Object> DI_BEAN_CACHE = new ConcurrentHashMap<String, Object>();
 	private static DIContainer instance = new DIContainer();
 	private static ReleBinder binder;
+	//private  ReleBinder binder;
 	private static final AppLogger logger = AppLogger.getInstance(DIContainer.class);
 	private boolean initFlag;
 
@@ -147,47 +149,41 @@ public class DIContainer {
 	}
 
 	private void initConfigBinder() {
-		if (binder == null) {
-			synchronized (logger) {
-				if (binder != null)
-					return;
-				binder = new ReleBinder();
-				// loadXmlFile(rb, "DAOConfig.xml");
-				// loadXmlFile(rb, "ServiceConfig.xml");
-				// loadXmlFile(rb, "AOPConfig.xml");
-				String files[] = AppProperties
-						.get("resource_DI_CONTAINER_FILES", "DAOConfig.xml;ServiceConfig.xml;AOPConfig.xml").split(";");
-				for (int i = 0; i < files.length; i++) {
-					loadXmlFile(binder, files[i]);
+		binder = new ReleBinder();
+		// loadXmlFile(rb, "DAOConfig.xml");
+		// loadXmlFile(rb, "ServiceConfig.xml");
+		// loadXmlFile(rb, "AOPConfig.xml");
+		String files[] = AppProperties
+				.get("resource_DI_CONTAINER_FILES", "DAOConfig.xml;ServiceConfig.xml;AOPConfig.xml").split(";");
+		for (int i = 0; i < files.length; i++) {
+			loadXmlFile(binder, files[i]);
+		}
+		// auto scan
+		String daoPackPath = AppProperties.get("resource_DI_DAO_PACK_PATH");
+		if (daoPackPath != null && daoPackPath.trim().length() > 0) {
+			// xxx;yyy;zzz
+			String packs[] = daoPackPath.split(";");
+			for (int i = 0; i < packs.length; i++) {
+				String pn = packs[i];
+				if (pn != null && pn.trim().length() > 0) {
+					autoScanClass(binder, pn);
 				}
-				// auto scan
-				String daoPackPath = AppProperties.get("resource_DI_DAO_PACK_PATH");
-				if (daoPackPath != null && daoPackPath.trim().length() > 0) {
-					// xxx;yyy;zzz
-					String packs[] = daoPackPath.split(";");
-					for (int i = 0; i < packs.length; i++) {
-						String pn = packs[i];
-						if (pn != null && pn.trim().length() > 0) {
-							autoScanClass(binder, pn);
-						}
-					}
-				}
-				String srvPackPath = AppProperties.get("resource_DI_SERVICE_PACK_PATH");
-				if (srvPackPath != null && srvPackPath.trim().length() > 0) {
-					// ...
-					// autoScanClass(binder,srvPackPath);
-					String packs[] = srvPackPath.split(";");
-					for (int i = 0; i < packs.length; i++) {
-						String pn = packs[i];
-						if (pn != null && pn.trim().length() > 0) {
-							autoScanClass(binder, pn);
-						}
-					}
-				}
-				//
-				binder.bindProperties();
 			}
 		}
+		String srvPackPath = AppProperties.get("resource_DI_SERVICE_PACK_PATH");
+		if (srvPackPath != null && srvPackPath.trim().length() > 0) {
+			// ...
+			// autoScanClass(binder,srvPackPath);
+			String packs[] = srvPackPath.split(";");
+			for (int i = 0; i < packs.length; i++) {
+				String pn = packs[i];
+				if (pn != null && pn.trim().length() > 0) {
+					autoScanClass(binder, pn);
+				}
+			}
+		}
+		//
+		binder.bindProperties();
 	}
 
 	private void autoScanClass(ReleBinder rb, String packname) {
@@ -199,8 +195,35 @@ public class DIContainer {
 				Map.Entry<Class<?>, Class<?>> kv = (Map.Entry<Class<?>, Class<?>>) it.next();
 				rb.bind(kv.getKey(), kv.getValue(), true);
 			}
+			logger.info("autoScanInClassPathDir:{}", packname);
+		} else {
+			Map<Class<?>, Class<?>> kvs2 = scanInClassPathLibs(packname);
+			if (!kvs2.isEmpty()) {
+				Iterator<?> it = kvs2.entrySet().iterator();
+				while (it.hasNext()) {
+					@SuppressWarnings("unchecked")
+					Map.Entry<Class<?>, Class<?>> kv = (Map.Entry<Class<?>, Class<?>>) it.next();
+					rb.bind(kv.getKey(), kv.getValue(), true);
+				}
+				logger.info("autoScanInClassPathLibs:{}", packname);
+			}
 		}
-		logger.info("autoScanClass:{}", packname);
+	}
+
+	private static Map<Class<?>, Class<?>> scanInClassPathLibs(String packname) {
+		Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
+		String x = System.getProperties().getProperty("java.class.path");
+		String[] jars = x.split(System.getProperties().getProperty("path.separator"));
+		for (int i = 0; i < jars.length; i++) {
+			String jar = jars[i];
+			if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
+				Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
+				if (!kvs.isEmpty()) {
+					allKvs.putAll(kvs);
+				}
+			}
+		}
+		return allKvs;
 	}
 
 	private void loadXmlFile(ReleBinder rb, String xmlname) {

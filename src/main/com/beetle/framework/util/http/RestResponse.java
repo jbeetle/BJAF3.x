@@ -1,4 +1,4 @@
-package com.beetle.framework.web.client;
+package com.beetle.framework.util.http;
 
 import java.util.Map;
 
