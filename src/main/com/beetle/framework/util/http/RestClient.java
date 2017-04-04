@@ -16,15 +16,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
@@ -60,24 +59,25 @@ import org.apache.http.util.EntityUtils;
  */
 public class RestClient {
 	public RestClient() {
-		this.client = new DefaultHttpClient();
+		if (username != null && username.length() > 0) {
+			this.client = ConnectPool.getInstance().getHttpClient(username, password);
+		} else {
+			this.client = ConnectPool.getInstance().getHttpClient();
+		}
 		this.invokLock = new ReentrantLock();
 	}
 
-	private final DefaultHttpClient client;
+	private final CloseableHttpClient client;
 	private final ReentrantLock invokLock;
 	private String username;
 	private String password;
+	//private final static Logger logger = AppLogger.getLogger(RestClient.class);
 
 	/**
 	 * 建立连接
 	 */
 	public void connect() {
-		if (username != null && username.length() > 0) {
-			UsernamePasswordCredentials upc = new UsernamePasswordCredentials(
-					username, password);
-			client.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
-		}
+
 	}
 
 	/**
@@ -98,8 +98,7 @@ public class RestClient {
 		if (content == null)
 			return null;
 		try {
-			return URLEncoder.encode(content, charset != null ? charset
-					: HTTP.DEF_CONTENT_CHARSET.name());
+			return URLEncoder.encode(content, charset != null ? charset : HTTP.DEF_CONTENT_CHARSET.name());
 		} catch (UnsupportedEncodingException ex) {
 			throw new IllegalArgumentException(ex);
 		}
@@ -127,8 +126,7 @@ public class RestClient {
 		return result.toString();
 	}
 
-	private static String genGetUrl(String url1, Map<String, String> paramMap,
-			Charset charset) {
+	private static String genGetUrl(String url1, Map<String, String> paramMap, Charset charset) {
 		if (url1.indexOf('?') > 0) {
 			if (!url1.endsWith("&")) {
 				url1 = url1 + "&";
@@ -151,53 +149,53 @@ public class RestClient {
 	public RestResponse invoke(RestRequest request) throws RestInvokeException {
 		if (request.getInvokeMethod().equals(RestRequest.InvokeMethod.GET)) {
 			return this.invokeWithGet(request);
-		} else if (request.getInvokeMethod().equals(
-				RestRequest.InvokeMethod.POST)) {
+		} else if (request.getInvokeMethod().equals(RestRequest.InvokeMethod.POST)) {
 			return this.invokeWithPost(request);
-		} else if (request.getInvokeMethod().equals(
-				RestRequest.InvokeMethod.DELETE)) {
+		} else if (request.getInvokeMethod().equals(RestRequest.InvokeMethod.DELETE)) {
 			return this.invokeWithDelete(request);
-		} else if (request.getInvokeMethod().equals(
-				RestRequest.InvokeMethod.PUT)) {
+		} else if (request.getInvokeMethod().equals(RestRequest.InvokeMethod.PUT)) {
 			return this.invokeWithPut(request);
 		} else {
-			throw new RestInvokeException("not support this mothod["
-					+ request.getInvokeMethod() + "] yet!");
+			throw new RestInvokeException("not support this mothod[" + request.getInvokeMethod() + "] yet!");
 		}
 	}
 
-	private RestResponse invokeWithDelete(RestRequest request)
-			throws RestInvokeException {
+	private RestResponse invokeWithDelete(RestRequest request) throws RestInvokeException {
 		invokLock.lock();
+		CloseableHttpResponse res = null;
 		try {
 			HttpDelete httpdelete = new HttpDelete(request.getUrl());
 			if (!request.getHeaderMap().isEmpty()) {
-				Iterator<Entry<String, String>> it = request.getHeaderMap()
-						.entrySet().iterator();
+				Iterator<Entry<String, String>> it = request.getHeaderMap().entrySet().iterator();
 				while (it.hasNext()) {
-					Map.Entry<String, String> kv = (Map.Entry<String, String>) it
-							.next();
+					Map.Entry<String, String> kv = (Map.Entry<String, String>) it.next();
 					httpdelete.addHeader(kv.getKey(), kv.getValue());
 				}
 			}
-			HttpResponse res = client.execute(httpdelete);
+			res = client.execute(httpdelete);
 			return fillResponse(res, request.getCharset());
 		} catch (Exception e) {
 			throw new RestInvokeException(e);
 		} finally {
+			if (res != null) {
+				try {
+					res.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			invokLock.unlock();
 			request.clear();
 		}
 	}
 
-	private RestResponse invokeWithGet(RestRequest request)
-			throws RestInvokeException {
+	private RestResponse invokeWithGet(RestRequest request) throws RestInvokeException {
 		invokLock.lock();
+		CloseableHttpResponse res = null;
 		try {
 			String url2 = null;
 			if (!request.getParamMap().isEmpty()) {
-				url2 = genGetUrl(request.getUrl(), request.getParamMap(),
-						request.getCharset());
+				url2 = genGetUrl(request.getUrl(), request.getParamMap(), request.getCharset());
 			}
 			final HttpGet httpget;
 			if (url2 != null) {
@@ -206,26 +204,30 @@ public class RestClient {
 				httpget = new HttpGet(request.getUrl());
 			}
 			if (!request.getHeaderMap().isEmpty()) {
-				Iterator<Entry<String, String>> it = request.getHeaderMap()
-						.entrySet().iterator();
+				Iterator<Entry<String, String>> it = request.getHeaderMap().entrySet().iterator();
 				while (it.hasNext()) {
-					Map.Entry<String, String> kv = (Map.Entry<String, String>) it
-							.next();
+					Map.Entry<String, String> kv = (Map.Entry<String, String>) it.next();
 					httpget.addHeader(kv.getKey(), kv.getValue());
 				}
 			}
-			HttpResponse res = client.execute(httpget);
+			res = client.execute(httpget);
 			return fillResponse(res, request.getCharset());
 		} catch (Exception e) {
 			throw new RestInvokeException(e);
 		} finally {
+			if (res != null) {
+				try {
+					res.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			invokLock.unlock();
 			request.clear();
 		}
 	}
 
-	private RestResponse fillResponse(HttpResponse res, Charset charset)
-			throws IOException {
+	private RestResponse fillResponse(HttpResponse res, Charset charset) throws IOException {
 		Map<String, String> hm = new HashMap<String, String>();
 		Header hds[] = res.getAllHeaders();
 		if (hds != null && hds.length > 0) {
@@ -238,9 +240,9 @@ public class RestClient {
 		return rr;
 	}
 
-	private RestResponse invokeWithPut(RestRequest request)
-			throws RestInvokeException {
+	private RestResponse invokeWithPut(RestRequest request) throws RestInvokeException {
 		invokLock.lock();
+		CloseableHttpResponse res = null;
 		try {
 			List<NameValuePair> nvps = null;
 			HttpPut httpput = new HttpPut(request.getUrl());
@@ -248,34 +250,36 @@ public class RestClient {
 				nvps = new ArrayList<NameValuePair>();
 				Set<String> ks = request.getParamMap().keySet();
 				for (String key : ks) {
-					NameValuePair np = new BasicNameValuePair(key, request
-							.getParamMap().get(key));
+					NameValuePair np = new BasicNameValuePair(key, request.getParamMap().get(key));
 					nvps.add(np);
 				}
 			}
 			if (request.getContent() != null) {
-				httpput.setEntity(new StringEntity(request.getContent(),
-						request.getCharset()));
+				httpput.setEntity(new StringEntity(request.getContent(), request.getCharset()));
 			}
 			if (!request.getHeaderMap().isEmpty()) {
-				Iterator<Entry<String, String>> it = request.getHeaderMap()
-						.entrySet().iterator();
+				Iterator<Entry<String, String>> it = request.getHeaderMap().entrySet().iterator();
 				while (it.hasNext()) {
-					Map.Entry<String, String> kv = (Map.Entry<String, String>) it
-							.next();
+					Map.Entry<String, String> kv = (Map.Entry<String, String>) it.next();
 					httpput.addHeader(kv.getKey(), kv.getValue());
 				}
 			}
 			if (nvps != null && !nvps.isEmpty()) {
-				httpput.setEntity(new UrlEncodedFormEntity(nvps, request
-						.getCharset()));
+				httpput.setEntity(new UrlEncodedFormEntity(nvps, request.getCharset()));
 			}
 			try {
-				HttpResponse res = client.execute(httpput);
+				res = client.execute(httpput);
 				return fillResponse(res, request.getCharset());
 			} catch (Exception e) {
 				throw new RestInvokeException(e);
 			} finally {
+				if (res != null) {
+					try {
+						res.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				if (nvps != null) {
 					nvps.clear();
 				}
@@ -286,9 +290,9 @@ public class RestClient {
 		}
 	}
 
-	private RestResponse invokeWithPost(RestRequest request)
-			throws RestInvokeException {
+	private RestResponse invokeWithPost(RestRequest request) throws RestInvokeException {
 		invokLock.lock();
+		CloseableHttpResponse res = null;
 		try {
 			List<NameValuePair> nvps = null;
 			HttpPost httpost = new HttpPost(request.getUrl());
@@ -296,34 +300,36 @@ public class RestClient {
 				nvps = new ArrayList<NameValuePair>();
 				Set<String> ks = request.getParamMap().keySet();
 				for (String key : ks) {
-					NameValuePair np = new BasicNameValuePair(key, request
-							.getParamMap().get(key));
+					NameValuePair np = new BasicNameValuePair(key, request.getParamMap().get(key));
 					nvps.add(np);
 				}
 			}
 			if (request.getContent() != null) {
-				httpost.setEntity(new StringEntity(request.getContent(),
-						request.getCharset()));
+				httpost.setEntity(new StringEntity(request.getContent(), request.getCharset()));
 			}
 			if (!request.getHeaderMap().isEmpty()) {
-				Iterator<Entry<String, String>> it = request.getHeaderMap()
-						.entrySet().iterator();
+				Iterator<Entry<String, String>> it = request.getHeaderMap().entrySet().iterator();
 				while (it.hasNext()) {
-					Map.Entry<String, String> kv = (Map.Entry<String, String>) it
-							.next();
+					Map.Entry<String, String> kv = (Map.Entry<String, String>) it.next();
 					httpost.addHeader(kv.getKey(), kv.getValue());
 				}
 			}
 			if (nvps != null && !nvps.isEmpty()) {
-				httpost.setEntity(new UrlEncodedFormEntity(nvps, request
-						.getCharset()));
+				httpost.setEntity(new UrlEncodedFormEntity(nvps, request.getCharset()));
 			}
 			try {
-				HttpResponse res = client.execute(httpost);
+				res = client.execute(httpost);
 				return fillResponse(res, request.getCharset());
 			} catch (Exception e) {
 				throw new RestInvokeException(e);
 			} finally {
+				if (res != null) {
+					try {
+						res.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				if (nvps != null) {
 					nvps.clear();
 				}
@@ -338,6 +344,10 @@ public class RestClient {
 	 * 关闭回收资源
 	 */
 	public void close() {
-		this.client.getConnectionManager().shutdown();
+		try {
+			this.client.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
