@@ -42,7 +42,7 @@ class ConnectPool {
 
 	public CloseableHttpClient getHttpClient(String username, String password) {
 		CredentialsProvider credsProvider = new BasicCredentialsProvider();
-		credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("username", "password"));
+		credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 		CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
 		return httpclient;
 	}
