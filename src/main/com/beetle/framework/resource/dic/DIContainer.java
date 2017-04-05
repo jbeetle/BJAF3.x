@@ -28,6 +28,7 @@ import com.beetle.framework.resource.dic.ReleBinder.FieldVO;
 import com.beetle.framework.util.ClassUtil;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.ResourceLoader;
+import com.beetle.framework.util.file.DirUtil;
 
 /*
  * 依赖注入容器
@@ -41,7 +42,7 @@ public class DIContainer {
 	private final static Map<String, Object> DI_BEAN_CACHE = new ConcurrentHashMap<String, Object>();
 	private static DIContainer instance = new DIContainer();
 	private static ReleBinder binder;
-	//private  ReleBinder binder;
+	// private ReleBinder binder;
 	private static final AppLogger logger = AppLogger.getInstance(DIContainer.class);
 	private boolean initFlag;
 
@@ -140,6 +141,9 @@ public class DIContainer {
 		}
 
 		public static ReleBinder getReleBinder() {
+			if (binder == null) {
+				DIContainer.getInstance().init();
+			}
 			return binder;
 		}
 	}
@@ -153,11 +157,13 @@ public class DIContainer {
 		// loadXmlFile(rb, "DAOConfig.xml");
 		// loadXmlFile(rb, "ServiceConfig.xml");
 		// loadXmlFile(rb, "AOPConfig.xml");
+		logger.info("load from xml files...");
 		String files[] = AppProperties
 				.get("resource_DI_CONTAINER_FILES", "DAOConfig.xml;ServiceConfig.xml;AOPConfig.xml").split(";");
 		for (int i = 0; i < files.length; i++) {
 			loadXmlFile(binder, files[i]);
 		}
+		logger.info("load by auto scan...");
 		// auto scan
 		String daoPackPath = AppProperties.get("resource_DI_DAO_PACK_PATH");
 		if (daoPackPath != null && daoPackPath.trim().length() > 0) {
@@ -165,6 +171,7 @@ public class DIContainer {
 			String packs[] = daoPackPath.split(";");
 			for (int i = 0; i < packs.length; i++) {
 				String pn = packs[i];
+				logger.info("dao scan:{}", pn);
 				if (pn != null && pn.trim().length() > 0) {
 					autoScanClass(binder, pn);
 				}
@@ -177,6 +184,7 @@ public class DIContainer {
 			String packs[] = srvPackPath.split(";");
 			for (int i = 0; i < packs.length; i++) {
 				String pn = packs[i];
+				logger.info("service scan:{}", pn);
 				if (pn != null && pn.trim().length() > 0) {
 					autoScanClass(binder, pn);
 				}
@@ -187,7 +195,9 @@ public class DIContainer {
 	}
 
 	private void autoScanClass(ReleBinder rb, String packname) {
+		logger.info("autoScanInClassPathDir:{}", packname);
 		Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname);
+		logger.debug("[{}]kvs:{}", packname, kvs.size());
 		if (!kvs.isEmpty()) {
 			Iterator<?> it = kvs.entrySet().iterator();
 			while (it.hasNext()) {
@@ -195,9 +205,10 @@ public class DIContainer {
 				Map.Entry<Class<?>, Class<?>> kv = (Map.Entry<Class<?>, Class<?>>) it.next();
 				rb.bind(kv.getKey(), kv.getValue(), true);
 			}
-			logger.info("autoScanInClassPathDir:{}", packname);
 		} else {
+			logger.info("autoScanInClassPathLibs:{}", packname);
 			Map<Class<?>, Class<?>> kvs2 = scanInClassPathLibs(packname);
+			logger.debug("[{}]kvs2:{}", packname, kvs2.size());
 			if (!kvs2.isEmpty()) {
 				Iterator<?> it = kvs2.entrySet().iterator();
 				while (it.hasNext()) {
@@ -205,12 +216,12 @@ public class DIContainer {
 					Map.Entry<Class<?>, Class<?>> kv = (Map.Entry<Class<?>, Class<?>>) it.next();
 					rb.bind(kv.getKey(), kv.getValue(), true);
 				}
-				logger.info("autoScanInClassPathLibs:{}", packname);
 			}
 		}
 	}
 
 	private static Map<Class<?>, Class<?>> scanInClassPathLibs(String packname) {
+		logger.info("scan system[java.class.path]");
 		Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
 		String x = System.getProperties().getProperty("java.class.path");
 		String[] jars = x.split(System.getProperties().getProperty("path.separator"));
@@ -220,6 +231,23 @@ public class DIContainer {
 				Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
 				if (!kvs.isEmpty()) {
 					allKvs.putAll(kvs);
+				}
+			}
+		}
+		if (allKvs.isEmpty()) {// java.class.path没有，找web容器底下的
+			String webClassPath = DIContainer.class.getClassLoader().getResource("/").getPath();
+			logger.debug("webClassPath:{}", webClassPath);
+			int i = webClassPath.lastIndexOf("classes");
+			if (i > 1) {
+				String webLibPath = webClassPath.substring(0, i) + "/lib/";
+				logger.debug("webLibPath:{}", webLibPath);
+				List<String> jars2 = DirUtil.getCurrentDirectoryFileNames(webLibPath, true, ".jar");
+				for (String jar : jars2) {
+					//logger.debug("jar:{}",jar);
+					Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
+					if (!kvs.isEmpty()) {
+						allKvs.putAll(kvs);
+					}
 				}
 			}
 		}
