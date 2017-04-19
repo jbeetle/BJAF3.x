@@ -29,6 +29,8 @@ import com.beetle.framework.util.ClassUtil;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.ResourceLoader;
 import com.beetle.framework.util.file.DirUtil;
+import com.beetle.framework.util.thread.task.TaskExecutor;
+import com.beetle.framework.util.thread.task.TaskImp;
 
 /*
  * 依赖注入容器
@@ -110,7 +112,7 @@ public class DIContainer {
 		}
 	}
 
-	void createInstance(String beanName, Class<?> impl) {
+	static void createInstance(String beanName, Class<?> impl) {
 		try {
 			if (!DI_BEAN_CACHE.containsKey(beanName)) {
 				Object bean = ClassUtil.newInstance(impl);
@@ -243,7 +245,7 @@ public class DIContainer {
 				logger.debug("webLibPath:{}", webLibPath);
 				List<String> jars2 = DirUtil.getCurrentDirectoryFileNames(webLibPath, true, ".jar");
 				for (String jar : jars2) {
-					//logger.debug("jar:{}",jar);
+					// logger.debug("jar:{}",jar);
 					Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
 					if (!kvs.isEmpty()) {
 						allKvs.putAll(kvs);
@@ -280,14 +282,44 @@ public class DIContainer {
 		}
 	}
 
+	private static class CreateBeanTask extends TaskImp {
+		private String beanName;
+		private Class<?> impl;
+
+		public CreateBeanTask(String beanName, Class<?> impl) {
+			super();
+			this.beanName = beanName;
+			this.impl = impl;
+		}
+
+		@Override
+		protected void routine() throws InterruptedException {
+			createInstance(beanName, impl);
+		}
+
+	}
+
 	private void initBean() {
+		// 是否需要从多线程初始化容器的bean，默认不需要
+		boolean nrft = AppProperties.getAsBoolean("resource_DI_Multi_Threaded_Initialization", true);
+		TaskExecutor exe = null;
+		if (!nrft) {
+			exe = new TaskExecutor();
+		}
 		for (BeanVO bvo : binder.getBeanVoList()) {
 			if (bvo != null) {
 				if (bvo.getIface() != null && bvo.getImp() != null) {
-					createInstance(bvo.getIface().getName(), bvo.getImp());
+					if (nrft) {
+						createInstance(bvo.getIface().getName(), bvo.getImp());
+					} else {
+						exe.addSubRoutine(new CreateBeanTask(bvo.getIface().getName(), bvo.getImp()));
+					}
 				}
 
 			}
+		}
+		if (!nrft) {
+			exe.runRoutineParalleJoin();
 		}
 		logger.debug("di cache keys:{}", DI_BEAN_CACHE.keySet());
 	}

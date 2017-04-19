@@ -76,7 +76,10 @@ final public class TableOperator<T> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TableOperator(String dataSourceName, String tableName, Class<T> valueObjectClass) {
 		if (!TableCACHER.containsKey(tableName) && !TableCACHER.containsKey(tableName.toUpperCase())) {
-			init(dataSourceName, tableName, valueObjectClass);
+			//boolean tcf = AppProperties.getAsBoolean("daoTableInitializationCache", true);
+			//if (tcf) {
+				init(dataSourceName, tableName, valueObjectClass);
+			//}
 		} else {
 			TableOperator tor = (TableOperator) TableCACHER.get(tableName);
 			if (tor == null) {
@@ -365,11 +368,14 @@ final public class TableOperator<T> {
 				rs.clearAll();
 		}
 	}
-	
+
 	/**
 	 * 统计数量
-	 * @param whereStr 条件语句
-	 * @param values 条件值
+	 * 
+	 * @param whereStr
+	 *            条件语句
+	 * @param values
+	 *            条件值
 	 * @return
 	 * @throws DBOperatorException
 	 */
