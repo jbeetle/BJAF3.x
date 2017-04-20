@@ -56,4 +56,5 @@ Beetle J2EE Application Framework Version 3，Powerful, simple and easy to use
 	* 账户、科目、流水
 	* 借贷复式记账
 	* 试算平衡
+* 规则引擎决策表（金融类风控决策核心组件）
 			   
