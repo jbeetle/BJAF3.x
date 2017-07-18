@@ -248,6 +248,17 @@ public class WebInput {
 		response.addDateHeader(name, date);
 	}
 
+	/**
+	 * 在服务端设置请求参数，其参数放在httprequest对象里面<br>
+	 * 此方便一般不使用，只有在客户端请求不存在此参数，而这个请求在本控制器或处理方面内不完全处理，需要传递到后续的类处理时，
+	 * 有缺少一些请求参数实时使用
+	 * @param key
+	 * @param value
+	 */
+	public void setRequestParameter(String key, String value) {
+		request.setAttribute(key, value);
+	}
+
 	public void setHeader(String key, String value) {
 		response.setHeader(key, value);
 	}
@@ -408,6 +419,7 @@ public class WebInput {
 	/**
 	 * 获取页面输入参数原始值（没有做任何xxs等处理）<br>
 	 * 为了安全性，一般不推荐使用，除非要做特殊处理的时候才可以使用
+	 * 
 	 * @param name
 	 * @return
 	 */

@@ -63,6 +63,7 @@ public abstract class AbnormalViewControlerImp extends ControllerImp {
 		}
 		return view;
 	}
+	
 
 	public void setContentType(String contentType) {
 		if (response != null) {
