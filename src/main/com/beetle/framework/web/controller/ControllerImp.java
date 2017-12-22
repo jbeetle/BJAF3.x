@@ -298,7 +298,7 @@ public abstract class ControllerImp {
 	 * <p/>
 	 * 对控制器进行任何并发数量限制。(注:必须在构造函数内调用才有效)
 	 * 
-	 * @param amount
+	 * @param amount 
 	 */
 	public void setMaxParallelAmount(int amount) {
 		if (amount > 0) {// 只作一次初始化设置
