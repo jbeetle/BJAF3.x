@@ -14,6 +14,7 @@ package com.beetle.framework.web.controller;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.beetle.framework.AppProperties;
-
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.view.View;
 
@@ -127,8 +127,7 @@ public abstract class ControllerImp {
 						HttpServletResponse.SC_NOT_ACCEPTABLE,
 						"exceeding this controller's request parallel amount limit,do it later,please!");
 			} else {
-				cur = cur + 1;
-				pv.setCur(cur);
+				pv.increment();
 			}
 		}
 		// ///////////////////==执行正常控制代码==//////////////////////////////
@@ -139,9 +138,7 @@ public abstract class ControllerImp {
 			// 更新计数器
 			if (className != null && cache.containsKey(className)) {
 				ParallelValue pv = (ParallelValue) cache.get(this.className);
-				int cur = pv.getCur();
-				cur = cur - 1;
-				pv.setCur(cur);
+				pv.decrement();
 			}
 		}
 		// ////////////////////////==设置back回调==//////////////////////////
@@ -273,9 +270,9 @@ public abstract class ControllerImp {
 	private static class ParallelValue {
 		int max;
 
-		int cur;
+		AtomicInteger cur;
 
-		public ParallelValue(int max, int cur) {
+		public ParallelValue(int max, AtomicInteger cur) {
 			this.max = max;
 			this.cur = cur;
 		}
@@ -285,11 +282,15 @@ public abstract class ControllerImp {
 		}
 
 		public int getCur() {
-			return this.cur;
+			return this.cur.get();
 		}
 
-		public void setCur(int cur) {
-			this.cur = cur;
+		public void increment() {
+			this.cur.incrementAndGet();
+		}
+		
+		public void decrement() {
+			this.cur.decrementAndGet();
 		}
 	}
 
@@ -306,7 +307,7 @@ public abstract class ControllerImp {
 				this.className = this.getClass().getName();
 			}
 			if (!cache.containsKey(className)) {
-				cache.put(className, new ParallelValue(amount, 0));
+				cache.put(className, new ParallelValue(amount, new AtomicInteger()));
 			}
 		}
 	}
