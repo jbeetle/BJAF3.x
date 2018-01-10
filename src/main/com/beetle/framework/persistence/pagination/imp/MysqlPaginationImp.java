@@ -156,12 +156,19 @@ public class MysqlPaginationImp implements IPagination {
 					List<V> paramList = pInfo.getCompositeSQLParamList();
 					if (!paramList.isEmpty()) {
 						StringBuffer sb = new StringBuffer();
-						for (int i = 0; i < paramList.size(); i++) {
-							V v = (V) paramList.get(i);
-							sb.append(
-									"(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
-							query.addParameter(v.getValue());
-							query.addParameter(v.getValue());
+						if(pInfo.isUseNullParameter()){
+						    for (int i = 0; i < paramList.size(); i++) {
+						        V v = (V) paramList.get(i);
+						        sb.append("(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
+						        query.addParameter(v.getValue());
+						        query.addParameter(v.getValue());
+						    }
+						}else{
+						    for (int i = 0; i < paramList.size(); i++) {
+                                V v = (V) paramList.get(i);
+                                sb.append(" " + v.getParameterName() + " " + v.getOperateSymbol() + " ? and ");
+                                query.addParameter(v.getValue());
+                            }
 						}
 						String whereStr = sb.toString();
 						int i = whereStr.lastIndexOf("and");
