@@ -61,6 +61,8 @@ public class PageParameter {
 	private int pageSize;
 
 	private boolean cacheRecordAmountFlag = false;
+	
+	private boolean useNullParameter=true;//使用null作为查询条件，组合查询模式时候使用
 
 	/**
 	 * 唯一标识别字段名称
@@ -258,4 +260,12 @@ public class PageParameter {
 	public void setCacheRecordAmountFlag(boolean cacheRecordAmountFlag) {
 		this.cacheRecordAmountFlag = cacheRecordAmountFlag;
 	}
+
+    public boolean isUseNullParameter() {
+        return useNullParameter;
+    }
+
+    public void setUseNullParameter(boolean useNullParameter) {
+        this.useNullParameter = useNullParameter;
+    }
 }
