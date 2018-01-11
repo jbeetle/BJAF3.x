@@ -16,6 +16,8 @@ package com.beetle.framework.persistence.pagination.imp;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.persistence.access.ConnectionFactory;
 import com.beetle.framework.persistence.access.operator.DBOperatorException;
@@ -166,19 +168,23 @@ public class MysqlPaginationImp implements IPagination {
 						}else{
 						    for (int i = 0; i < paramList.size(); i++) {
                                 V v = (V) paramList.get(i);
-                                sb.append(" " + v.getParameterName() + " " + v.getOperateSymbol() + " ? and ");
-                                query.addParameter(v.getValue());
+                                if(v.getValue()!=null){
+                                    sb.append(" " + v.getParameterName() + " " + v.getOperateSymbol() + " ? and ");
+                                    query.addParameter(v.getValue());
+                                }
                             }
 						}
 						String whereStr = sb.toString();
-						int i = whereStr.lastIndexOf("and");
-						whereStr = whereStr.substring(0, i);
-						String tmpSql = pInfo.getUserSql().toLowerCase();
-						String usersql = "";
-						if (tmpSql.indexOf("where") > 1) {
-							usersql = pInfo.getUserSql() + " and " + whereStr;
-						} else {
-							usersql = pInfo.getUserSql() + " where " + whereStr;
+						String usersql = pInfo.getUserSql();
+						if(StringUtils.isNotBlank(whereStr)){
+						    int i = whereStr.lastIndexOf("and");
+						    whereStr = whereStr.substring(0, i);
+						    String tmpSql = pInfo.getUserSql().toLowerCase();
+						    if (tmpSql.indexOf("where") > 1) {
+						        usersql = usersql + " and " + whereStr;
+						    } else {
+						        usersql = usersql + " where " + whereStr;
+						    }
 						}
 						if (pInfo.getOrderExpression().length() > 1) {
 							usersql = usersql + " " + pInfo.getOrderExpression().toLowerCase();
