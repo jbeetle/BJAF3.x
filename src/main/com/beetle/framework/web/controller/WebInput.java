@@ -20,7 +20,9 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -711,7 +713,8 @@ public class WebInput {
 	 */
 	@SuppressWarnings("rawtypes")
 	public java.util.Map getParameterMap() {
-		Map<String, String[]> xx = request.getParameterMap();
+		Map<String, String[]> xx = new HashMap<String, String[]>();
+		xx.putAll(request.getParameterMap());
 		Set<?> e = xx.entrySet();
 		Iterator<?> it = e.iterator();
 		while (it.hasNext()) {
@@ -720,7 +723,7 @@ public class WebInput {
 			String values[] = getParameterValues(key);
 			xx.put(key, values);
 		}
-		return xx;
+		return Collections.unmodifiableMap(xx);
 	}
 
 	/**
