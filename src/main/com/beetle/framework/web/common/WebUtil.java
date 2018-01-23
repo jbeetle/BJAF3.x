@@ -1,15 +1,16 @@
 package com.beetle.framework.web.common;
 
-import com.beetle.framework.AppProperties;
-import com.beetle.framework.web.controller.ControllerException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.beetle.framework.AppProperties;
+import com.beetle.framework.web.controller.ControllerException;
 
 public class WebUtil {
 	
@@ -89,6 +90,8 @@ public class WebUtil {
 	}
 
 	public static String decodeURL(String url, String charset) {
+	    if(url==null)
+	        return null;
 		try {
 			return URLDecoder.decode(url, charset);
 		} catch (UnsupportedEncodingException u) {
@@ -162,6 +165,8 @@ public class WebUtil {
 	}
 
 	public static String decodeURL(String string) {
+	    if(string==null)
+	        return null;
 		return decodeURL(string, System.getProperty("file.encoding"));
 		// return URLDecoder.decode(string);
 	}
