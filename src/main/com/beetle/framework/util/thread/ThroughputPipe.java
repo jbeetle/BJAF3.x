@@ -43,6 +43,15 @@ public class ThroughputPipe<T> {
 	 * 启动管道流量控制，而且只能启动一次。
 	 */
 	public synchronized void start() {
+		start_(false);
+	}
+
+	public synchronized void startWithDaemon() {
+		start_(true);
+	}
+
+	private void start_(boolean dmFlag) {
+
 		if (!f) {
 			f = true;
 			Thread t = new Thread(new Runnable() {
@@ -68,7 +77,7 @@ public class ThroughputPipe<T> {
 					}
 				}
 			}, "ThroughputPipe-Dispatcher");
-			t.setDaemon(true);
+			t.setDaemon(dmFlag);
 			t.start();
 		}
 	}
@@ -97,8 +106,7 @@ public class ThroughputPipe<T> {
 	 *            --流量消费指派速度参数，单位ms毫秒。例如，每秒消费1个请求，则值为1000ms<br>
 	 *            特别地，值为0时，指派速度没有限制，管道流量消费速度只依赖于线程池的大小及handler计算速度。
 	 */
-	public ThroughputPipe(int pipeSize, IConsumeHandler<T> handler,
-			long stepOfDispatcher) {
+	public ThroughputPipe(int pipeSize, IConsumeHandler<T> handler, long stepOfDispatcher) {
 		if (null == handler) {
 			throw new RuntimeException("handle can't be null!");
 		}
@@ -121,8 +129,7 @@ public class ThroughputPipe<T> {
 	 *            --流量消费指派速度参数，单位ms毫秒。例如，每秒消费1个请求，则值为1000ms<br>
 	 *            特别地，值为0时，指派速度没有限制，管道流量消费速度只依赖于线程池的大小及handler计算速度。
 	 */
-	public ThroughputPipe(int pipeSize, int poolSize,
-			IConsumeHandler<T> handler, long stepOfDispatcher) {
+	public ThroughputPipe(int pipeSize, int poolSize, IConsumeHandler<T> handler, long stepOfDispatcher) {
 		if (pipeSize <= 0 || poolSize <= 0) {
 			throw new RuntimeException("size's value must >0!");
 		}
@@ -131,9 +138,8 @@ public class ThroughputPipe<T> {
 		}
 		this.queue = new LinkedBlockingQueue<T>(pipeSize);
 		this.handler = handler;
-		tpe = new ThreadPoolExecutor(poolSize, poolSize, livetime,
-				TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(),
-				new CallerRunsPolicy());
+		tpe = new ThreadPoolExecutor(poolSize, poolSize, livetime, TimeUnit.MILLISECONDS,
+				new SynchronousQueue<Runnable>(), new CallerRunsPolicy());
 		this.stepOfDispatcher = stepOfDispatcher;
 	}
 
