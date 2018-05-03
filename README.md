@@ -13,6 +13,7 @@ Beetle J2EE Application Framework Version 3，Powerful, simple and easy to use
 	* 支持数据库序列功能
 	* 组合查询功能，无需动态拼接查询条件，提高开发效率
 	* 透明防止SQL注入
+	* 表字段查询透明脱敏
 	* NOSQL支持Redis的常用封装，支持String\Map\List\自定义DTO对象简易操作及本地内存优化及连接池优化
 * Service业务层
 	* Service RPC
