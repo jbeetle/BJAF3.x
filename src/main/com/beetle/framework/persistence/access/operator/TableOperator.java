@@ -60,8 +60,21 @@ final public class TableOperator<T> {
 	private String autoKeyFiledName;
 
 	private String primaryKeyName;
-
+	private boolean notDesensitize;
 	private final static AppLogger logger = AppLogger.getInstance(TableOperator.class);
+
+	public boolean isNotDesensitize() {
+		return notDesensitize;
+	}
+
+	/**
+	 * 设置表操作器是否取消脱敏处理，true为取消，不参与框架配置的脱敏机制<br>
+	 * 默认为false
+	 * @param notDesensitize
+	 */
+	public void setNotDesensitize(boolean notDesensitize) {
+		this.notDesensitize = notDesensitize;
+	}
 
 	/**
 	 * TableOperator（默认为此表的主键为非自动增量）
@@ -76,10 +89,11 @@ final public class TableOperator<T> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TableOperator(String dataSourceName, String tableName, Class<T> valueObjectClass) {
 		if (!TableCACHER.containsKey(tableName) && !TableCACHER.containsKey(tableName.toUpperCase())) {
-			//boolean tcf = AppProperties.getAsBoolean("daoTableInitializationCache", true);
-			//if (tcf) {
-				init(dataSourceName, tableName, valueObjectClass);
-			//}
+			// boolean tcf =
+			// AppProperties.getAsBoolean("daoTableInitializationCache", true);
+			// if (tcf) {
+			init(dataSourceName, tableName, valueObjectClass);
+			// }
 		} else {
 			TableOperator tor = (TableOperator) TableCACHER.get(tableName);
 			if (tor == null) {
@@ -193,7 +207,7 @@ final public class TableOperator<T> {
 		if (this.primaryKeyName == null) {
 			throw new AppRuntimeException("此表没有定义主键或为组合主键，不支持此方法");
 		}
-		QueryOperator query = new QueryOperator();
+		QueryOperator query = createQueryOperator();
 		query.setDataSourceName(this.dsName);
 		query.setSql(SqlGenerator.generateSelectByPKSql(this.filedSet, this.tbName, this.primaryKeyName));
 		query.addParameter(pk);
@@ -209,6 +223,13 @@ final public class TableOperator<T> {
 			if (rs != null)
 				rs.clearAll();
 		}
+	}
+
+	private QueryOperator createQueryOperator() {
+		if (isNotDesensitize()) {
+			return new QueryOperator(true);
+		}
+		return new QueryOperator();
 	}
 
 	/**
@@ -232,6 +253,7 @@ final public class TableOperator<T> {
 		}
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName, detailTableVOClass);
+		tor.setNotDesensitize(isNotDesensitize());
 		List<?> dl = tor.selectByWhereCondition("where " + this.primaryKeyName + "=?", new Object[] { masterTablePK });
 		MasterDetailDTO dto = new MasterDetailDTO(mo, dl);
 		dl.clear();
@@ -263,6 +285,7 @@ final public class TableOperator<T> {
 		}
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		TableOperator<?> tor = new TableOperator(this.dsName, detailTableName, detailTableVOClass);
+		tor.setNotDesensitize(isNotDesensitize());
 		whereStrForDetailTable = whereStrForDetailTable.toLowerCase();
 		String pktmp = this.primaryKeyName.toLowerCase();
 		final MasterDetailDTO dto;
@@ -339,7 +362,7 @@ final public class TableOperator<T> {
 
 	@SuppressWarnings("unchecked")
 	public List<T> selectByWhereCondition(String whereStr, Object values[]) throws DBOperatorException {
-		QueryOperator query = new QueryOperator();
+		QueryOperator query = createQueryOperator();
 		query.setDataSourceName(this.dsName);
 		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName) + whereStr);
 		int i = whereStr.indexOf("?");

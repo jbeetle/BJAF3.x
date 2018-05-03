@@ -76,6 +76,15 @@ public class PageParameter {
 	private List<V> paramList = new LinkedList<V>();
 	// order表达式(order by xxx desc)
 	private String orderExpression = "";
+	private boolean notDesensitize;
+	
+	public boolean isNotDesensitize() {
+		return notDesensitize;
+	}
+
+	public void setNotDesensitize(boolean notDesensitize) {
+		this.notDesensitize = notDesensitize;
+	}
 
 	public PageParameter() {
 		this.queryMode = QueryMode.NormalSQL;

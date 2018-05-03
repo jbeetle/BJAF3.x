@@ -52,15 +52,13 @@ import com.beetle.framework.util.cache.TimeOutCache;
  */
 public class FireBirdPaginationImp implements IPagination {
 	private static ICache countCache = new TimeOutCache(120);
-	private static AppLogger logger = AppLogger
-			.getInstance(FireBirdPaginationImp.class);
+	private static AppLogger logger = AppLogger.getInstance(FireBirdPaginationImp.class);
 
 	public FireBirdPaginationImp() {
 
 	}
 
-	private int getRecordAmount(Connection conn, PageParameter pInfo)
-			throws DBOperatorException {
+	private int getRecordAmount(Connection conn, PageParameter pInfo) throws DBOperatorException {
 		Integer amount;
 		if (pInfo.isCacheRecordAmountFlag()) {
 			Integer key = new Integer(pInfo.getUserSql().hashCode());
@@ -75,16 +73,14 @@ public class FireBirdPaginationImp implements IPagination {
 		return amount.intValue();
 	}
 
-	private Integer caleAmount(Connection conn, PageParameter pInfo)
-			throws NumberFormatException, DBOperatorException {
+	private Integer caleAmount(Connection conn, PageParameter pInfo) throws NumberFormatException, DBOperatorException {
 		// select count(1) from (select * from account) t
 		Integer amount;
-		QueryOperator query = new QueryOperator();
+		QueryOperator query = new QueryOperator(true);
 		query.setUseOnlyConnectionFlag(true);
 		if (!pInfo.getSqlParameters().isEmpty()) {
 			for (int i = 0; i < pInfo.getSqlParameters().size(); i++) {
-				SqlParameter sp = (SqlParameter) pInfo.getSqlParameters()
-						.get(i);
+				SqlParameter sp = (SqlParameter) pInfo.getSqlParameters().get(i);
 				query.addParameter(sp);
 			}
 		}
@@ -100,6 +96,13 @@ public class FireBirdPaginationImp implements IPagination {
 		return amount;
 	}
 
+	private QueryOperator createQueryOperator(PageParameter pInfo) {
+		if (pInfo.isNotDesensitize()) {
+			return new QueryOperator(true);
+		}
+		return new QueryOperator();
+	}
+
 	public PageResult page(PageParameter pInfo) throws PaginationException {
 		Connection conn = null;
 		PageResult pr = new PageResult();
@@ -107,7 +110,7 @@ public class FireBirdPaginationImp implements IPagination {
 			conn = ConnectionFactory.getConncetion(pInfo.getDataSourceName());
 			int pos = pInfo.getPageNumber() - 1;
 			if (pos >= 0) {
-				QueryOperator query = new QueryOperator();
+				QueryOperator query = createQueryOperator(pInfo);
 				query.setUseOnlyConnectionFlag(true);
 				query.setPresentConnection(conn);
 				String usersql = pInfo.getUserSql();
@@ -181,8 +184,7 @@ public class FireBirdPaginationImp implements IPagination {
 			conn = ConnectionFactory.getConncetion(pInfo.getDataSourceName());
 			pbi.setPageSize(pInfo.getPageSize());
 			pbi.setRecordAmount(getRecordAmount(conn, pInfo));
-			pbi.setPageAmount(PageHelper.pageCount(pInfo.getPageSize(),
-					pbi.getRecordAmount()));
+			pbi.setPageAmount(PageHelper.pageCount(pInfo.getPageSize(), pbi.getRecordAmount()));
 		} catch (Throwable e) {
 			logger.error(e);
 			throw new PaginationException(e);

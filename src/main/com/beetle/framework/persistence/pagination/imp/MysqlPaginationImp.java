@@ -81,7 +81,7 @@ public class MysqlPaginationImp implements IPagination {
 	private Integer caleAmount(Connection conn, PageParameter pInfo) throws NumberFormatException, DBOperatorException {
 		// select count(1) from (select * from account) t
 		Integer amount;
-		QueryOperator query = new QueryOperator();
+		QueryOperator query = createQueryOperator(pInfo);// new QueryOperator();
 		query.setUseOnlyConnectionFlag(true);
 		if (pInfo.isNormalSQLQueryMode()) {
 			if (!pInfo.getSqlParameters().isEmpty()) {
@@ -129,6 +129,13 @@ public class MysqlPaginationImp implements IPagination {
 		return amount;
 	}
 
+	private QueryOperator createQueryOperator(PageParameter pInfo) {
+		if (pInfo.isNotDesensitize()) {
+			return new QueryOperator(true);
+		}
+		return new QueryOperator();
+	}
+
 	public PageResult page(PageParameter pInfo) throws PaginationException {
 		Connection conn = null;
 		PageResult pr = new PageResult();
@@ -136,7 +143,8 @@ public class MysqlPaginationImp implements IPagination {
 			conn = ConnectionFactory.getConncetion(pInfo.getDataSourceName());
 			int pos = pInfo.getPageNumber() - 1;
 			if (pos >= 0) {
-				QueryOperator query = new QueryOperator();
+				QueryOperator query = createQueryOperator(pInfo);// new
+																	// QueryOperator();
 				query.setPresentConnection(conn);
 				query.setUseOnlyConnectionFlag(true);
 				if (pInfo.isNormalSQLQueryMode()) {
@@ -158,33 +166,34 @@ public class MysqlPaginationImp implements IPagination {
 					List<V> paramList = pInfo.getCompositeSQLParamList();
 					if (!paramList.isEmpty()) {
 						StringBuffer sb = new StringBuffer();
-						if(pInfo.isUseNullParameter()){
-						    for (int i = 0; i < paramList.size(); i++) {
-						        V v = (V) paramList.get(i);
-						        sb.append("(? is null or " + v.getParameterName() + " " + v.getOperateSymbol() + " ?) and ");
-						        query.addParameter(v.getValue());
-						        query.addParameter(v.getValue());
-						    }
-						}else{
-						    for (int i = 0; i < paramList.size(); i++) {
-                                V v = (V) paramList.get(i);
-                                if(v.getValue()!=null){
-                                    sb.append(" " + v.getParameterName() + " " + v.getOperateSymbol() + " ? and ");
-                                    query.addParameter(v.getValue());
-                                }
-                            }
+						if (pInfo.isUseNullParameter()) {
+							for (int i = 0; i < paramList.size(); i++) {
+								V v = (V) paramList.get(i);
+								sb.append("(? is null or " + v.getParameterName() + " " + v.getOperateSymbol()
+										+ " ?) and ");
+								query.addParameter(v.getValue());
+								query.addParameter(v.getValue());
+							}
+						} else {
+							for (int i = 0; i < paramList.size(); i++) {
+								V v = (V) paramList.get(i);
+								if (v.getValue() != null) {
+									sb.append(" " + v.getParameterName() + " " + v.getOperateSymbol() + " ? and ");
+									query.addParameter(v.getValue());
+								}
+							}
 						}
 						String whereStr = sb.toString();
 						String usersql = pInfo.getUserSql();
-						if(StringUtils.isNotBlank(whereStr)){
-						    int i = whereStr.lastIndexOf("and");
-						    whereStr = whereStr.substring(0, i);
-						    String tmpSql = pInfo.getUserSql().toLowerCase();
-						    if (tmpSql.indexOf("where") > 1) {
-						        usersql = usersql + " and " + whereStr;
-						    } else {
-						        usersql = usersql + " where " + whereStr;
-						    }
+						if (StringUtils.isNotBlank(whereStr)) {
+							int i = whereStr.lastIndexOf("and");
+							whereStr = whereStr.substring(0, i);
+							String tmpSql = pInfo.getUserSql().toLowerCase();
+							if (tmpSql.indexOf("where") > 1) {
+								usersql = usersql + " and " + whereStr;
+							} else {
+								usersql = usersql + " where " + whereStr;
+							}
 						}
 						if (pInfo.getOrderExpression().length() > 1) {
 							usersql = usersql + " " + pInfo.getOrderExpression().toLowerCase();
