@@ -36,12 +36,28 @@ import com.beetle.framework.persistence.access.base.ResultSetHandler;
 import com.beetle.framework.resource.define.CompositeDTO;
 
 public class QueryOperator extends BaseOperator {
+	/**
+	 * 默认构造函数，此函数默认会根据系统配置来进行脱敏处理，是否进行要看数据源配置而定<br>
+	 * <item name="desensitize-imp"
+				value="com.beetle.framework.resource.desensitize.DefaultDesensitizeImpl" /><br>
+				如果这个配置不配，则不做脱敏处理
+	 */
 	public QueryOperator() {
 		maxRow = 0;
+		this.notDesensitize = false;
+	}
+
+	/**
+	 * 
+	 * @param notDesensitize 为true,无论是否配置desensitize，查询结果不会做脱敏处理。
+	 */
+	public QueryOperator(boolean notDesensitize) {
+		super();
+		this.notDesensitize = notDesensitize;
 	}
 
 	private int maxRow = 0;
-
+	private final boolean notDesensitize;// 不做脱敏处理
 	private List<Map<String, Object>> SQLResultSet = null;
 
 	private ResultSetHandler handlerImp = null;
@@ -52,7 +68,7 @@ public class QueryOperator extends BaseOperator {
 
 	private void doAccess() throws DBOperatorException {
 		try {
-			handlerImp = new ResultSetHandler();
+			handlerImp = new ResultSetHandler(notDesensitize, this.getDataSourceName());
 			if (!this.getParameters().isEmpty()) {
 				if (!this.isUseOnlyConnectionFlag()) {
 					DBAccess.query(AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()), handlerImp,
@@ -162,6 +178,7 @@ public class QueryOperator extends BaseOperator {
 
 	/**
 	 * 获取结果值对象（根据输入定义类自动状态，如果结果存在多条记录，只返回第一条，没有数据返回null）
+	 * 
 	 * @param dtoClass
 	 * @return 如果结果存在多条记录，只返回第一条，没有数据返回null
 	 */

@@ -31,6 +31,11 @@ public class CompositeQueryOperator extends QueryOperator {
 		orderExpression = "";
 	}
 
+	public CompositeQueryOperator(boolean notDesensitize) {
+		super(notDesensitize);
+		orderExpression = "";
+	}
+
 	public void addParameter(Object value) {
 		throw new DBOperatorException(
 				"uses the [addParameter(String parameterName, Object value)]instead this methods!");
