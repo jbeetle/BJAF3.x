@@ -79,7 +79,7 @@ public class PostgreSqlPaginationImp implements IPagination {
 			throws NumberFormatException, DBOperatorException {
 		// select count(1) from (select * from account) t
 		Integer amount;
-		QueryOperator query = new QueryOperator();
+		QueryOperator query = new QueryOperator(true);
 		query.setUseOnlyConnectionFlag(true);
 		if (!pInfo.getSqlParameters().isEmpty()) {
 			for (int i = 0; i < pInfo.getSqlParameters().size(); i++) {
@@ -99,7 +99,12 @@ public class PostgreSqlPaginationImp implements IPagination {
 		}
 		return amount;
 	}
-
+	private QueryOperator createQueryOperator(PageParameter pInfo) {
+		if (pInfo.isNotDesensitize()) {
+			return new QueryOperator(true);
+		}
+		return new QueryOperator();
+	}
 	public PageResult page(PageParameter pInfo) throws PaginationException {
 		Connection conn = null;
 		PageResult pr = new PageResult();
@@ -107,7 +112,7 @@ public class PostgreSqlPaginationImp implements IPagination {
 			conn = ConnectionFactory.getConncetion(pInfo.getDataSourceName());
 			int pos = pInfo.getPageNumber() - 1;
 			if (pos >= 0) {
-				QueryOperator query = new QueryOperator();
+				QueryOperator query = createQueryOperator(pInfo);//new QueryOperator();
 				query.setUseOnlyConnectionFlag(true);
 				query.setPresentConnection(conn);
 				String usersql = pInfo.getUserSql();

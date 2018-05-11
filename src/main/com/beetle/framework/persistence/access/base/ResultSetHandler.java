@@ -23,6 +23,8 @@ package com.beetle.framework.persistence.access.base;
  */
 
 import com.beetle.framework.AppRuntimeException;
+import com.beetle.framework.persistence.access.DBConfig;
+import com.beetle.framework.resource.desensitize.IDesensitize;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -44,6 +46,16 @@ final public class ResultSetHandler {
 	private List<Map<String, Object>> sqlResultSet; // 数据结果集
 
 	private boolean isBuilded = false;
+	private boolean notDesensitize;
+	// private String dataSourceName;
+	private IDesensitize dstzInstance;
+
+	public ResultSetHandler(boolean notDesensitize, String dataSourceName) {
+		super();
+		this.notDesensitize = notDesensitize;
+		this.dstzInstance = DBConfig.getDesensitizeInstance(dataSourceName);
+		sqlResultSet = new ArrayList<Map<String, Object>>();
+	}
 
 	public ResultSetHandler() {
 		sqlResultSet = new ArrayList<Map<String, Object>>();
@@ -72,14 +84,26 @@ final public class ResultSetHandler {
 
 	private void processRow(ResultSet rs) throws SQLException {
 		// HashMap rowMap = new HashMap(columnCount);
-		Map<String, Object> rowMap = new LinkedHashMap<String, Object>(
-				columnCount); // 保持顺序
+		Map<String, Object> rowMap = new LinkedHashMap<String, Object>(columnCount); // 保持顺序
 		try {
 			for (int i = 0; i < columnCount; i++) {
 				// String key = columnNames[i].trim().toUpperCase();2006-11-5
 				String key = columnNames[i].trim();
 				Object value = rs.getObject(i + 1); // (columnNames[i]);?2006-9-29
-				rowMap.put(key, value);
+				if (notDesensitize) {// 不做脱敏处理
+					rowMap.put(key, value);
+				} else {// 根据配置判断是否做脱敏处理
+					if (this.dstzInstance != null) {
+						if (value instanceof String) {
+							String newValue = dstzInstance.Desensitize(key, (String) value);
+							rowMap.put(key, newValue);
+						} else {
+							rowMap.put(key, value);
+						}
+					} else {// 不做脱敏处理
+						rowMap.put(key, value);
+					}
+				}
 			}
 			sqlResultSet.add(rowMap);
 		} catch (SQLException sqe) {
@@ -112,8 +136,7 @@ final public class ResultSetHandler {
 		return rowCount;
 	}
 
-	public final List<Map<String, Object>> getResultDataSet()
-			throws DBAccessException {
+	public final List<Map<String, Object>> getResultDataSet() throws DBAccessException {
 		return sqlResultSet;
 	}
 

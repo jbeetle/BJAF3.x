@@ -30,7 +30,7 @@ import org.apache.http.util.EntityUtils;
 
 /**
  * Http Rest客户端，支持http的get/post等请求<br>
- * eg:
+ * eg: 
  * 
  * <pre>
  * 
@@ -59,25 +59,37 @@ import org.apache.http.util.EntityUtils;
  */
 public class RestClient {
 	public RestClient() {
-		if (username != null && username.length() > 0) {
-			this.client = ConnectPool.getInstance().getHttpClient(username, password);
-		} else {
-			this.client = ConnectPool.getInstance().getHttpClient();
-		}
+		this.client = ConnectPool.createHttpClient();
+		this.invokLock = new ReentrantLock();
+	}
+
+	/**
+	 * 使用连接池
+	 * 
+	 * @param poolmax
+	 * @param poolinit
+	 */
+	public RestClient(int poolmax, int poolinit) {
+		ConnectPool pp = new ConnectPool(poolmax, poolinit);
+		this.client = pp.getHttpClient();
 		this.invokLock = new ReentrantLock();
 	}
 
 	private final CloseableHttpClient client;
 	private final ReentrantLock invokLock;
-	private String username;
-	private String password;
-	//private final static Logger logger = AppLogger.getLogger(RestClient.class);
+
 
 	/**
 	 * 建立连接
 	 */
 	public void connect() {
 
+	}
+
+	public RestClient(String username, String password, int poolmax, int poolinit) {
+		ConnectPool pp = new ConnectPool(poolmax, poolinit);
+		this.client = pp.getHttpClient(username, password);
+		this.invokLock = new ReentrantLock();
 	}
 
 	/**
@@ -89,9 +101,8 @@ public class RestClient {
 	 *            --密码
 	 */
 	public RestClient(String username, String password) {
-		this();
-		this.username = username;
-		this.password = password;
+		this.client = ConnectPool.createHttpClient(username, password);
+		this.invokLock = new ReentrantLock();
 	}
 
 	private static String encode(String content, String charset) {
@@ -161,9 +172,9 @@ public class RestClient {
 	}
 
 	private RestResponse invokeWithDelete(RestRequest request) throws RestInvokeException {
-		invokLock.lock();
 		CloseableHttpResponse res = null;
 		try {
+			invokLock.lock();
 			HttpDelete httpdelete = new HttpDelete(request.getUrl());
 			if (!request.getHeaderMap().isEmpty()) {
 				Iterator<Entry<String, String>> it = request.getHeaderMap().entrySet().iterator();
@@ -190,9 +201,9 @@ public class RestClient {
 	}
 
 	private RestResponse invokeWithGet(RestRequest request) throws RestInvokeException {
-		invokLock.lock();
 		CloseableHttpResponse res = null;
 		try {
+			invokLock.lock();	
 			String url2 = null;
 			if (!request.getParamMap().isEmpty()) {
 				url2 = genGetUrl(request.getUrl(), request.getParamMap(), request.getCharset());

@@ -225,7 +225,7 @@ public class SqlServerPaginationImp implements IPagination {
 		u2.access();
 		return amount;
 	}
-
+	
 	public PageBaseInfo calc(PageParameter pInfo) throws PaginationException {
 		Connection conn = null;
 		PageBaseInfo pbi = new PageBaseInfo();

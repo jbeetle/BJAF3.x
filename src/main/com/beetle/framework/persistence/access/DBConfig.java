@@ -12,22 +12,28 @@
  */
 package com.beetle.framework.persistence.access;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.Node;
+
 import com.beetle.framework.AppContext;
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.resource.define.CfgFileInfo;
+import com.beetle.framework.resource.desensitize.IDesensitize;
 import com.beetle.framework.resource.mask.IPasswordMask;
 import com.beetle.framework.util.OtherUtil;
 import com.beetle.framework.util.ResourceLoader;
 import com.beetle.framework.util.file.XMLReader;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.Node;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 public class DBConfig {
 
@@ -145,6 +151,29 @@ public class DBConfig {
 			}
 		}
 		return pwd;
+	}
+
+	private static final Map<String, IDesensitize> destMap = new HashMap<>();
+
+	public final static IDesensitize getDesensitizeInstance(String dataSourceName) {
+		String imp = DBConfig.getFrameworkDS(dataSourceName, "desensitize-imp");
+		if (imp == null || imp.trim().length() == 0) {
+			return null;
+		}
+		if (destMap.get(dataSourceName) == null) {
+			synchronized (destMap) {
+				if (destMap.get(dataSourceName) == null) {
+					try {
+						IDesensitize destInstance = (IDesensitize) Class.forName(imp).newInstance();
+						destMap.put(dataSourceName, destInstance);
+						return destInstance;
+					} catch (Exception e) {
+						throw new AppRuntimeException(e);
+					}
+				}
+			}
+		}
+		return destMap.get(dataSourceName);
 	}
 
 	private final static Map<String, String> readeConfig(String v1, String v2, String v3) {

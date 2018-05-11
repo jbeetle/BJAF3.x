@@ -23,9 +23,9 @@ import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.encrypt.AesEncrypt;
 import com.beetle.framework.util.encrypt.Coder;
 import com.beetle.framework.util.encrypt.RSAEncrypt;
-import com.beetle.framework.web.client.RestClient;
-import com.beetle.framework.web.client.RestRequest;
-import com.beetle.framework.web.client.RestResponse;
+import com.beetle.framework.util.http.RestClient;
+import com.beetle.framework.util.http.RestRequest;
+import com.beetle.framework.util.http.RestResponse;
 import com.beetle.framework.web.jwt.Claims;
 
 public class TestMe {
