@@ -209,10 +209,10 @@ final public class GlobalDispatchServlet extends HttpServlet {
 			response.setHeader("errCode", e.getErrCode() + "");
 			response.setHeader("errMsg", errMsg);
 			if (e.getErrCode() > 0) {
-				response.setStatus(e.getErrCode());
 				response.setHeader("STATUS_CODE_INFO", e.getMessage());
+				response.sendError(e.getErrCode());
 			} else {
-				throw new ServletException(e);
+			    throw new ServletException(e);
 			}
 		}
 	}
