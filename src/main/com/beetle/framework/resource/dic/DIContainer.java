@@ -107,7 +107,7 @@ public class DIContainer {
 				binder.bindProperties();
 				initBean();
 				initInject();
-				binder.getBeanVoList().clear();
+				//binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27
 			}
 		}
 	}
@@ -363,10 +363,11 @@ public class DIContainer {
 			initConfigBinder();
 			initBean();
 			initInject();
-			//
+			/*
 			if (binder != null) {
-				binder.getBeanVoList().clear();
+				binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27
 			}
+			*/
 			initFlag = true;
 		}
 	}
