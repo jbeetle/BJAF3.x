@@ -938,7 +938,7 @@ final public class TableOperator<T> {
 		pp.setCacheRecordAmountFlag(true);
 		pp.setUseNullParameter(false);
 		pp.setDataSourceName(this.dsName);
-		pp.setPageNumber(pageNumber);
+		pp.setPageNumber(pageNumber); 
 		pp.setPageSize(pageSize);
 		pp.setUserSql(SqlGenerator.generateSelectAllSql(this.filedSet,this.tbName)+whereStr);
 		int index = whereStr.indexOf("?");
