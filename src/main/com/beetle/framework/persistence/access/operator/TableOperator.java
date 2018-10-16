@@ -14,7 +14,11 @@ import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.persistence.access.ConnectionException;
 import com.beetle.framework.persistence.access.ConnectionFactory;
 import com.beetle.framework.persistence.access.DBHelper;
+import com.beetle.framework.persistence.pagination.PageParameter;
+import com.beetle.framework.persistence.pagination.PageResult;
+import com.beetle.framework.persistence.pagination.PaginationOperator;
 import com.beetle.framework.resource.define.MasterDetailDTO;
+import com.beetle.framework.resource.define.PageList;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.cache.ConcurrentCache;
 import com.beetle.framework.util.cache.ICache;
@@ -927,4 +931,31 @@ final public class TableOperator<T> {
 		return this.primaryKeyName;
 	}
 
+	
+	public PageList<T> selectByWherePaging(String whereStr,Object[] values,boolean notDesensitize,int pageNumber, int pageSize) throws DBOperatorException{
+		PageParameter pp = new PageParameter();
+		pp.setNotDesensitize(notDesensitize);
+		pp.setCacheRecordAmountFlag(true);
+		pp.setUseNullParameter(false);
+		pp.setDataSourceName(this.dsName);
+		pp.setPageNumber(pageNumber);
+		pp.setPageSize(pageSize);
+		pp.setUserSql(SqlGenerator.generateSelectAllSql(this.filedSet,this.tbName)+whereStr);
+		int index = whereStr.indexOf("?");
+		if(index > 0){
+			for (int i = 0; i < values.length; i++) {
+				pp.addParameter(values[i]);
+			}
+		}
+		PageResult pr = null;
+		try {
+			pr = PaginationOperator.access(pp);
+			PageList<T> pl = pr.getPageList(voClass);
+			return pl;
+		}finally{
+			if (pr != null) {
+			   pr.clearAll();
+			}
+		}
+	}
 }
