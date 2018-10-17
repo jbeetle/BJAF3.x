@@ -14,7 +14,11 @@ import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.persistence.access.ConnectionException;
 import com.beetle.framework.persistence.access.ConnectionFactory;
 import com.beetle.framework.persistence.access.DBHelper;
+import com.beetle.framework.persistence.pagination.PageParameter;
+import com.beetle.framework.persistence.pagination.PageResult;
+import com.beetle.framework.persistence.pagination.PaginationOperator;
 import com.beetle.framework.resource.define.MasterDetailDTO;
+import com.beetle.framework.resource.define.PageList;
 import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.util.cache.ConcurrentCache;
 import com.beetle.framework.util.cache.ICache;
@@ -927,4 +931,98 @@ final public class TableOperator<T> {
 		return this.primaryKeyName;
 	}
 
+	/**
+	 * 
+	  * @Title: TableOperator
+	  * @Description: 单表分页查询
+	  * @param @param whereStr：条件语句
+	  * @param @param values：条件值（条件语句必须跟条件值一一对应）
+	  * @param @param pageNumber：当前页数
+	  * @param @param pageSize：当前显示数
+	  * @param @return
+	  * @return PageList<T>    返回类型
+	  * @author yuanfeng.he
+	  * @date 2018年10月16日-下午17:26:41
+	  * @throws
+	 */
+	public PageList<T> selectByWhereConditionPaging(String whereStr,Object[] values,int pageNumber, int pageSize) throws DBOperatorException{
+		PageParameter pp = new PageParameter();
+		pp.setNotDesensitize(this.isNotDesensitize());
+		pp.setCacheRecordAmountFlag(true);
+		pp.setUseNullParameter(false);
+		pp.setDataSourceName(this.dsName);
+		pp.setPageNumber(pageNumber); 
+		pp.setPageSize(pageSize);
+		pp.setUserSql(SqlGenerator.generateSelectAllSql(this.filedSet,this.tbName)+whereStr);
+		int index = whereStr.indexOf("?");
+		if(index > 0){
+			for (int i = 0; i < values.length; i++) {
+				pp.addParameter(values[i]);
+			}
+		}
+		PageResult pr = null;
+		try {
+			pr = PaginationOperator.access(pp);
+			PageList<T> pl = pr.getPageList(voClass);
+			return pl;
+		}finally{
+			if (pr != null) {
+			   pr.clearAll();
+			}
+		}
+	}
+	
+	/**
+	 * 
+	  * @Title: TableOperator
+	  * @Description: 按where条件的IN语句进行查询如 where userId IN(......)
+	  * @param @param foreignFieldName：条件字段名
+	  * @param @param keys：条件值
+	  * @param @return
+	  * @return List<T>    返回类型
+	  * @author yuanfeng.he
+	  * @date 2018年10月17日-下午15:35:41
+	  * @throws
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> selectByForeignKeys(String foreignFieldName,Object[] keys) throws DBOperatorException{
+		if(foreignFieldName==null || foreignFieldName==""){
+			throw new DBOperatorException("foreignFieldName can't be null");
+		}
+		if(keys==null || keys.length==0){
+			throw new DBOperatorException("keys can't be null");
+		}
+		QueryOperator query = new QueryOperator(this.isNotDesensitize());
+		query.setDataSourceName(this.dsName);
+		StringBuffer sb = new StringBuffer();
+		sb.append("WHERE"+" "+foreignFieldName+" "+"IN");
+		sb.append("(");
+		for (int i = 0; i < keys.length; i++) {
+			if(i>0)
+				sb.append(",");
+			sb.append("?");
+			query.addParameter(keys[i]);
+		}
+		sb.append(")");
+		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName)+sb.toString());
+		RsDataSet rds = null;
+		try {
+			query.access();
+			if (query.resultSetAvailable()) {
+				rds = new RsDataSet(query.getSqlResultSet());
+				List<T> list = new ArrayList<T>(rds.rowCount);
+				for (int i = 0; i < rds.rowCount; i++) {
+					Object obj = rowToObj(rds);
+					list.add((T) obj);
+					rds.next();
+				}
+				return list;
+			} else {
+				return new ArrayList<T>();
+			}
+		} finally {
+			if (rds != null)
+				rds.clearAll();
+		}
+	}
 }

@@ -26,7 +26,7 @@
 *技术支持：
 	http://www.mc2e.cc/j2ee/index.html 
 	https://github.com/jbeetle/BJAF3.x
-	yuhaodong@gmail.com
+	yuhaodong@gmail.com   
 Enjoy it!
 余浩东 2016-05-05
 
