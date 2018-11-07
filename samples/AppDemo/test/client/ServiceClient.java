@@ -1,6 +1,6 @@
 package client;
 
-import com.beetle.framework.business.service.ServiceFactory;
+import com.beetle.framework.business.service.RpcProxyClient;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.util.encrypt.AesEncrypt;
 
@@ -11,8 +11,7 @@ import demo.XXXApp.service.face.IHelloService;
 
 public class ServiceClient {
 	static AppLogger logger = AppLogger.getInstance(ServiceClient.class);
-	static IHelloService helloService = ServiceFactory.serviceLookup(
-			IHelloService.class, true);
+	static IHelloService helloService = RpcProxyClient.lookup(IHelloService.class, true);
 
 	public static void main(String[] args) {
 		// System.out.println(helloService.hello("xx"));
@@ -36,9 +35,7 @@ public class ServiceClient {
 					while (true) {
 						try {
 
-							System.out.println("1-->"
-									+ helloService.hello(" "
-											+ Thread.currentThread().getId()));
+							System.out.println("1-->" + helloService.hello(" " + Thread.currentThread().getId()));
 
 							Thread.sleep(10);
 						} catch (InterruptedException e) {
@@ -56,8 +53,7 @@ public class ServiceClient {
 					while (true) {
 						try {
 
-							System.out.println("2-->"
-									+ helloService.findUserById(1001l));
+							System.out.println("2-->" + helloService.findUserById(1001l));
 
 							Thread.sleep(10);
 						} catch (InterruptedException e) {
@@ -100,7 +96,7 @@ public class ServiceClient {
 	}
 
 	public static void main_(String[] args) {
-		IHelloService hs = ServiceFactory.serviceLookup(IHelloService.class);
+		IHelloService hs = RpcProxyClient.lookup(IHelloService.class);
 		System.out.println(hs.hello("hello world!"));
 		User user = new User();
 		user.setBirthday(new java.sql.Date(System.currentTimeMillis()));
@@ -122,7 +118,7 @@ public class ServiceClient {
 	}
 
 	public static void main_2(String[] args) {
-		IHelloService hs = ServiceFactory.serviceLookup(IHelloService.class);
+		IHelloService hs = RpcProxyClient.lookup(IHelloService.class);
 		for (int i = 1; i < 1000; i++) {
 			User user = new User();
 			user.setBirthday(new java.sql.Date(System.currentTimeMillis()));
@@ -140,6 +136,6 @@ public class ServiceClient {
 			friend.setPhone("13501583576");
 			hs.CreateUserAndFriend(user, friend);
 		}
-		ServiceFactory.releaseRpcResources();
+		RpcProxyClient.clearAll();
 	}
 }

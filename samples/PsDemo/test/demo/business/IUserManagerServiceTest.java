@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.beetle.framework.business.service.ServiceFactory;
+import com.beetle.framework.resource.dic.DIContainer;
 
 import demo.valueobject.ExpUser;
 
@@ -18,8 +18,7 @@ public class IUserManagerServiceTest {
 		user.setPASSWD("888888");
 		user.setSEX(-1);
 		user.setUSERNAME("余浩东");
-		IUserManagerService userSrvc = ServiceFactory
-				.serviceLookup(IUserManagerService.class);
+		IUserManagerService userSrvc = DIContainer.getInstance().retrieve(IUserManagerService.class);
 		userSrvc.createUser(user);
 		assertTrue(true);
 	}

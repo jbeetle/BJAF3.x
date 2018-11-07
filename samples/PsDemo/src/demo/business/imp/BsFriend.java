@@ -2,7 +2,7 @@ package demo.business.imp;
 
 import java.util.List;
 
-import com.beetle.framework.resource.dic.def.InjectField;
+import com.beetle.framework.resource.dic.def.DaoField;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
 
 import demo.business.IFriendService;
@@ -11,7 +11,7 @@ import demo.persistence.dao.IExpFriendDao;
 import demo.valueobject.ExpFriend;
 
 public class BsFriend implements IFriendService {
-	@InjectField
+	@DaoField
 	private IExpFriendDao friendDao;
 
 	@ServiceTransaction
@@ -25,8 +25,7 @@ public class BsFriend implements IFriendService {
 	}
 
 	@Override
-	public List<ExpFriend> queryFriendsByName(String friendName)
-			throws ServiceException {
+	public List<ExpFriend> queryFriendsByName(String friendName) throws ServiceException {
 		return friendDao.queryByName(friendName);
 	}
 

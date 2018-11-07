@@ -986,7 +986,7 @@ final public class TableOperator<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> selectByForeignKeys(String foreignFieldName,Object[] keys) throws DBOperatorException{
-		if(foreignFieldName==null || foreignFieldName==""){
+		if(foreignFieldName==null || foreignFieldName.equals("")){
 			throw new DBOperatorException("foreignFieldName can't be null");
 		}
 		if(keys==null || keys.length==0){

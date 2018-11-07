@@ -15,12 +15,9 @@ package com.beetle.framework.business.service;
 /**
  * 
  * Service服务工厂,服务必须在ServiceConfig.xml文件中注册
- * 
+ * 注：直接暴露相关方法，容易被不懂模式的程序员任意调用，破坏我们的编程范式，不利于代码监控、控制；新版本屏蔽掉，必须新建立一个类继承才能用
  */
-public final class ServiceFactory {
-	private ServiceFactory() {
-
-	}
+public abstract class ServiceFactory {
 
 	/**
 	 * 从本地容器中查找
@@ -29,7 +26,7 @@ public final class ServiceFactory {
 	 * @return
 	 */
 
-	public static <T> T localServiceLookup(final Class<T> interfaceClass) {
+	protected <T> T localServiceLookup(final Class<T> interfaceClass) {
 		return RpcProxyClient.localLookup(interfaceClass);
 	}
 
@@ -44,7 +41,7 @@ public final class ServiceFactory {
 	 * @param interfaceClass
 	 * @return
 	 */
-	public static <T> T serviceLookup(final Class<T> interfaceClass) {
+	protected <T> T serviceLookup(final Class<T> interfaceClass) {
 		return RpcProxyClient.lookup(interfaceClass);
 	}
 
@@ -60,8 +57,7 @@ public final class ServiceFactory {
 	 * @param withShortConnection
 	 * @return
 	 */
-	public static <T> T serviceLookup(final Class<T> interfaceClass,
-			boolean withShortConnection) {
+	protected <T> T serviceLookup(final Class<T> interfaceClass, boolean withShortConnection) {
 		return RpcProxyClient.lookup(interfaceClass, withShortConnection);
 	}
 
@@ -81,16 +77,15 @@ public final class ServiceFactory {
 	 *            参数定义
 	 * @return
 	 */
-	public static <T> T rpcServiceLookup(final Class<T> interfaceClass,
-			final String host, final int port, boolean withShortConnection) {
-		return RpcProxyClient.remoteLookup(interfaceClass, host, port,
-				withShortConnection);
+	protected <T> T rpcServiceLookup(final Class<T> interfaceClass, final String host, final int port,
+			boolean withShortConnection) {
+		return RpcProxyClient.remoteLookup(interfaceClass, host, port, withShortConnection);
 	}
 
 	/**
 	 * 释放RPC相关的资源
 	 */
-	public static void releaseRpcResources() {
+	protected void releaseRpcResources() {
 		RpcProxyClient.clearAll();
 	}
 }

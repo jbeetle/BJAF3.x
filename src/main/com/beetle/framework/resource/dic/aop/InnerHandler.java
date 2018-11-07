@@ -158,11 +158,11 @@ public class InnerHandler implements InvocationHandler {
 		}
 		return rs;
 	}
-
+	private final static Object lockObj=new Object();
 	private static AopInterceptor getInterceptor(Method method) {
 		AopInterceptor interceptor = CACHE.get(method);
 		if (interceptor == null) {
-			synchronized (CACHE) {
+			synchronized (lockObj) {
 				if (interceptor == null) {
 					ReleBinder binder = DIContainer.Inner.getReleBinder();
 					List<BeanVO> tmpList = binder.getBeanVoList();

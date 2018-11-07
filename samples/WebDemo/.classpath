@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/bjaf"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/bjaf-util"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/bjaf-web"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jcommon.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 8 [1.8.0_77]"/>
+	<classpathentry kind="lib" path="/BJAF3.x/dist/beetle.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/annotations-api.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/itext-2.0.4.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/jcommon.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/jfreechart.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/jsp-api.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/jstl.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/poi-3.0.1-FINAL-20070705.jar"/>
+	<classpathentry kind="lib" path="/BJAF3.x/lib/web/standard.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>

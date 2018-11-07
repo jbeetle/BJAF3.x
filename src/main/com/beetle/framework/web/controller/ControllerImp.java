@@ -12,6 +12,7 @@
  */
 package com.beetle.framework.web.controller;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,6 +23,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.beetle.framework.AppProperties;
+import com.beetle.framework.log.AppLogger;
+import com.beetle.framework.resource.dic.def.ServiceField;
+import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.view.View;
 
@@ -56,7 +60,7 @@ public abstract class ControllerImp {
 	private boolean requireSession = false; // 默认不需要做session检查
 
 	private boolean disableGetMethodFlag = false;// 禁止get方法请求，默认允许
-
+	private boolean serviceFlag = false;// 服务检查加载标记
 	private int cacheSeconds = -1;
 
 	private boolean instanceCacheFlag = true; // 默认都需要缓存
@@ -71,8 +75,7 @@ public abstract class ControllerImp {
 		this.avoidSubmitSeconds = seconds;
 	}
 
-	View dealRequest(HttpServletRequest request, HttpServletResponse response)
-			throws ControllerException {
+	View dealRequest(HttpServletRequest request, HttpServletResponse response) throws ControllerException {
 		if (this.disableGetMethodFlag) {
 			if (request.getMethod().equalsIgnoreCase("get")) {
 				throw new ControllerException(HttpServletResponse.SC_FORBIDDEN,
@@ -92,8 +95,7 @@ public abstract class ControllerImp {
 		// ////////////////==设置front回调==//////////////////
 		WebInput webInput = new WebInput(request, response);
 		if (this.globalFrontCallFlag) {
-			ICutFrontAction preCall = ControllerFactory
-					.getControllerGlobalPreCall();
+			ICutFrontAction preCall = ControllerFactory.getControllerGlobalPreCall();
 			if (preCall != null) {
 				View ve = preCall.act(webInput);
 				if (ve != null) {
@@ -106,10 +108,8 @@ public abstract class ControllerImp {
 			HttpSession session = request.getSession(false);
 			if (session == null) {
 				noCache(response);
-				if (webInput.getRequest().getAttribute(
-						CommonUtil.CANCEL_SESSION_CHECK_FLAG) == null) {
-					String dv = AppProperties
-							.get("web_view_DisabledSessionView");
+				if (webInput.getRequest().getAttribute(CommonUtil.CANCEL_SESSION_CHECK_FLAG) == null) {
+					String dv = AppProperties.get("web_view_DisabledSessionView");
 					if (dv != null && dv.trim().length() > 0) {
 						return new View(dv);
 					}
@@ -123,13 +123,31 @@ public abstract class ControllerImp {
 			int max = pv.getMax();
 			int cur = pv.getCur();
 			if (cur > max) {
-				throw new ControllerException(
-						HttpServletResponse.SC_NOT_ACCEPTABLE,
+				throw new ControllerException(HttpServletResponse.SC_NOT_ACCEPTABLE,
 						"exceeding this controller's request parallel amount limit,do it later,please!");
 			} else {
 				pv.increment();
 			}
 		}
+		// 服务注入
+		if (!this.serviceFlag) {
+			this.serviceFlag = true;// 没必要考虑并发了
+			Field[] fields = this.getClass().getDeclaredFields();
+			if (fields != null && fields.length > 0) {
+				for (Field f : fields) {
+					if (f.isAnnotationPresent(ServiceField.class)) {
+						try {
+							ObjectUtil.setFieldValue(this, f.getName(), this.serviceLookup(f.getType()));
+						} catch (Exception e) {
+							e.printStackTrace();
+							throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+									AppLogger.getErrStackTraceInfo(e));
+						}
+					}
+				}
+			}
+		}
+		//
 		// ///////////////////==执行正常控制代码==//////////////////////////////
 		View view;
 		try {
@@ -143,8 +161,7 @@ public abstract class ControllerImp {
 		}
 		// ////////////////////////==设置back回调==//////////////////////////
 		if (this.globalBackCallFlag) {
-			ICutBackAction backCall = ControllerFactory
-					.getControllerGlobalBackCall();
+			ICutBackAction backCall = ControllerFactory.getControllerGlobalBackCall();
 			if (backCall != null) {
 				View ve = backCall.act(webInput);
 				if (ve != null) {
@@ -158,8 +175,7 @@ public abstract class ControllerImp {
 		return view;
 	}
 
-	private void avoidSubmit(HttpServletRequest request,
-			HttpServletResponse response) throws ControllerException {
+	private void avoidSubmit(HttpServletRequest request, HttpServletResponse response) throws ControllerException {
 		String ckname = CommonUtil.analysePath(request.getServletPath().trim());
 		if (ckname.indexOf('$') == 0) {
 			ckname = ckname.substring(1);
@@ -170,18 +186,16 @@ public abstract class ControllerImp {
 			long now = System.currentTimeMillis();
 			long cmp = this.avoidSubmitSeconds * 1000;
 			if (now - old <= cmp) { // 如果是在设置的时间内提交请求的话，则直接中断请求
-//				throw new ControllerException(
-//						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-//						"Don't submit the same request repeating！");
-				throw new ControllerException(
-						HttpServletResponse.SC_NOT_ACCEPTABLE,
+				// throw new ControllerException(
+				// HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+				// "Don't submit the same request repeating！");
+				throw new ControllerException(HttpServletResponse.SC_NOT_ACCEPTABLE,
 						"Don't submit the same request repeating！");
 			} else {
 				cookie.setMaxAge(-1); // 删除请求
 			}
 		} else {
-			cookie = new Cookie(ckname, String.valueOf(System
-					.currentTimeMillis()));
+			cookie = new Cookie(ckname, String.valueOf(System.currentTimeMillis()));
 			cookie.setMaxAge(this.avoidSubmitSeconds);
 			response.addCookie(cookie);
 		}
@@ -199,18 +213,6 @@ public abstract class ControllerImp {
 	}
 
 	/**
-	 * 从本地容器查找业务层的Service,与ServiceFactory相应的方法功能一致
-	 * 
-	 * @param interfaceClass
-	 *            --服务接口类
-	 * @return 服务实例
-	 */
-	public <T> T localServiceLookup(final Class<T> interfaceClass) {
-		return com.beetle.framework.business.service.ServiceFactory
-				.localServiceLookup(interfaceClass);
-	}
-
-	/**
 	 * 从业务层查找服务，与ServiceFactory相应的方法功能一致<br>
 	 * 首先根据application.properties配置文件中的参数“rpc_client_proxyInvoke=jvm”
 	 * 是否定义来优先在本地查找；<br>
@@ -222,8 +224,7 @@ public abstract class ControllerImp {
 	 * @return
 	 */
 	public <T> T serviceLookup(final Class<T> interfaceClass) {
-		return com.beetle.framework.business.service.ServiceFactory
-				.serviceLookup(interfaceClass);
+		return ServiceClient.getInstance().serviceLookupExt(interfaceClass);
 	}
 
 	/**
@@ -242,11 +243,9 @@ public abstract class ControllerImp {
 	 *            参数定义
 	 * @return
 	 */
-	public <T> T rpcServiceLookup(final Class<T> interfaceClass,
-			final String host, final int port, boolean withShortConnection) {
-		return com.beetle.framework.business.service.ServiceFactory
-				.rpcServiceLookup(interfaceClass, host, port,
-						withShortConnection);
+	public <T> T rpcServiceLookup(final Class<T> interfaceClass, final String host, final int port,
+			boolean withShortConnection) {
+		return ServiceClient.getInstance().rpcServiceLookupExt(interfaceClass, host, port, withShortConnection);
 	}
 
 	/**
@@ -288,7 +287,7 @@ public abstract class ControllerImp {
 		public void increment() {
 			this.cur.incrementAndGet();
 		}
-		
+
 		public void decrement() {
 			this.cur.decrementAndGet();
 		}

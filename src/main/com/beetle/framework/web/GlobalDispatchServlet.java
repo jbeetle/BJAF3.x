@@ -136,6 +136,12 @@ final public class GlobalDispatchServlet extends HttpServlet {
 					com.beetle.framework.business.server.BusinessAppSrv.start();
 					logger.debug("BusinessAppSrv.started!");
 				}
+				boolean diflag = AppProperties.getAsBoolean("web_DIContainer_init", false);
+				if (diflag) {
+					logger.debug("DIContainer.init....");
+					com.beetle.framework.resource.dic.DIContainer.getInstance().init();
+					logger.debug("DIContainer.init done!");
+				}
 				//
 				cf.contentType = "text/html; charset=" + cf.charset;
 				logger.info("charset:" + cf.charset);
@@ -205,7 +211,7 @@ final public class GlobalDispatchServlet extends HttpServlet {
 		try {
 			ControllerHelper.doService(request, response, this.getServletContext());
 		} catch (ControllerException e) {
-			String errMsg = URLEncoder.encode(e.getErrMsg(), response.getCharacterEncoding());	
+			String errMsg = URLEncoder.encode(e.getErrMsg(), response.getCharacterEncoding());
 			response.setHeader("errCode", e.getErrCode() + "");
 			response.setHeader("errMsg", errMsg);
 			if (e.getErrCode() > 0) {

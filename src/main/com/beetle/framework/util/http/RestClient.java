@@ -188,6 +188,7 @@ public class RestClient {
 		} catch (Exception e) {
 			throw new RestInvokeException(e);
 		} finally {
+			invokLock.unlock();	
 			if (res != null) {
 				try {
 					res.close();
@@ -195,7 +196,6 @@ public class RestClient {
 					e.printStackTrace();
 				}
 			}
-			invokLock.unlock();
 			request.clear();
 		}
 	}
@@ -226,6 +226,7 @@ public class RestClient {
 		} catch (Exception e) {
 			throw new RestInvokeException(e);
 		} finally {
+			invokLock.unlock();	
 			if (res != null) {
 				try {
 					res.close();
@@ -233,7 +234,6 @@ public class RestClient {
 					e.printStackTrace();
 				}
 			}
-			invokLock.unlock();
 			request.clear();
 		}
 	}

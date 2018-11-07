@@ -2,7 +2,7 @@ package demo.business.imp;
 
 import java.util.List;
 
-import com.beetle.framework.resource.dic.def.InjectField;
+import com.beetle.framework.resource.dic.def.DaoField;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
 
 import demo.business.IFriendService;
@@ -18,13 +18,13 @@ import demo.valueobject.ExpUfRelation;
 import demo.valueobject.ExpUser;
 
 public class BsUserManager implements IUserManagerService {
-	@InjectField
+	@DaoField
 	private IFriendService friendSrvc;
-	@InjectField
+	@DaoField
 	private IExpUserDao userDao;
-	@InjectField
+	@DaoField
 	private IExpUfRelationDao ufRelationDao;
-	@InjectField
+	@DaoField
 	private IExpFriendDao friendDao;
 
 	@ServiceTransaction
@@ -43,8 +43,7 @@ public class BsUserManager implements IUserManagerService {
 
 	@ServiceTransaction
 	@Override
-	public void createFriend(Long userId, ExpFriend friend)
-			throws ServiceException {
+	public void createFriend(Long userId, ExpFriend friend) throws ServiceException {
 		long fid = friendSrvc.addFriend(friend);// 此方式也声明了事务
 		ExpUfRelation uf = new ExpUfRelation();
 		// uf.setFriendid(10057l);
@@ -60,8 +59,7 @@ public class BsUserManager implements IUserManagerService {
 
 	@ServiceTransaction
 	@Override
-	public void deleteFriend(long userid, long friendId)
-			throws ServiceException {
+	public void deleteFriend(long userid, long friendId) throws ServiceException {
 		ufRelationDao.delete(friendId, userid);
 		friendDao.delete(friendId);
 	}

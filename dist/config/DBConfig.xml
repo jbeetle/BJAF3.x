@@ -21,7 +21,7 @@
 			<!-- 测试sql语句，空隙时，有利于连接池检查连接状态 -->
 			<item name="test-sql" value="select 1" />
 			<item name="connection-url"
-				value="jdbc:mysql://127.0.0.1:3306/eacloud?useUnicode=true&amp;characterEncoding=UTF-8" />
+				value="jdbc:mysql://209.9.108.89:3306/quant?useUnicode=true&amp;characterEncoding=UTF-8" />
 			<item name="driver-class" value="com.mysql.jdbc.Driver" />
 			<item name="user-name" value="root" />
 			<!-- 密码掩码实现类，可选配置，不配置代表密码不加密，同时密码[password]的值必须采取"mask{掩码}"格式 框架提供了一个默认掩码加密实现[com.beetle.framework.persistence.access.DefaultPassworkMask] 
@@ -29,7 +29,7 @@
 			<item name="mask-imp"
 				value="com.beetle.framework.resource.mask.DefaultPassworkMask" />
 			<!-- 用户密码，采取mask{xxx}格式代表值是掩码，此时必须提供mask-imp实现类 -->
-			<item name="password" value="760224" />
+			<item name="password" value="home@8601" />
 			<!-- <item name="password" value="mask{7b55ef6a3c0c4be172e29384b6e6c5f1ca9d620eb1580489e3c888f49cec9904}" 
 				/> -->
 			<!--

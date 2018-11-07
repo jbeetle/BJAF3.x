@@ -36,7 +36,7 @@ import com.beetle.framework.resource.dic.aop.AopInterceptor;
 import com.beetle.framework.resource.dic.aop.InnerHandler;
 import com.beetle.framework.resource.dic.def.Aop;
 import com.beetle.framework.resource.dic.def.AsyncMethodCallback;
-import com.beetle.framework.resource.dic.def.InjectField;
+import com.beetle.framework.resource.dic.def.DaoField;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
 import com.beetle.framework.util.ClassUtil;
 
@@ -395,7 +395,7 @@ public class ReleBinder {
 		Field[] fields = imp.getDeclaredFields();
 		if (fields != null && fields.length > 0) {
 			for (Field f : fields) {
-				if (f.isAnnotationPresent(InjectField.class)) {
+				if (f.isAnnotationPresent(DaoField.class)) {
 					if (DAO_CHECK.contains(bvo.getIface().getName())) {
 						throw new DependencyInjectionException(
 								"DAO cannot use injectField statement, do not conform to the programming paradigm");
