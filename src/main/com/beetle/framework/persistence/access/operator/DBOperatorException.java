@@ -24,13 +24,14 @@ public class DBOperatorException extends DBAccessException {
 	public DBOperatorException(String p0, Throwable p1) {
 		super(p0, p1);
 		setplus(p1);
+		this.errCode = -1010;
 	}
 
 	private void setplus(Throwable p1) {
 		if (p1 != null) {
 			if (p1 instanceof DBAccessException) {
 				DBAccessException qe = (DBAccessException) p1;
-				this.errCode = qe.getErrCode();
+				// this.errCode = qe.getErrCode();
 				this.sqlState = qe.sqlState;
 			}
 		}
@@ -39,10 +40,12 @@ public class DBOperatorException extends DBAccessException {
 	public DBOperatorException(Throwable p0) {
 		super(p0);
 		setplus(p0);
+		this.errCode = -1010;
 	}
 
 	public DBOperatorException(String p0) {
 		super(p0);
+		this.errCode = -1010;
 	}
 
 	public DBOperatorException(int errCode, String message, Throwable cause) {

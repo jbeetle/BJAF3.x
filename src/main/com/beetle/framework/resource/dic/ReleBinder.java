@@ -37,6 +37,7 @@ import com.beetle.framework.resource.dic.aop.InnerHandler;
 import com.beetle.framework.resource.dic.def.Aop;
 import com.beetle.framework.resource.dic.def.AsyncMethodCallback;
 import com.beetle.framework.resource.dic.def.DaoField;
+import com.beetle.framework.resource.dic.def.ServiceField;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
 import com.beetle.framework.util.ClassUtil;
 
@@ -304,7 +305,9 @@ public class ReleBinder {
 	 * implement-接口实现类，抽象的扩展类，或提供者类，或非接口实现类（此时不定义interface属性）
 	 * singleton-是否为单例（针对implement而已），不定义此属性，默认为true
 	 * 	-->
-	 * 	<item interface="com.beetle.framework.util.pattern.di.IService" implement="com.beetle.framework.util.pattern.di.IServiceImp" singleton="true"/>
+	 * 	<item interface=
+	"com.beetle.framework.util.pattern.di.IService" implement=
+	"com.beetle.framework.util.pattern.di.IServiceImp" singleton="true"/>
 	 * </binder>
 	 * </pre>
 	 * 
@@ -385,24 +388,29 @@ public class ReleBinder {
 			setBeanVoProperty(vo);
 		}
 	}
-	
+
 	private void setBeanVoProperty(BeanVO bvo) {
 		logger.debug("bvo:{}", bvo);
 		Class<?> imp = bvo.getImp();
 		if (imp == null) {// aop case
 			return;
 		}
-		Field[] fields = imp.getDeclaredFields();
+		// imp的父类（支持继承）也支持一下，把服务调服务禁止，有点严格，稍微释放一下，也有利于大家抽象设计能力的提升
+		//Field[] fields = imp.getDeclaredFields();
+		Field[] fields = ClassUtil.getAllFields(imp);
 		if (fields != null && fields.length > 0) {
 			for (Field f : fields) {
 				if (f.isAnnotationPresent(DaoField.class)) {
 					if (DAO_CHECK.contains(bvo.getIface().getName())) {
-						throw new DependencyInjectionException(
-								"DAO cannot use injectField statement, do not conform to the programming paradigm");
+						throw new DependencyInjectionException("DAO[" + imp.getName()
+								+ "] cannot use daoField annotation, do not conform to the programming paradigm!");
 					}
 					FieldVO pvo = new FieldVO(f.getName(), f.getType().getName());
 					bvo.getProperties().add(pvo);
 					logger.debug("pvo:{}", pvo);
+				} else if (f.isAnnotationPresent(ServiceField.class)) {// 服务调服务，很容易被滥用，没法控制，屏蔽掉此功能
+					throw new DependencyInjectionException("The [" + imp.getName()
+							+ "] cannot use serviceField annotation, do not conform to the programming paradigm!");
 				}
 			}
 		}
@@ -413,8 +421,8 @@ public class ReleBinder {
 			}
 			if (m.isAnnotationPresent(ServiceTransaction.class)) {
 				if (DAO_CHECK.contains(bvo.getIface().getName())) {
-					throw new DependencyInjectionException(
-							"DAO cannot use transaction statement, do not conform to the programming paradigm");
+					throw new DependencyInjectionException("DAO[" + imp.getName()
+							+ "] cannot use transaction annotation, do not conform to the programming paradigm!");
 				}
 				dealTrans(bvo, m);
 			}

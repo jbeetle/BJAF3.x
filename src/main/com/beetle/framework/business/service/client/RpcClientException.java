@@ -35,14 +35,17 @@ public class RpcClientException extends AppRuntimeException {
 
 	public RpcClientException(String message, Throwable cause) {
 		super(message, cause);
+		this.errCode = -2200;
 	}
 
 	public RpcClientException(String message) {
 		super(message);
+		this.errCode = -2200;
 	}
 
 	public RpcClientException(Throwable cause) {
 		super(cause);
+		this.errCode = -2200;
 	}
 
 }

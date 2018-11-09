@@ -350,7 +350,8 @@ public class DIContainer {
 							propvalue = getBean(ref);
 						}
 						logger.debug("set :{} value", name);
-						ObjectUtil.setFieldValue(bean, name, propvalue);
+						//ObjectUtil.setFieldValue(bean, name, propvalue);
+						ObjectUtil.setFieldValueX(bean, name, propvalue);
 					}
 				}
 			}

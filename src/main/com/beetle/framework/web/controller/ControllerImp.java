@@ -24,8 +24,11 @@ import javax.servlet.http.HttpSession;
 
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
+import com.beetle.framework.resource.dic.def.DaoField;
 import com.beetle.framework.resource.dic.def.ServiceField;
 import com.beetle.framework.util.ObjectUtil;
+import com.beetle.framework.util.thread.task.TaskExecutor;
+import com.beetle.framework.util.thread.task.TaskImp;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.view.View;
 
@@ -143,6 +146,9 @@ public abstract class ControllerImp {
 							throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 									AppLogger.getErrStackTraceInfo(e));
 						}
+					} else if (f.isAnnotationPresent(DaoField.class)) {
+						throw new ControllerException("The [" + this.getClass().getName()
+								+ "] cannot use daoField annotation, do not conform to the programming paradigm!");
 					}
 				}
 			}
@@ -246,6 +252,15 @@ public abstract class ControllerImp {
 	public <T> T rpcServiceLookup(final Class<T> interfaceClass, final String host, final int port,
 			boolean withShortConnection) {
 		return ServiceClient.getInstance().rpcServiceLookupExt(interfaceClass, host, port, withShortConnection);
+	}
+
+	/**
+	 * 异步执行任务，使用是框架公共线程池，在application.properties文件配置相关线程池参数routinespool_<br>
+	 * 支持异步任务超时关闭，超时事件，任务结束事件等，详细参考框架TaskExecutor模型
+	 * @param task
+	 */
+	public void asyncExecuteTask(TaskImp task) {
+		TaskExecutor.runRoutineInCommonPool(task);
 	}
 
 	/**

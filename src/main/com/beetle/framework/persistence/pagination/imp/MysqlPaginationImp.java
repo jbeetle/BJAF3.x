@@ -252,7 +252,7 @@ public class MysqlPaginationImp implements IPagination {
 			pbi.setPageAmount(PageHelper.pageCount(pInfo.getPageSize(), pbi.getRecordAmount()));
 		} catch (Throwable e) {
 			logger.error(e);
-			throw new PaginationException(e);
+			throw new PaginationException("execute page err", e);
 		} finally {
 			ConnectionFactory.closeConnection(conn);
 			if (!pInfo.getSqlParameters().isEmpty()) {

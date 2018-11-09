@@ -42,15 +42,30 @@ public class ConnectionException extends DBAccessException {
 	public ConnectionException(String p0, Throwable p1) {
 		super(p0, p1);
 		setplus(p1);
+		this.errCode=-1050;
 	}
 
 	public ConnectionException(Throwable p0) {
 		super(p0);
 		setplus(p0);
+		this.errCode=-1050;
 	}
 
 	public ConnectionException(String p0) {
 		super(p0);
+		this.errCode=-1050;
+	}
+
+	public ConnectionException(int errCode, String message, Throwable cause) {
+		super(errCode, message, cause);
+	}
+
+	public ConnectionException(int errCode, String message) {
+		super(errCode, message);
+	}
+
+	public ConnectionException(int errCode, Throwable cause) {
+		super(errCode, cause);
 	}
 
 	private void setplus(Throwable p1) {
@@ -58,8 +73,7 @@ public class ConnectionException extends DBAccessException {
 			if (p1 instanceof DBAccessException) {
 				DBAccessException qe = (DBAccessException) p1;
 				this.sqlState = qe.sqlState;
-				this.errCode = qe.getErrCode();
-				;
+				//this.errCode = qe.getErrCode();
 			}
 		}
 	}

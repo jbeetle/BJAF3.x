@@ -20,6 +20,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -249,6 +251,40 @@ public class ObjectUtil {
 		try {
 			Class<?> obj = target.getClass();
 			Field[] fields = obj.getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {
+				fields[i].setAccessible(true);
+				if (field.equals(fields[i].getName())) {
+					fields[i].set(target, value);
+					break;
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static Field[] getObjAllFields(Object object) {
+		Class<?> clazz = object.getClass();
+		List<Field> fieldList = new ArrayList<>();
+		while (clazz != null) {
+			fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+			clazz = clazz.getSuperclass();
+		}
+		Field[] fields = new Field[fieldList.size()];
+		fieldList.toArray(fields);
+		return fields;
+	}
+
+	/**
+	 * 设置对象的属性值，支持对象的所有父类属性设置
+	 * @param target
+	 * @param field
+	 * @param value
+	 */
+	public final static void setFieldValueX(Object target, String field, Object value) {
+		try {
+			// Class<?> obj = target.getClass();
+			Field[] fields = getObjAllFields(target);
 			for (int i = 0; i < fields.length; i++) {
 				fields[i].setAccessible(true);
 				if (field.equals(fields[i].getName())) {

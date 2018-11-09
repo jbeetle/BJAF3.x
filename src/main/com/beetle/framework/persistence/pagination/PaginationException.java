@@ -34,8 +34,7 @@ import com.beetle.framework.persistence.access.operator.DBOperatorException;
  * @author HenryYu (yuhaodong@gmail.com)
  * @version 1.0
  */
-public class PaginationException extends
-		DBOperatorException {
+public class PaginationException extends DBOperatorException {
 	/**
 	 * 
 	 */
@@ -43,13 +42,29 @@ public class PaginationException extends
 
 	public PaginationException(String message) {
 		super(message);
+		this.errCode=-1060;
 	}
 
 	public PaginationException(Throwable cause) {
 		super(cause);
+		this.errCode=-1060;
 	}
 
 	public PaginationException(String message, Throwable cause) {
 		super(message, cause);
+		this.errCode=-1060;
 	}
+
+	public PaginationException(int errCode, String message, Throwable cause) {
+		super(errCode, message, cause);
+	}
+
+	public PaginationException(int errCode, String message) {
+		super(errCode, message);
+	}
+
+	public PaginationException(int errCode, Throwable cause) {
+		super(errCode, cause);
+	}
+
 }

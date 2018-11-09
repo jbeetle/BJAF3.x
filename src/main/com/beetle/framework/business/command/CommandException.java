@@ -28,14 +28,17 @@ public class CommandException extends AppException {
 
 	public CommandException(String p0, Throwable p1) {
 		super(p0, p1);
+		this.errCode = -2100;
 	}
 
 	public CommandException(Throwable p0) {
 		super(p0);
+		this.errCode = -2100;
 	}
 
 	public CommandException(String p0) {
 		super(p0);
+		this.errCode = -2100;
 	}
 
 }

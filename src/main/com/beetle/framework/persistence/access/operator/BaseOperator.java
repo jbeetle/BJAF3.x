@@ -37,8 +37,7 @@ public abstract class BaseOperator {
 	private Connection presentConnection; // 当前使用的数据库连接
 	private boolean useOnlyConnectionFlag = false; // 仅使用一个连接的标记，默认为false，需要手工关闭连接
 
-	protected final static AppLogger logger = AppLogger
-			.getInstance(BaseOperator.class);
+	protected final static AppLogger logger = AppLogger.getInstance(BaseOperator.class);
 	private boolean accessFlag = false;
 
 	protected BaseOperator() {
@@ -63,7 +62,7 @@ public abstract class BaseOperator {
 		if (!isAccessed()) {
 			if (sql == null) {
 				this.getParameters().clear();
-				throw new DBOperatorException("sql has not set yet");
+				throw new DBOperatorException(-1003, "sql has not set yet");
 			} else {
 				if (logger.isDebugEnabled()) {
 					logger.debug("sql:[" + this.getSql() + "]");
@@ -76,8 +75,7 @@ public abstract class BaseOperator {
 				}
 			}
 		} else {
-			throw new DBOperatorException(
-					"can't access again![One Operator only access once! ]");
+			throw new DBOperatorException(-1004, "can't access again![One Operator only access once! ]");
 		}
 	}
 

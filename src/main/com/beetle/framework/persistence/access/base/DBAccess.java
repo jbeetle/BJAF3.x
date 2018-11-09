@@ -60,7 +60,7 @@ public class DBAccess {
 			}
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(null, ps, rs);
@@ -93,7 +93,7 @@ public class DBAccess {
 		} catch (SQLException sqle) {
 			// logger.error("run[" + selectAccessManner + "]err", sqle);
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(con, ps, rs);
@@ -116,7 +116,7 @@ public class DBAccess {
 			return r;
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(null, ps, null);
@@ -134,7 +134,7 @@ public class DBAccess {
 			return r;
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(con, ps, null);
@@ -153,7 +153,7 @@ public class DBAccess {
 			return reRowNum;
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(null, ps, null);
@@ -181,7 +181,7 @@ public class DBAccess {
 			return id;
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(con, ps, null);
@@ -203,7 +203,7 @@ public class DBAccess {
 			return reRowNum;
 		} catch (SQLException sqle) {
 			logger.error(sqle.getMessage(), sqle);
-			throw new DBAccessException("execute sql err!", sqle);
+			throw new DBAccessException(-1002, "execute sql err!", sqle);
 		} finally {
 			try {
 				ConnectionFactory.closeAll(con, ps, null);

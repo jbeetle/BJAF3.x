@@ -211,12 +211,16 @@ final public class GlobalDispatchServlet extends HttpServlet {
 		try {
 			ControllerHelper.doService(request, response, this.getServletContext());
 		} catch (ControllerException e) {
+			AppLogger logger = AppLogger.getInstance(GlobalDispatchServlet.class);
+			logger.error("doService err", e);
 			String errMsg = URLEncoder.encode(e.getErrMsg(), response.getCharacterEncoding());
 			response.setHeader("errCode", e.getErrCode() + "");
 			response.setHeader("errMsg", errMsg);
 			if (e.getErrCode() > 0) {
 				response.setStatus(e.getErrCode());
 				response.setHeader("STATUS_CODE_INFO", e.getMessage());
+				response.setHeader("errCode", e.getErrCode()*-1 + "");
+				response.setHeader("errMsg", e.getMessage());
 			} else {
 				throw new ServletException(e);
 			}

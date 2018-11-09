@@ -25,14 +25,17 @@ public class RedisOperatorException extends AppRuntimeException {
 
 	public RedisOperatorException(String message, Throwable cause) {
 		super(message, cause);
+		this.errCode=-1100;//如果不设置，默认-1100就是redis的
 	}
 
 	public RedisOperatorException(String message) {
 		super(message);
+		this.errCode=-1100;
 	}
 
 	public RedisOperatorException(Throwable cause) {
 		super(cause);
+		this.errCode=-1100;
 	}
 
 }

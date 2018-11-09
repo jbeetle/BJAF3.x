@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -272,6 +273,23 @@ public final class ClassUtil {
 		return null;
 	}
 
+	/**
+	 * 获取所有属性包括父类
+	 * 
+	 * @param object
+	 * @return
+	 */
+	public static Field[] getAllFields(Class<?> clazz) {
+		List<Field> fieldList = new ArrayList<>();
+		while (clazz != null) {
+			fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+			clazz = clazz.getSuperclass();
+		}
+		Field[] fields = new Field[fieldList.size()];
+		fieldList.toArray(fields);
+		return fields;
+	}
+
 	@SuppressWarnings({ "rawtypes" })
 	public static Object newInstance(final String className, final Class[] constrParamTypes,
 			final Object[] constrParamValues) throws Exception {
@@ -451,7 +469,7 @@ public final class ClassUtil {
 		List<Class<?>> impList = new ArrayList<Class<?>>();
 		try {
 			@SuppressWarnings("rawtypes")
-			Class[] ca = findClassesInJar(jarFilename,packName);
+			Class[] ca = findClassesInJar(jarFilename, packName);
 			for (int i = 0; i < ca.length; i++) {
 				// System.out.println(ca[i]);
 				if (ca[i].isInterface()) {

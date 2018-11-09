@@ -27,6 +27,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.beetle.framework.AppException;
+import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.controller.FacadeController.DrawCtrl;
@@ -241,8 +243,11 @@ final public class ControllerHelper {
 			if (view != null) {
 				if (view.getViewname().equals(AbnormalViewControlerImp.abnormalViewName)) { // 流视图
 					OutputStream out = response.getOutputStream();
-					out.flush();
-					out.close();
+					try {
+						out.flush();
+					} finally {
+						out.close();
+					}
 				} else { // 正常视图
 					dealModelAndForward(view, request, response, app);
 				}
@@ -252,7 +257,12 @@ final public class ControllerHelper {
 			}
 		} catch (ControllerException se) {
 			throw se;
+		} catch (AppRuntimeException se) {
+			throw new ControllerException(se.getErrCode(), se.getErrMsg(), se);
 		} catch (Throwable se) {
+			if (se instanceof AppException) {
+				throw new ControllerException(((AppException) se).getErrCode(), ((AppException) se).getErrMsg(), se);
+			}
 			throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, se);
 		} finally {
 			if (view != null) {

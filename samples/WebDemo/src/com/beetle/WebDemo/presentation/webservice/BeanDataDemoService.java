@@ -15,9 +15,9 @@ public class BeanDataDemoService extends WebServiceController {
 	public ModelData defaultAction(WebInput wi) throws ControllerException {
 		ModelData md = new ModelData();
 		Integer userId = wi.getParameterAsInteger("id");
-		if (userId == null) {
-			userId = 1000;
-		}
+//		if (userId == null) {
+//			userId = 1000;
+//		}
 		User user = userService.queryUser(userId);
 		md.setData(user);
 		return md;

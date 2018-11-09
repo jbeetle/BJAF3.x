@@ -74,6 +74,7 @@ final public class TableOperator<T> {
 	/**
 	 * 设置表操作器是否取消脱敏处理，true为取消，不参与框架配置的脱敏机制<br>
 	 * 默认为false
+	 * 
 	 * @param notDesensitize
 	 */
 	public void setNotDesensitize(boolean notDesensitize) {
@@ -139,10 +140,10 @@ final public class TableOperator<T> {
 			logger.info(this.tbName + "-->inited!");
 		} catch (ConnectionException ce) {
 			logger.error(ce);
-			throw new DBOperatorException(ce);
+			throw new DBOperatorException(-1016, ce);
 		} catch (SQLException ex) {
 			logger.error(ex);
-			throw new DBOperatorException(ex);
+			throw new DBOperatorException(-1017, ex);
 		} finally {
 			if (conn != null) {
 				try {
@@ -674,7 +675,7 @@ final public class TableOperator<T> {
 			return update.getEffectCounts();
 		} catch (DBOperatorException ex) {
 			logger.error(ex);
-			throw new DBOperatorException(ex);
+			throw ex;
 		}
 	}
 
@@ -693,7 +694,7 @@ final public class TableOperator<T> {
 			return update.getEffectCounts();
 		} catch (DBOperatorException ex) {
 			logger.error(ex);
-			throw new DBOperatorException(ex);
+			throw ex;
 		}
 	}
 
@@ -763,7 +764,7 @@ final public class TableOperator<T> {
 			return update.getBatchEffectCounts();
 		} catch (DBOperatorException ex) {
 			logger.error(ex);
-			throw new DBOperatorException(ex);
+			throw ex;
 		} finally {
 			// pks.clear();
 		}
@@ -933,29 +934,25 @@ final public class TableOperator<T> {
 
 	/**
 	 * 
-	  * @Title: TableOperator
-	  * @Description: 单表分页查询
-	  * @param @param whereStr：条件语句
-	  * @param @param values：条件值（条件语句必须跟条件值一一对应）
-	  * @param @param pageNumber：当前页数
-	  * @param @param pageSize：当前显示数
-	  * @param @return
-	  * @return PageList<T>    返回类型
-	  * @author yuanfeng.he
-	  * @date 2018年10月16日-下午17:26:41
-	  * @throws
+	 * @Title: TableOperator @Description: 单表分页查询 @param @param
+	 *         whereStr：条件语句 @param @param
+	 *         values：条件值（条件语句必须跟条件值一一对应） @param @param
+	 *         pageNumber：当前页数 @param @param
+	 *         pageSize：当前显示数 @param @return @return PageList<T> 返回类型 @author
+	 *         yuanfeng.he @date 2018年10月16日-下午17:26:41 @throws
 	 */
-	public PageList<T> selectByWhereConditionPaging(String whereStr,Object[] values,int pageNumber, int pageSize) throws DBOperatorException{
+	public PageList<T> selectByWhereConditionPaging(String whereStr, Object[] values, int pageNumber, int pageSize)
+			throws DBOperatorException {
 		PageParameter pp = new PageParameter();
 		pp.setNotDesensitize(this.isNotDesensitize());
 		pp.setCacheRecordAmountFlag(true);
 		pp.setUseNullParameter(false);
 		pp.setDataSourceName(this.dsName);
-		pp.setPageNumber(pageNumber); 
+		pp.setPageNumber(pageNumber);
 		pp.setPageSize(pageSize);
-		pp.setUserSql(SqlGenerator.generateSelectAllSql(this.filedSet,this.tbName)+whereStr);
+		pp.setUserSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName) + whereStr);
 		int index = whereStr.indexOf("?");
-		if(index > 0){
+		if (index > 0) {
 			for (int i = 0; i < values.length; i++) {
 				pp.addParameter(values[i]);
 			}
@@ -965,46 +962,41 @@ final public class TableOperator<T> {
 			pr = PaginationOperator.access(pp);
 			PageList<T> pl = pr.getPageList(voClass);
 			return pl;
-		}finally{
+		} finally {
 			if (pr != null) {
-			   pr.clearAll();
+				pr.clearAll();
 			}
 		}
 	}
-	
+
 	/**
 	 * 
-	  * @Title: TableOperator
-	  * @Description: 按where条件的IN语句进行查询如 where userId IN(......)
-	  * @param @param foreignFieldName：条件字段名
-	  * @param @param keys：条件值
-	  * @param @return
-	  * @return List<T>    返回类型
-	  * @author yuanfeng.he
-	  * @date 2018年10月17日-下午15:35:41
-	  * @throws
+	 * @Title: TableOperator @Description: 按where条件的IN语句进行查询如 where userId
+	 *         IN(......) @param @param foreignFieldName：条件字段名 @param @param
+	 *         keys：条件值 @param @return @return List<T> 返回类型 @author
+	 *         yuanfeng.he @date 2018年10月17日-下午15:35:41 @throws
 	 */
 	@SuppressWarnings("unchecked")
-	public List<T> selectByForeignKeys(String foreignFieldName,Object[] keys) throws DBOperatorException{
-		if(foreignFieldName==null || foreignFieldName.equals("")){
+	public List<T> selectByForeignKeys(String foreignFieldName, Object[] keys) throws DBOperatorException {
+		if (foreignFieldName == null || foreignFieldName.equals("")) {
 			throw new DBOperatorException("foreignFieldName can't be null");
 		}
-		if(keys==null || keys.length==0){
+		if (keys == null || keys.length == 0) {
 			throw new DBOperatorException("keys can't be null");
 		}
 		QueryOperator query = new QueryOperator(this.isNotDesensitize());
 		query.setDataSourceName(this.dsName);
 		StringBuffer sb = new StringBuffer();
-		sb.append("WHERE"+" "+foreignFieldName+" "+"IN");
+		sb.append("WHERE" + " " + foreignFieldName + " " + "IN");
 		sb.append("(");
 		for (int i = 0; i < keys.length; i++) {
-			if(i>0)
+			if (i > 0)
 				sb.append(",");
 			sb.append("?");
 			query.addParameter(keys[i]);
 		}
 		sb.append(")");
-		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName)+sb.toString());
+		query.setSql(SqlGenerator.generateSelectAllSql(this.filedSet, this.tbName) + sb.toString());
 		RsDataSet rds = null;
 		try {
 			query.access();

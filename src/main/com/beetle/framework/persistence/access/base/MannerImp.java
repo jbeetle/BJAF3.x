@@ -37,7 +37,7 @@ class MannerImp implements IAccessManner {
 		this.sql = sql;
 		this.return_generated_keys = false;
 		if (DBHelper.sqlInjectValidate(sql)) {
-			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+			throw new DBAccessException(-1001, "Statement[" + sql + "] exists SQL injection risk,aborts！");
 		}
 	}
 
@@ -47,7 +47,7 @@ class MannerImp implements IAccessManner {
 		this.sql = sql;
 		this.return_generated_keys = return_generated_keys;
 		if (DBHelper.sqlInjectValidate(sql)) {
-			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+			throw new DBAccessException(-1001, "Statement[" + sql + "] exists SQL injection risk,aborts！");
 		}
 	}
 

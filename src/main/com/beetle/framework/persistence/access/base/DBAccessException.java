@@ -56,7 +56,8 @@ public class DBAccessException
 		if (p1 != null) {
 			if (p1 instanceof SQLException) {
 				SQLException qe = (SQLException) p1;
-				this.errCode = qe.getErrorCode();
+				//驱动返回的错误吗不知道什么规则，破坏我们编程约定，用我们自己的算了
+				//this.errCode = qe.getErrorCode();
 				this.sqlState = qe.getSQLState();
 			}
 		}

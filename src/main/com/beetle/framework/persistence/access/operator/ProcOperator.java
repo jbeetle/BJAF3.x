@@ -53,16 +53,14 @@ public abstract class ProcOperator extends BaseOperator {
 		CallableStatement call = null;
 		try {
 			if (!this.isPresentConnectionUsable()) {
-				conn = ConnectionFactory
-						.getConncetion(this.getDataSourceName());
+				conn = ConnectionFactory.getConncetion(this.getDataSourceName());
 				this.setPresentConnection(conn);
 			} else {
 				conn = this.getPresentConnection();
 			}
 			// call = conn.prepareCall(genCallString());
 			// 构造call语句
-			call = AccessMannerFactory.getAccessManner(genCallString())
-					.accessByCallableStatement(conn);
+			call = AccessMannerFactory.getAccessManner(genCallString()).accessByCallableStatement(conn);
 			processInputParameter(call); // 处理存储输入参数
 			setProcOutParameters(call, this.getParameters().size()); // 登记输出参数
 			call.execute(); // 执行
@@ -79,7 +77,7 @@ public abstract class ProcOperator extends BaseOperator {
 			}
 		} catch (Exception e) {
 			logger.error(e);
-			throw new DBOperatorException("call proc err", e);
+			throw new DBOperatorException(-1005, "call proc err", e);
 		} finally {
 			if (!this.isUseOnlyConnectionFlag()) {
 				ConnectionFactory.closeAll(conn, call, null);
@@ -89,11 +87,9 @@ public abstract class ProcOperator extends BaseOperator {
 		}
 	}
 
-	protected abstract void processResult(CallableStatement call)
-			throws SQLException;
+	protected abstract void processResult(CallableStatement call) throws SQLException;
 
-	protected void processInputParameter(CallableStatement call)
-			throws SQLException {
+	protected void processInputParameter(CallableStatement call) throws SQLException {
 		List<SqlParameter> parameters = this.getParameters();
 		for (int i = 0; i < parameters.size(); i++) {
 			SqlParameter p = parameters.get(i);
@@ -103,8 +99,7 @@ public abstract class ProcOperator extends BaseOperator {
 
 	protected abstract String genCallString();
 
-	protected abstract void setProcOutParameters(CallableStatement cs, int pos)
-			throws SQLException;
+	protected abstract void setProcOutParameters(CallableStatement cs, int pos) throws SQLException;
 
 	/**
 	 * 获取执行结果标记

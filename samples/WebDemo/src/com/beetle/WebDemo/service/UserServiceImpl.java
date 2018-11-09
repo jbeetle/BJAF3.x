@@ -11,7 +11,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User queryUser(Integer userId) throws ServiceException {
 		if (userId == null) {
-			throw new ServiceException(-1, "Userid can't be null");
+			throw new ServiceException(-201, "Userid can't be null");
 		}
 		return userDao.findUserById(userId);
 	}

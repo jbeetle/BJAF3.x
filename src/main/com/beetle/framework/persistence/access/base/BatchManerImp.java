@@ -30,7 +30,7 @@ import java.util.List;
 		this.sql = sql;
 		this.batchValues = batchValues;
 		if (DBHelper.sqlInjectValidate(sql)) {
-			throw new DBAccessException("Statement["+sql+"] exists SQL injection risk,aborts！");
+			throw new DBAccessException(-1001,"Statement["+sql+"] exists SQL injection risk,aborts！");
 		}
 	}
 

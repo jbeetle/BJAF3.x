@@ -32,13 +32,16 @@ public class ControllerException extends AppException {
 
 	public ControllerException(String message) {
 		super(message);
+		this.errCode=-4100;
 	}
 
 	public ControllerException(Throwable cause) {
 		super(cause);
+		this.errCode=-4100;
 	}
 
 	public ControllerException(String message, Throwable cause) {
 		super(message, cause);
+		this.errCode=-4100;
 	}
 }

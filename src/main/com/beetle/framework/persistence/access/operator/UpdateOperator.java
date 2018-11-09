@@ -78,11 +78,11 @@ public final class UpdateOperator extends BaseOperator {
 				}
 			}
 		} catch (ConnectionException ce) {
-			throw new DBOperatorException("db connection err", ce);
+			throw new DBOperatorException(-1009, "db connection err", ce);
 		} catch (DBAccessException dbe) {
-			throw new DBOperatorException("UpdateOperator err", dbe);
+			throw new DBOperatorException(-1017, "UpdateOperator err", dbe);
 		} catch (Throwable e) {
-			throw new DBOperatorException("UpdateOperator raise unknown err", e);
+			throw new DBOperatorException(-1018, "UpdateOperator raise unknown err", e);
 		} finally {
 			if (this.batchValues != null) {
 				this.batchValues.clear();

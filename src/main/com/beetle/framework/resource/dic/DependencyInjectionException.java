@@ -18,8 +18,7 @@ public class DependencyInjectionException extends AppRuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public DependencyInjectionException(int errCode, String message,
-			Throwable cause) {
+	public DependencyInjectionException(int errCode, String message, Throwable cause) {
 		super(errCode, message, cause);
 	}
 
@@ -33,14 +32,17 @@ public class DependencyInjectionException extends AppRuntimeException {
 
 	public DependencyInjectionException(String message, Throwable cause) {
 		super(message, cause);
+		this.errCode = -3100;
 	}
 
 	public DependencyInjectionException(String message) {
 		super(message);
+		this.errCode = -3100;
 	}
 
 	public DependencyInjectionException(Throwable cause) {
 		super(cause);
+		this.errCode = -3100;
 	}
 
 }

@@ -38,9 +38,9 @@ import com.beetle.framework.resource.define.CompositeDTO;
 public class QueryOperator extends BaseOperator {
 	/**
 	 * 默认构造函数，此函数默认会根据系统配置来进行脱敏处理，是否进行要看数据源配置而定<br>
-	 * <item name="desensitize-imp"
-				value="com.beetle.framework.resource.desensitize.DefaultDesensitizeImpl" /><br>
-				如果这个配置不配，则不做脱敏处理
+	 * <item name="desensitize-imp" value=
+	 * "com.beetle.framework.resource.desensitize.DefaultDesensitizeImpl" /><br>
+	 * 如果这个配置不配，则不做脱敏处理
 	 */
 	public QueryOperator() {
 		maxRow = 0;
@@ -49,7 +49,8 @@ public class QueryOperator extends BaseOperator {
 
 	/**
 	 * 
-	 * @param notDesensitize 为true,无论是否配置desensitize，查询结果不会做脱敏处理。
+	 * @param notDesensitize
+	 *            为true,无论是否配置desensitize，查询结果不会做脱敏处理。
 	 */
 	public QueryOperator(boolean notDesensitize) {
 		super();
@@ -77,7 +78,7 @@ public class QueryOperator extends BaseOperator {
 					if (!this.isPresentConnectionUsable()) {
 						// this.setPresentConnection(ConnectionFactory
 						// .getConncetion(this.getDataSourceName()));
-						throw new DBOperatorException("the current connection is closed!");
+						throw new DBOperatorException(-1007, "the current connection is closed!");
 					}
 					DBAccess.queryForOneConnection(
 							AccessMannerFactory.getAccessManner(this.getSql(), this.getParameters()), handlerImp,
@@ -91,7 +92,7 @@ public class QueryOperator extends BaseOperator {
 					if (!this.isPresentConnectionUsable()) {
 						// this.setPresentConnection(ConnectionFactory
 						// .getConncetion(this.getDataSourceName()));
-						throw new DBOperatorException("the current connection is closed!");
+						throw new DBOperatorException(-1008, "the current connection is closed!");
 					}
 					DBAccess.queryForOneConnection(AccessMannerFactory.getAccessManner(this.getSql()), handlerImp,
 							this.getPresentConnection(), this.maxRow);
@@ -102,11 +103,11 @@ public class QueryOperator extends BaseOperator {
 				logger.debug("rowcount:" + handlerImp.getRowCount());
 			}
 		} catch (ConnectionException ce) {
-			throw new DBOperatorException("db connection err", ce);
+			throw new DBOperatorException(-1009, "db connection err", ce);
 		} catch (DBAccessException dbe) {
-			throw new DBOperatorException("QueryOperator err", dbe);
+			throw new DBOperatorException(-1010, "QueryOperator err", dbe);
 		} catch (Throwable e) {
-			throw new DBOperatorException("QueryOperator raise unknown err", e);
+			throw new DBOperatorException(-1011, "QueryOperator raise unknown err", e);
 		}
 	}
 

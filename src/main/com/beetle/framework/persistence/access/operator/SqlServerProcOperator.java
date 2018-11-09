@@ -52,23 +52,20 @@ public final class SqlServerProcOperator extends ProcOperator {
 		CallableStatement call = null;
 		try {
 			if (!this.isPresentConnectionUsable()) {
-				conn = ConnectionFactory
-						.getConncetion(this.getDataSourceName());
+				conn = ConnectionFactory.getConncetion(this.getDataSourceName());
 				this.setPresentConnection(conn);
 			} else {
 				conn = this.getPresentConnection();
 			}
 			// call = conn.prepareCall(genCallString());
 			// 构造call语句
-			call = AccessMannerFactory.getAccessManner(genCallString())
-					.accessByCallableStatement(conn);
+			call = AccessMannerFactory.getAccessManner(genCallString()).accessByCallableStatement(conn);
 			processInputParameter(call); // 处理存储输入参数
 			setProcOutParameters(call, this.getParameters().size()); // 登记输出参数
 			boolean f = call.execute(); // 执行
 			if (!f) {
 				this.returnFlag = call.getInt(this.getParameters().size() + 1);
-				this.returnMsg = call
-						.getString(this.getParameters().size() + 2);
+				this.returnMsg = call.getString(this.getParameters().size() + 2);
 			} else {
 				this.processResult(call);
 			}
@@ -83,7 +80,7 @@ public final class SqlServerProcOperator extends ProcOperator {
 			 */
 		} catch (Exception e) {
 			logger.error(e);
-			throw new DBOperatorException("call proc err", e);
+			throw new DBOperatorException(-1012, "call proc err", e);
 		} finally {
 			if (!this.isUseOnlyConnectionFlag()) {
 				ConnectionFactory.closeAll(conn, call, null);
@@ -163,8 +160,7 @@ public final class SqlServerProcOperator extends ProcOperator {
 	 * (logger.isDebugEnabled()) { logger.debug("callString:" + callString); }
 	 * return callString; }
 	 */
-	protected void setProcOutParameters(CallableStatement cs, int pos)
-			throws java.sql.SQLException {
+	protected void setProcOutParameters(CallableStatement cs, int pos) throws java.sql.SQLException {
 		cs.registerOutParameter(pos + 1, java.sql.Types.INTEGER);
 		cs.registerOutParameter(pos + 2, java.sql.Types.VARCHAR);
 	}
