@@ -5,7 +5,7 @@ Beetle J2EE Application Framework Version 3，Powerful, simple and easy to use
 * 依赖注入容器（DIContainer）
 	* 组件装配及引用
 	* 支付AOP编程
-	* 注解编程（InjectField/Aop/ServiceTransaction） 
+	* 注解编程（DaoField/ServiceField/Aop/ServiceTransaction） 
 * 持久层
 	* 多种数据源（包括XA数据源）及连接池，灵活配置，支持数据库密码加密处理
 	* 数据存取操作器，增删查改无需编写代码，简单易用（TableOperator/QueryOperator/UpdateOperator） 
