@@ -20,6 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import com.beetle.framework.AppProperties;
 import com.beetle.framework.log.AppLogger;
@@ -227,13 +230,18 @@ public class DIContainer {
 		Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
 		String x = System.getProperties().getProperty("java.class.path");
 		String[] jars = x.split(System.getProperties().getProperty("path.separator"));
+		logger.debug("packname:{}",packname);
 		for (int i = 0; i < jars.length; i++) {
 			String jar = jars[i];
+			logger.debug("jar:{}",jar);
 			if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
 				Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
 				if (!kvs.isEmpty()) {
 					allKvs.putAll(kvs);
 				}
+				Map<Class<?>, Class<?>> kvs2 = scanManifestLib(packname, jar);
+				if(!kvs2.isEmpty())
+				    allKvs.putAll(kvs2);
 			}
 		}
 		if (allKvs.isEmpty()) {// java.class.path没有，找web容器底下的
@@ -256,7 +264,39 @@ public class DIContainer {
 		return allKvs;
 	}
 
-	private void loadXmlFile(ReleBinder rb, String xmlname) {
+	private static Map<Class<?>, Class<?>> scanManifestLib(String packname, String sourceJar) {
+	    Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
+	    JarFile jarFile=null;
+	    try {
+	        jarFile=new JarFile(sourceJar);
+	        Manifest manifest=jarFile.getManifest();
+	        Attributes attributes=manifest.getMainAttributes();
+	        String libs=attributes.getValue("Class-Path");
+	        String[] jars=libs.split(" ");
+	        for (int i = 0; i < jars.length; i++) {
+	            String jar = jars[i];
+	            logger.debug("jar:{}",jar);
+	            if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
+	                Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
+	                if (!kvs.isEmpty()) {
+	                    allKvs.putAll(kvs);
+	                }
+	            }
+	        }
+        } catch (Exception e) {
+            logger.error("扫描{}的manifest中的lib错误",sourceJar,e);
+        }finally {
+            if(jarFile!=null)
+                try {
+                    jarFile.close();
+                } catch (IOException e) {
+                    logger.error("关闭JarFile失败",e);
+                }
+        }
+        return allKvs;
+    }
+
+    private void loadXmlFile(ReleBinder rb, String xmlname) {
 		String filename = AppProperties.getAppHome() + xmlname;
 		File f = new File(filename);
 		if (f.exists()) {
