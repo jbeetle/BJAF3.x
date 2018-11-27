@@ -46,7 +46,6 @@ public class UploadForm {
 	private Map<String, String> fieldMap;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
-
 	public UploadForm(List<FileObj> fileList, Map<String, String> fieldMap, HttpServletRequest request,
 			HttpServletResponse response) {
 		this.fileList = fileList;

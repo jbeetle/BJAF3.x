@@ -12,6 +12,7 @@
  */
 package com.beetle.framework.web.controller;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -27,6 +29,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 
 import com.beetle.framework.log.AppLogger;
+import com.beetle.framework.resource.dic.def.DaoField;
+import com.beetle.framework.resource.dic.def.ServiceField;
+import com.beetle.framework.util.ObjectUtil;
 import com.beetle.framework.web.common.CommonUtil;
 import com.beetle.framework.web.common.WebConst;
 import com.beetle.framework.web.controller.upload.FileObj;
@@ -70,16 +75,41 @@ public class UploadController extends ControllerImp {
 	/**
 	 * execute
 	 * 
-	 * @param webInput
-	 *            WebInput
+	 * @param webInput WebInput
 	 * @return Model
 	 * @throws ServletException
-	 * @todo Implement this com.beetle.framework.web.controller.ControllerImp
-	 *       method
+	 * @todo Implement this com.beetle.framework.web.controller.ControllerImp method
 	 */
 	public View perform(WebInput webInput) throws ControllerException {
 		HttpServletRequest request = webInput.getRequest();
 		return doupload(webInput, request);
+	}
+
+	private boolean injectFlag = false;
+
+	private void serviceInject(IUpload upload) throws ControllerException {
+		// 服务注入
+		if (!this.injectFlag) {
+			this.injectFlag = true;// 没必要考虑并发了
+			Field[] fields = upload.getClass().getDeclaredFields();
+			if (fields != null && fields.length > 0) {
+				for (Field f : fields) {
+					if (f.isAnnotationPresent(ServiceField.class)) {
+						try {
+							ObjectUtil.setFieldValue(upload, f.getName(), this.serviceLookup(f.getType()));
+						} catch (Exception e) {
+							e.printStackTrace();
+							throw new ControllerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+									AppLogger.getErrStackTraceInfo(e));
+						}
+					} else if (f.isAnnotationPresent(DaoField.class)) {
+						throw new ControllerException("The [" + upload.getClass().getName()
+								+ "] cannot use daoField annotation, do not conform to the programming paradigm!");
+					}
+				}
+			}
+		}
+		//
 	}
 
 	/**
@@ -103,6 +133,7 @@ public class UploadController extends ControllerImp {
 				String ctrlimpName = (String) webInput.getRequest().getAttribute(CommonUtil.controllerimpclassname);
 				if (ctrlimpName != null)
 					upload = UploadFactory.getUploadInstance(webInput.getControllerName(), ctrlimpName); // 2007-03-21
+					serviceInject(upload);
 			}
 			if (upload == null) {
 				String uploadclass = webInput.getParameter("$upload");
@@ -114,6 +145,7 @@ public class UploadController extends ControllerImp {
 				logger.debug("uploadclass:{}", uploadclass);
 				logger.debug("uploadclass_:{}", uploadclass_);
 				upload = UploadFactory.getUploadInstance(uploadclass, uploadclass_);
+				serviceInject(upload);
 			}
 			logger.debug("IUpload:{}", upload);
 			long sizeMax = webInput.getParameterAsLong("sizeMax", 0);
