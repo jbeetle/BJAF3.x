@@ -12,6 +12,8 @@ import com.beetle.framework.resource.dic.ReleBinder;
 import com.beetle.framework.resource.dic.ReleBinder.BeanVO;
 import com.beetle.framework.resource.dic.def.AsyncMethodCallback;
 import com.beetle.framework.resource.dic.def.ServiceTransaction;
+import com.beetle.framework.resource.watch.WatchHelper;
+import com.beetle.framework.resource.watch.WatchInfo;
 import com.beetle.framework.util.thread.task.TaskExecutor;
 import com.beetle.framework.util.thread.task.TaskImp;
 
@@ -154,11 +156,23 @@ public class InnerHandler implements InvocationHandler {
 			te.addSubRoutine(new ExeTask(targetImp, method, args, BeanVO.getFromAsync(method)));
 			te.runRoutine();
 		} else {
-			rs = method.invoke(targetImp, args);
+			// 20181218加上监控控制低级程序员的无脑设计
+			try {
+				if (WatchHelper.isNeedWatch()) {
+					WatchHelper.bind(new WatchInfo().setId(targetImp.getClass().getName() + "-" + method.getName()));
+				}
+				rs = method.invoke(targetImp, args);
+			} finally {
+				if (WatchHelper.isNeedWatch()) {
+					WatchHelper.unbind();
+				}
+			}
 		}
 		return rs;
 	}
-	private final static Object lockObj=new Object();
+
+	private final static Object lockObj = new Object();
+
 	private static AopInterceptor getInterceptor(Method method) {
 		AopInterceptor interceptor = CACHE.get(method);
 		if (interceptor == null) {

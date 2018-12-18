@@ -18,9 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import com.beetle.framework.util.ResourceLoader;
 
@@ -72,8 +75,7 @@ final public class AppProperties {
 			try {
 				is = ResourceLoader.getResAsStream(filenamePath);
 				appPpt.load(is);
-				System.out.println("find  [" + filenamePath
-						+ "] in classpath and  use it!");
+				System.out.println("find  [" + filenamePath + "] in classpath and  use it!");
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -154,8 +156,7 @@ final public class AppProperties {
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	public static String getByDecode(String key, String charsetName)
-			throws UnsupportedEncodingException {
+	public static String getByDecode(String key, String charsetName) throws UnsupportedEncodingException {
 		String x = get(key);
 		if (x == null) {
 			return null;
@@ -193,10 +194,24 @@ final public class AppProperties {
 	}
 
 	/**
+	 * 把key对应值拆成一个集合返回，元素通过';'分割，如果Key不存在，返回一个空的Set
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static Set<String> getAsSet(String key) {
+		String a = get(key);
+		if (a == null || a.length() == 0) {
+			return new HashSet<>();
+		}
+		String[] sx = a.split(";");
+		return new HashSet<>(Arrays.asList(sx));
+	}
+
+	/**
 	 * 根据属性的Key的前缀返回满足此前缀Key所有的值
 	 * 
-	 * @param prefixName
-	 *            --key的前缀名称
+	 * @param prefixName --key的前缀名称
 	 * @return 满足此前缀Key所有的值列表
 	 */
 	public static List<String> getByPrefixName(String prefixName) {

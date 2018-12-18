@@ -15,6 +15,9 @@ package com.beetle.framework.resource.watch;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.beetle.framework.AppProperties;
 
 /**
  * <p>
@@ -38,12 +41,16 @@ import java.util.Map;
  * @version 1.0
  */
 public final class WatchInfo {
+	public static final int MAX_COUNTER = AppProperties.getAsInt("resoucrcesMaxCounter", 15);
+	public final static int WARN_COUNTER = AppProperties.getAsInt("resoucrcesWarnCounter", 5);
 	private int status; // 业务类（command/delegate）的状态;10--启动状态；11--运行中；12--结束状态
 
 	private Map<String, VO> resoucrces; // key==资源名称;value=某种资源的共享对象（例如：数据库连接）;
 	// private int resourceType; //资源名称类型;1--数据连接（Connection）;2--...
 	private long clearTime; // 单位毫秒
 	private long beginTime; // 单位毫秒
+	private AtomicInteger counter;// 计数器，记录获取资源的次数，可以用来做系统资源效率进行评估，来做质量控制
+	private String id;// 监控对象标示，可选
 
 	static class VO {
 		public int getObjType() {
@@ -67,8 +74,7 @@ public final class WatchInfo {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((resObj == null) ? 0 : resObj.hashCode());
+			result = prime * result + ((resObj == null) ? 0 : resObj.hashCode());
 			return result;
 		}
 
@@ -97,6 +103,17 @@ public final class WatchInfo {
 		this.status = 10;
 		this.beginTime = 0; // System.currentTimeMillis();
 		this.resoucrces = new HashMap<String, VO>();
+		this.counter = new AtomicInteger(1);
+		this.id = "";
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public WatchInfo setId(String id) {
+		this.id = id;
+		return this;
 	}
 
 	public long getClearTime() {
@@ -109,6 +126,10 @@ public final class WatchInfo {
 
 	public long getBeginTime() {
 		return beginTime;
+	}
+
+	public AtomicInteger getCounter() {
+		return counter;
 	}
 
 	public int getResourceSizeByType(int objType) {
@@ -132,15 +153,18 @@ public final class WatchInfo {
 		if (vo == null) {
 			return null;
 		}
+		counter.incrementAndGet();
 		return vo.getResObj();
 	}
 
-	public void setStatus(int status) {
+	public WatchInfo setStatus(int status) {
 		this.status = status;
+		return this;
 	}
 
-	public void setClearTime(long clearTime) {
+	public WatchInfo setClearTime(long clearTime) {
 		this.clearTime = clearTime;
+		return this;
 	}
 
 	public void clearResoucrces() {
@@ -151,9 +175,8 @@ public final class WatchInfo {
 		return resoucrces;
 	}
 
-	public void addResource(String resourceName, Object resourceObject,
-			int objType) {
-		//System.out.println(resourceObject);
+	public void addResource(String resourceName, Object resourceObject, int objType) {
+		// System.out.println(resourceObject);
 		this.resoucrces.put(resourceName, new VO(objType, resourceObject));
 	}
 

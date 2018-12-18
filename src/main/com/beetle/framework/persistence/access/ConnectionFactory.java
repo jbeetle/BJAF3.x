@@ -18,11 +18,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import com.beetle.framework.AppProperties;
 import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.log.AppLogger;
 import com.beetle.framework.resource.container.ContainerUtil;
@@ -33,6 +35,7 @@ import com.beetle.framework.resource.watch.WatchHelper;
 import com.beetle.framework.resource.watch.WatchInfo;
 import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.cache.StrongCache;
+import com.beetle.framework.util.encrypt.Coder;
 
 /**
  * <p>
@@ -53,9 +56,8 @@ import com.beetle.framework.util.cache.StrongCache;
  * @version 1.0
  */
 public final class ConnectionFactory {
-	private static AppLogger logger = AppLogger
-			.getInstance(ConnectionFactory.class);
-
+	private static AppLogger logger = AppLogger.getInstance(ConnectionFactory.class);
+	private static final Set<String> OperatorMd5Set = AppProperties.getAsSet("excludeOperatorValidate");
 	private final static ICache dsCache = new StrongCache();
 
 	/**
@@ -66,14 +68,28 @@ public final class ConnectionFactory {
 	 * @return
 	 * @throws ConnectionException
 	 */
-	public static Connection getConncetion(String dataSourceName)
-			throws ConnectionException {
+	public static Connection getConncetion(String dataSourceName) throws ConnectionException {
 		Connection conn;
 		if (WatchHelper.isNeedWatch()) {
 			final WatchInfo wi = WatchHelper.currentWatch();
 			if (wi == null) {
 				conn = getConncetion_(dataSourceName);
 				return conn;
+			}
+			int curCounter = wi.getCounter().get();
+			if (curCounter >= WatchInfo.WARN_COUNTER && curCounter < WatchInfo.MAX_COUNTER) {
+				logger.warn(
+						"Warning: the current operation[{}] calls more than {} database times, there is the suspicion of poor performance, it is recommended to optimize the design!",
+						wi.getId(), curCounter);
+			} else if (curCounter >= WatchInfo.MAX_COUNTER) {
+				String md5 = Coder.md5(wi.getId());
+				if (!OperatorMd5Set.contains(md5)) {
+					throw new AppRuntimeException("This operation[" + wi.getId() + "] calls more than "
+							+ WatchInfo.MAX_COUNTER
+							+ " database times, belongs to the garbage design, prohibits the execution, please improve the design!");
+				} else {
+					logger.info("pass the supid[{}]method", wi.getId());
+				}
 			}
 			conn = (Connection) wi.getResourceByName(dataSourceName);
 			if (conn != null) {
@@ -82,7 +98,7 @@ public final class ConnectionFactory {
 				}
 				return conn;
 			} else {
-				//synchronized (driverCache) { //20160627
+				// synchronized (driverCache) { //20160627
 				synchronized (wi) {
 					conn = (Connection) wi.getResourceByName(dataSourceName);
 					if (conn != null) {
@@ -99,11 +115,8 @@ public final class ConnectionFactory {
 					if (wi.checkResourceExist(Constant.BUSINESS_CMD_TRANS)) {
 						if (wi.getResourceSizeByType(1) > 1) {
 							if (DBConfig.isAtomikosSupport(dataSourceName)) {
-								ITransaction trans = JTAFactory
-										.getTransactionFromFramework();
-								wi.addResource(
-										Constant.BUSINESS_CMD_TRANS,
-										trans,
+								ITransaction trans = JTAFactory.getTransactionFromFramework();
+								wi.addResource(Constant.BUSINESS_CMD_TRANS, trans,
 										Constant.COMMON_WATCHINFO_OBJECT_TYPE_TRANS);
 								trans.begin();
 							} else {
@@ -115,8 +128,7 @@ public final class ConnectionFactory {
 								}
 							}
 						} else {// 单个数据源，使用jdbctransation
-							ITransaction trans = JTAFactory
-									.getTransactionFromConnection(conn);
+							ITransaction trans = JTAFactory.getTransactionFromConnection(conn);
 							wi.addResource(Constant.BUSINESS_CMD_TRANS, trans,
 									Constant.COMMON_WATCHINFO_OBJECT_TYPE_TRANS);
 							trans.begin();
@@ -142,10 +154,8 @@ public final class ConnectionFactory {
 		return getConncetion_(dataSourceName);
 	}
 
-	private static Connection getConncetion_(String dataSourceName)
-			throws ConnectionException {
-		int flag = Integer.parseInt(DBConfig.getFrameworkDS(dataSourceName,
-				DBConfig.use_mode));
+	private static Connection getConncetion_(String dataSourceName) throws ConnectionException {
+		int flag = Integer.parseInt(DBConfig.getFrameworkDS(dataSourceName, DBConfig.use_mode));
 		if (logger.isDebugEnabled()) {
 			logger.debug(dataSourceName + "'s[use-mode]:" + flag);
 			logger.debug("==create new connention:" + dataSourceName);
@@ -171,8 +181,7 @@ public final class ConnectionFactory {
 		return newDriverConn(dataSourceName);
 	}
 
-	private static Connection fromFramework(String dataSourceName)
-			throws ConnectionException {
+	private static Connection fromFramework(String dataSourceName) throws ConnectionException {
 		IConnPool pool;
 		if (dsCache.containsKey(dataSourceName)) {
 			pool = (IConnPool) dsCache.get(dataSourceName);
@@ -183,8 +192,7 @@ public final class ConnectionFactory {
 		}
 	}
 
-	private static Connection fromContain(String dataSourceName)
-			throws ConnectionException {
+	private static Connection fromContain(String dataSourceName) throws ConnectionException {
 		DataSource ds = (DataSource) dsCache.get(dataSourceName);
 		if (ds == null) {
 			synchronized (dsCache) {
@@ -230,11 +238,9 @@ public final class ConnectionFactory {
 	}
 
 	private static DataSource initDatasource(String dataSourceName) {
-		String jndiname = DBConfig.getFrameworkDS(dataSourceName,
-				DBConfig.jndi_name);
+		String jndiname = DBConfig.getFrameworkDS(dataSourceName, DBConfig.jndi_name);
 		if (jndiname == null || jndiname.trim().length() == 0) {
-			throw new AppRuntimeException(dataSourceName
-					+ "'s [jndi-name] can not be null,must be setted!");
+			throw new AppRuntimeException(dataSourceName + "'s [jndi-name] can not be null,must be setted!");
 		}
 		Context ctx = null;
 		try {
@@ -262,36 +268,26 @@ public final class ConnectionFactory {
 		if (GeneConnPool == null) {
 			synchronized (dsCache) {
 				if (!dsCache.containsKey(dataSourceName)) {
-					int minsize = Integer.parseInt(DBConfig.getFrameworkDS(
-							dataSourceName, "pool-minsize"));
-					int maxsize = Integer.parseInt(DBConfig.getFrameworkDS(
-							dataSourceName, "pool-maxsize"));
-					String drvName = DBConfig.getFrameworkDS(dataSourceName,
-							"driver-class");
-					String url = DBConfig.getFrameworkDS(dataSourceName,
-							"connection-url");
-					String user = DBConfig.getFrameworkDS(dataSourceName,
-							"user-name");
-					String passwd = DBConfig
-							.decodeDatasourcePassword(dataSourceName);
+					int minsize = Integer.parseInt(DBConfig.getFrameworkDS(dataSourceName, "pool-minsize"));
+					int maxsize = Integer.parseInt(DBConfig.getFrameworkDS(dataSourceName, "pool-maxsize"));
+					String drvName = DBConfig.getFrameworkDS(dataSourceName, "driver-class");
+					String url = DBConfig.getFrameworkDS(dataSourceName, "connection-url");
+					String user = DBConfig.getFrameworkDS(dataSourceName, "user-name");
+					String passwd = DBConfig.decodeDatasourcePassword(dataSourceName);
 					final String impStr;
 					try {
-						impStr = DBConfig.getFrameworkDS(dataSourceName,
-								DBConfig.pool_imp);
-						GeneConnPool = (IConnPool) Class.forName(impStr)
-								.newInstance();
+						impStr = DBConfig.getFrameworkDS(dataSourceName, DBConfig.pool_imp);
+						GeneConnPool = (IConnPool) Class.forName(impStr).newInstance();
 						GeneConnPool.setConURL(url);
 						GeneConnPool.setDriverName(drvName);
 						GeneConnPool.setMax(maxsize);
 						GeneConnPool.setMin(minsize);
 						GeneConnPool.setUsername(user);
 						GeneConnPool.setPassword(passwd);
-						GeneConnPool.setTestSql(DBConfig.getFrameworkDS(
-								dataSourceName, "test-sql"));
+						GeneConnPool.setTestSql(DBConfig.getFrameworkDS(dataSourceName, "test-sql"));
 						GeneConnPool.start();
 						dsCache.put(dataSourceName, GeneConnPool);
-						logger.info(dataSourceName + "'s " + impStr
-								+ " Started!");
+						logger.info(dataSourceName + "'s " + impStr + " Started!");
 					} catch (Exception e) {
 						throw new ConnectionException(e);
 					}
@@ -315,19 +311,14 @@ public final class ConnectionFactory {
 	public static Connection newDriverConn(String dataSourceName) {
 		try {
 			/*
-			 * Driver drv = (Driver) Class.forName(
-			 * DBConfig.getFrameworkDS(dataSourceName, "driver-class"))
-			 * .newInstance(); DriverManager.registerDriver(drv);
+			 * Driver drv = (Driver) Class.forName( DBConfig.getFrameworkDS(dataSourceName,
+			 * "driver-class")) .newInstance(); DriverManager.registerDriver(drv);
 			 */
 			if (!driverCache.containsKey(dataSourceName)) {
-				Class.forName(DBConfig.getFrameworkDS(dataSourceName,
-						"driver-class"));
-				driverCache
-						.put(dataSourceName, DBConfig.getFrameworkDS(
-								dataSourceName, "driver-class"));
+				Class.forName(DBConfig.getFrameworkDS(dataSourceName, "driver-class"));
+				driverCache.put(dataSourceName, DBConfig.getFrameworkDS(dataSourceName, "driver-class"));
 			}
-			return DriverManager.getConnection(
-					DBConfig.getFrameworkDS(dataSourceName, "connection-url"),
+			return DriverManager.getConnection(DBConfig.getFrameworkDS(dataSourceName, "connection-url"),
 					DBConfig.getFrameworkDS(dataSourceName, "user-name"),
 					DBConfig.decodeDatasourcePassword(dataSourceName));
 		} catch (Exception e) {
@@ -339,16 +330,12 @@ public final class ConnectionFactory {
 	/**
 	 * 回收相关资源
 	 * 
-	 * @param conn
-	 *            Connection
-	 * @param stm
-	 *            Statement
-	 * @param res
-	 *            ResultSet
+	 * @param conn Connection
+	 * @param stm  Statement
+	 * @param res  ResultSet
 	 * @throws ConnectionException
 	 */
-	public static void closeAll(Connection conn, Statement stm, ResultSet res)
-			throws ConnectionException {
+	public static void closeAll(Connection conn, Statement stm, ResultSet res) throws ConnectionException {
 		try {
 			if (res != null) {
 				res.close();
@@ -393,12 +380,10 @@ public final class ConnectionFactory {
 	 * 关闭数据库连接
 	 * 
 	 * 
-	 * @param conn
-	 *            Connection
+	 * @param conn Connection
 	 * @throws ConnectionException
 	 */
-	public static void closeConnection(Connection conn)
-			throws ConnectionException {
+	public static void closeConnection(Connection conn) throws ConnectionException {
 		closeAll(conn, null, null);
 	}
 

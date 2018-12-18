@@ -90,7 +90,7 @@ public class MysqlPaginationImp implements IPagination {
 					query.addParameter(sp);
 				}
 			}
-			query.setSql("select count(*) from (" + pInfo.getUserSql() + ") c_t");
+			query.setSql("select count(1) from (" + pInfo.getUserSql() + ") c_t");
 		} else {
 			List<V> paramList = pInfo.getCompositeSQLParamList();
 			if (!paramList.isEmpty()) {
@@ -114,7 +114,7 @@ public class MysqlPaginationImp implements IPagination {
 				}
 				//
 				// String sql = pInfo.getUserSql() + " where " + whereStr;
-				query.setSql("select count(*) from (" + sql + ") c_t");
+				query.setSql("select count(1) from (" + sql + ") c_t");
 				// paramList.clear();
 			}
 		}

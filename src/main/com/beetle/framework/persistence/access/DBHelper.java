@@ -11,8 +11,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import com.beetle.framework.AppProperties;
+import com.beetle.framework.util.encrypt.Coder;
+
 public class DBHelper {
 	private static final String sqlInject = "'|;|-|--|+|//|/|%|#";// 过滤掉的sql关键字，可以手动添加
+	private static final Set<String> sqlMd5Set = AppProperties.getAsSet("excludeSqlInjectValidate");
+
+	public static boolean excludeSqlInjectValidate(String sql) {
+		String md5 = Coder.md5(sql);
+		return sqlMd5Set.contains(md5);
+	}
 
 	public final static boolean sqlInjectValidate(String str) {
 		str = str.toLowerCase();// 统一转为小写
@@ -28,8 +37,7 @@ public class DBHelper {
 	/**
 	 * ��ȡ��ݿ�ϵͳ���û�
 	 * 
-	 * @param conn
-	 *            Connection
+	 * @param conn Connection
 	 * @return String[]
 	 * @throws SQLException
 	 */
@@ -40,8 +48,7 @@ public class DBHelper {
 	/**
 	 * ��ȡ��ݿ�ϵͳ���û�
 	 * 
-	 * @param metaData
-	 *            DatabaseMetaData
+	 * @param metaData DatabaseMetaData
 	 * @return String[]
 	 * @throws SQLException
 	 */
@@ -63,8 +70,7 @@ public class DBHelper {
 	/**
 	 * ��ȡ��ݿ�ϵͳ��������ݿ����
 	 * 
-	 * @param conn
-	 *            ��ݿ�l��
+	 * @param conn ��ݿ�l��
 	 * @return String[]
 	 * @throws SQLException
 	 */
@@ -75,8 +81,7 @@ public class DBHelper {
 	/**
 	 * ��ȡ��ݿ�ϵͳ����ƣ��磺sybase/oracle/sqlserver...��
 	 * 
-	 * @param conn
-	 *            Connection
+	 * @param conn Connection
 	 * @return String
 	 * @throws SQLException
 	 */
@@ -88,8 +93,7 @@ public class DBHelper {
 	/**
 	 * 
 	 * 
-	 * @param metaData
-	 *            DatabaseMetaData
+	 * @param metaData DatabaseMetaData
 	 * @return String[]
 	 * @throws SQLException
 	 */
@@ -111,12 +115,9 @@ public class DBHelper {
 	/**
 	 * 
 	 * 
-	 * @param conn
-	 *            Connection
-	 * @param user
-	 *            String
-	 * @param dataBase
-	 *            String
+	 * @param conn     Connection
+	 * @param user     String
+	 * @param dataBase String
 	 * @return String[]
 	 * @throws SQLException
 	 */
@@ -127,12 +128,9 @@ public class DBHelper {
 	/**
 	 * 
 	 * 
-	 * @param metaData
-	 *            DatabaseMetaData
-	 * @param dataBase
-	 *            String
-	 * @param user
-	 *            String
+	 * @param metaData DatabaseMetaData
+	 * @param dataBase String
+	 * @param user     String
 	 * @return String[]
 	 * @throws SQLException
 	 */

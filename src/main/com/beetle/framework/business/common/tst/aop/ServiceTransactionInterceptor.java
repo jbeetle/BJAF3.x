@@ -6,6 +6,8 @@ import com.beetle.framework.AppRuntimeException;
 import com.beetle.framework.business.command.CommandException;
 import com.beetle.framework.business.command.CommandExecutor;
 import com.beetle.framework.business.command.CommandImp;
+import com.beetle.framework.resource.watch.WatchHelper;
+import com.beetle.framework.resource.watch.WatchInfo;
 import com.beetle.framework.util.cache.ConcurrentCache;
 import com.beetle.framework.util.cache.ICache;
 import com.beetle.framework.util.thread.task.TaskExecutor;
@@ -30,7 +32,7 @@ public class ServiceTransactionInterceptor {
 	}
 
 	public static Object invokeRequired(Object targetImp, Method method, Object[] args) throws Throwable {
-		String kfc = (String) KFC.get(Thread.currentThread());
+		String kfc = (String) KFC.get(Thread.currentThread());// 为了支持事务嵌套，其实事务嵌套没毛用，反而把系统用复杂了，以后考虑去掉，20181218review
 		if (kfc == null) {
 			try {
 				KFC.put(Thread.currentThread(), TMP_KEY);
@@ -112,6 +114,10 @@ public class ServiceTransactionInterceptor {
 		@Override
 		public void process() throws CommandException {
 			try {
+				WatchInfo wi = WatchHelper.currentWatch();
+				if (wi != null) {
+					wi.setId(impObj.getClass().getName() + "-" + method.getName());
+				}
 				this.result = method.invoke(impObj, args);
 			} catch (Exception e) {
 				CommandException ce = new CommandException(e);

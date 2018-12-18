@@ -14,14 +14,19 @@
  */
 package com.beetle.framework.persistence.access.base;
 
-import com.beetle.framework.persistence.access.DBHelper;
-import com.beetle.framework.persistence.access.operator.SqlParameter;
-
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
- class BatchManerImp implements IAccessManner {
+import com.beetle.framework.persistence.access.DBHelper;
+import com.beetle.framework.persistence.access.operator.SqlParameter;
+
+class BatchManerImp implements IAccessManner {
 	private String sql;
 
 	private ArrayList<List<SqlParameter>> batchValues;
@@ -30,12 +35,13 @@ import java.util.List;
 		this.sql = sql;
 		this.batchValues = batchValues;
 		if (DBHelper.sqlInjectValidate(sql)) {
-			throw new DBAccessException(-1001,"Statement["+sql+"] exists SQL injection risk,aborts！");
+			if (!DBHelper.excludeSqlInjectValidate(sql)) {
+				throw new DBAccessException(-1001, "Statement[" + sql + "] exists SQL injection risk,aborts！");
+			}
 		}
 	}
 
-	public PreparedStatement accessByPreStatement(Connection conn)
-			throws SQLException {
+	public PreparedStatement accessByPreStatement(Connection conn) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(sql);
 		for (int j = 0; j < batchValues.size(); j++) {
 			List<SqlParameter> rowParameters = batchValues.get(j);
@@ -52,12 +58,10 @@ import java.util.List;
 							ps.setString(i + 1, (String) sqlParam.getValue());
 							break;
 						case Types.TIMESTAMP:
-							ps.setTimestamp(i + 1,
-									(Timestamp) sqlParam.getValue());
+							ps.setTimestamp(i + 1, (Timestamp) sqlParam.getValue());
 							break;
 						default:
-							ps.setObject(i + 1, sqlParam.getValue(),
-									sqlParam.getType());
+							ps.setObject(i + 1, sqlParam.getValue(), sqlParam.getType());
 							break;
 						}
 					}
@@ -74,8 +78,7 @@ import java.util.List;
 		return ps;
 	}
 
-	public CallableStatement accessByCallableStatement(Connection conn)
-			throws SQLException {
+	public CallableStatement accessByCallableStatement(Connection conn) throws SQLException {
 		throw new com.beetle.framework.AppRuntimeException("not implemented!");
 	}
 }
