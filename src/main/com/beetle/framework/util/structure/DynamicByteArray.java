@@ -8,8 +8,7 @@ public class DynamicByteArray {
 
 	public DynamicByteArray(int initialCapacity) {
 		if (initialCapacity < 0)
-			throw new IllegalArgumentException("Illegal Capacity: "
-					+ initialCapacity);
+			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
 		this.b = new byte[initialCapacity];
 		totalCapacity = initialCapacity;
 		size = 0;
@@ -25,6 +24,10 @@ public class DynamicByteArray {
 
 	public byte[] getBytes() {
 		return b;
+	}
+
+	public void add(byte[] incrb) {
+		add(incrb, incrb.length);
 	}
 
 	public void add(byte[] incrb, int flag) {
