@@ -1,12 +1,42 @@
 package com.beetle.framework.util.file;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 
 /**
  * File utilities.
  */
 public final class FileUtil {
 
+	/**
+	 * 获取文件后缀
+	 * @param f
+	 * @return
+	 */
+	public static String getExtension(File f) {
+		String ext = null;
+		String s = f.getName();
+		int i = s.lastIndexOf('.');
+
+		if (i > 0 && i < s.length() - 1) {
+			ext = s.substring(i + 1).toLowerCase();
+		}
+		return ext;
+	}
 	// ---------------------------------------------------------------- file
 	// copy
 
@@ -18,10 +48,8 @@ public final class FileUtil {
 	/**
 	 * Copies one file to another. Existing file will be overwritten,
 	 * 
-	 * @param fileIn
-	 *            input file
-	 * @param fileOut
-	 *            output file
+	 * @param fileIn  input file
+	 * @param fileOut output file
 	 * @throws IOException
 	 */
 	public static void copy(String fileIn, String fileOut) throws IOException {
@@ -29,15 +57,12 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Copies one file to another with specified buffer size. Existing file will
-	 * be overwritten,
+	 * Copies one file to another with specified buffer size. Existing file will be
+	 * overwritten,
 	 * 
-	 * @param fileIn
-	 *            input file
-	 * @param fileOut
-	 *            output file
-	 * @param bufsize
-	 *            size of the buffer used for copying
+	 * @param fileIn  input file
+	 * @param fileOut output file
+	 * @param bufsize size of the buffer used for copying
 	 * @throws IOException
 	 */
 	public static void copy(String fileIn, String fileOut, int bufsize) throws IOException {
@@ -47,10 +72,8 @@ public final class FileUtil {
 	/**
 	 * Copies one file to another. Existing file will be overwritten,
 	 * 
-	 * @param fileIn
-	 *            input file
-	 * @param fileOut
-	 *            output file
+	 * @param fileIn  input file
+	 * @param fileOut output file
 	 * @throws IOException
 	 */
 	public static void copy(File fileIn, File fileOut) throws IOException {
@@ -58,15 +81,12 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Copies one file to another with specified buffer size. Existing file will
-	 * be overwritten,
+	 * Copies one file to another with specified buffer size. Existing file will be
+	 * overwritten,
 	 * 
-	 * @param fileIn
-	 *            input file
-	 * @param fileOut
-	 *            output file
-	 * @param bufsize
-	 *            size of the buffer used for copying
+	 * @param fileIn  input file
+	 * @param fileOut output file
+	 * @param bufsize size of the buffer used for copying
 	 * @throws IOException
 	 */
 	public static void copy(File fileIn, File fileOut, int bufsize) throws IOException {
@@ -101,11 +121,10 @@ public final class FileUtil {
 	public final static int STRING_BUFFER_SIZE = 32 * 1024;
 
 	/**
-	 * Reads file's content into a String. Implicitly assumes that the file is
-	 * in the default encoding.
+	 * Reads file's content into a String. Implicitly assumes that the file is in
+	 * the default encoding.
 	 * 
-	 * @param fileName
-	 *            name of the file to read from
+	 * @param fileName name of the file to read from
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -114,13 +133,11 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Reads file's content into a String. Implicitly assumes that the file is
-	 * in the default encoding.
+	 * Reads file's content into a String. Implicitly assumes that the file is in
+	 * the default encoding.
 	 * 
-	 * @param fileName
-	 *            name of the file to read from
-	 * @param bufferSize
-	 *            buffer size
+	 * @param fileName   name of the file to read from
+	 * @param bufferSize buffer size
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -129,11 +146,10 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Reads file's content into a String. Implicitly assumes that the file is
-	 * in the default encoding.
+	 * Reads file's content into a String. Implicitly assumes that the file is in
+	 * the default encoding.
 	 * 
-	 * @param file
-	 *            file to read
+	 * @param file file to read
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -142,13 +158,11 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Reads file's content into a String. Implicitly assumes that the file is
-	 * in the default encoding.
+	 * Reads file's content into a String. Implicitly assumes that the file is in
+	 * the default encoding.
 	 * 
-	 * @param file
-	 *            file to read
-	 * @param bufferSize
-	 *            buffer size
+	 * @param file       file to read
+	 * @param bufferSize buffer size
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -186,13 +200,11 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Writes string to a file. Implicitly assumes that the file will be written
-	 * the default encoding.
+	 * Writes string to a file. Implicitly assumes that the file will be written the
+	 * default encoding.
 	 * 
-	 * @param fileName
-	 *            name of the destination file
-	 * @param s
-	 *            source string
+	 * @param fileName name of the destination file
+	 * @param s        source string
 	 * @throws IOException
 	 */
 	public static void writeString(String fileName, String s) throws IOException {
@@ -200,15 +212,12 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Writes string to a file. Implicitly assumes that the file will be written
-	 * the default encoding.
+	 * Writes string to a file. Implicitly assumes that the file will be written the
+	 * default encoding.
 	 * 
-	 * @param fileName
-	 *            name of the destination file
-	 * @param s
-	 *            source string
-	 * @param bufferSize
-	 *            buffer size
+	 * @param fileName   name of the destination file
+	 * @param s          source string
+	 * @param bufferSize buffer size
 	 * @throws IOException
 	 */
 	public static void writeString(String fileName, String s, int bufferSize) throws IOException {
@@ -216,13 +225,11 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Writes string to a file. Implicitly assumes that the file will be written
-	 * the default encoding.
+	 * Writes string to a file. Implicitly assumes that the file will be written the
+	 * default encoding.
 	 * 
-	 * @param file
-	 *            destination file
-	 * @param s
-	 *            source string
+	 * @param file destination file
+	 * @param s    source string
 	 * @throws IOException
 	 */
 	public static void writeString(File file, String s) throws IOException {
@@ -230,15 +237,12 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Writes string to a file. Implicitly assumes that the file will be written
-	 * the default encoding.
+	 * Writes string to a file. Implicitly assumes that the file will be written the
+	 * default encoding.
 	 * 
-	 * @param file
-	 *            destination file
-	 * @param s
-	 *            source string
-	 * @param bufferSize
-	 *            buffer size
+	 * @param file       destination file
+	 * @param s          source string
+	 * @param bufferSize buffer size
 	 * @throws IOException
 	 */
 	public static void writeString(File file, String s, int bufferSize) throws IOException {
@@ -268,10 +272,8 @@ public final class FileUtil {
 	/**
 	 * Reads file's content into a String.
 	 * 
-	 * @param fileName
-	 *            source file name
-	 * @param encoding
-	 *            java encoding string
+	 * @param fileName source file name
+	 * @param encoding java encoding string
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -282,12 +284,9 @@ public final class FileUtil {
 	/**
 	 * Reads file's content into a String.
 	 * 
-	 * @param fileName
-	 *            source file name
-	 * @param bufferSize
-	 *            buffer size
-	 * @param encoding
-	 *            java encoding string
+	 * @param fileName   source file name
+	 * @param bufferSize buffer size
+	 * @param encoding   java encoding string
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -298,10 +297,8 @@ public final class FileUtil {
 	/**
 	 * Reads file's content into a String.
 	 * 
-	 * @param file
-	 *            source file
-	 * @param encoding
-	 *            java encoding string
+	 * @param file     source file
+	 * @param encoding java encoding string
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -310,17 +307,13 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Reads file's content into a String. This is a bit different
-	 * implementation than other readString() method, since the number of
-	 * characters in the file is not known. This currently only affest the value
-	 * of the maximum file size.
+	 * Reads file's content into a String. This is a bit different implementation
+	 * than other readString() method, since the number of characters in the file is
+	 * not known. This currently only affest the value of the maximum file size.
 	 * 
-	 * @param file
-	 *            source file
-	 * @param bufferSize
-	 *            buffer size
-	 * @param encoding
-	 *            java encoding string
+	 * @param file       source file
+	 * @param bufferSize buffer size
+	 * @param encoding   java encoding string
 	 * @return string with file content or null
 	 * @throws IOException
 	 */
@@ -374,12 +367,9 @@ public final class FileUtil {
 	/**
 	 * Writes string to a file.
 	 * 
-	 * @param fileName
-	 *            destination file name
-	 * @param s
-	 *            source string
-	 * @param encoding
-	 *            java encoding string
+	 * @param fileName destination file name
+	 * @param s        source string
+	 * @param encoding java encoding string
 	 * @throws IOException
 	 */
 	public static void writeString(String fileName, String s, String encoding) throws IOException {
@@ -389,14 +379,10 @@ public final class FileUtil {
 	/**
 	 * Writes string to a file.
 	 * 
-	 * @param fileName
-	 *            destination file name
-	 * @param s
-	 *            source string
-	 * @param bufferSize
-	 *            buffer size
-	 * @param encoding
-	 *            java encoding string
+	 * @param fileName   destination file name
+	 * @param s          source string
+	 * @param bufferSize buffer size
+	 * @param encoding   java encoding string
 	 * @throws IOException
 	 */
 	public static void writeString(String fileName, String s, int bufferSize, String encoding) throws IOException {
@@ -406,12 +392,9 @@ public final class FileUtil {
 	/**
 	 * Writes string to a file.
 	 * 
-	 * @param file
-	 *            destination file
-	 * @param s
-	 *            source string
-	 * @param encoding
-	 *            java encoding string
+	 * @param file     destination file
+	 * @param s        source string
+	 * @param encoding java encoding string
 	 * @throws IOException
 	 */
 	public static void writeString(File file, String s, String encoding) throws IOException {
@@ -421,14 +404,10 @@ public final class FileUtil {
 	/**
 	 * Writes string to a file.
 	 * 
-	 * @param file
-	 *            destination file
-	 * @param s
-	 *            source string
-	 * @param bufferSize
-	 *            buffer size
-	 * @param encoding
-	 *            java encoding string
+	 * @param file       destination file
+	 * @param s          source string
+	 * @param bufferSize buffer size
+	 * @param encoding   java encoding string
 	 * @throws IOException
 	 */
 	public static void writeString(File file, String s, int bufferSize, String encoding) throws IOException {
@@ -470,10 +449,8 @@ public final class FileUtil {
 	/**
 	 * Writes serializable object to a file. Existing file will be overwritten.
 	 * 
-	 * @param f
-	 *            name of the destination file
-	 * @param o
-	 *            object to write
+	 * @param f name of the destination file
+	 * @param o object to write
 	 * @throws IOException
 	 */
 	public static void writeObject(String f, Object o) throws IOException {
@@ -484,12 +461,9 @@ public final class FileUtil {
 	 * Writes serializable object to a file with specified buffer size. Existing
 	 * file will be overwritten.
 	 * 
-	 * @param f
-	 *            name of the destination file
-	 * @param o
-	 *            object to write
-	 * @param bufferSize
-	 *            buffer size used for writing
+	 * @param f          name of the destination file
+	 * @param o          object to write
+	 * @param bufferSize buffer size used for writing
 	 * @throws IOException
 	 */
 	public static void writeObject(String f, Object o, int bufferSize) throws IOException {
@@ -520,8 +494,7 @@ public final class FileUtil {
 	/**
 	 * Reads seralized object from the file.
 	 * 
-	 * @param f
-	 *            name of the source file
+	 * @param f name of the source file
 	 * @return serialized object from the file.
 	 * @throws IOException
 	 */
@@ -532,10 +505,8 @@ public final class FileUtil {
 	/**
 	 * Reads seralized object from the file with specified buffer size
 	 * 
-	 * @param f
-	 *            name of the source file
-	 * @param bufferSize
-	 *            size of buffer used for reading
+	 * @param f          name of the source file
+	 * @param bufferSize size of buffer used for reading
 	 * @return serialized object from the file.
 	 * @throws IOException
 	 * @throws ClassNotFoundException
@@ -584,8 +555,7 @@ public final class FileUtil {
 	/**
 	 * Reads file content as byte array.
 	 * 
-	 * @param s
-	 *            file name
+	 * @param s file name
 	 * @return file content
 	 * @throws IOException
 	 */
@@ -596,8 +566,7 @@ public final class FileUtil {
 	/**
 	 * Reads file content as byte array.
 	 * 
-	 * @param file
-	 *            file to read
+	 * @param file file to read
 	 * @return file content
 	 * @throws IOException
 	 */

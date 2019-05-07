@@ -20,22 +20,83 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DirUtil {
+	private final static List<File> dirfilelist = new ArrayList<>();
+
+	private final static List<File> dirfileSuflist = new ArrayList<>();
+
+	public final static boolean createDir(String dirName) {
+		File f = new File(dirName);
+		if (f.exists()) {
+			if (f.isDirectory()) {
+				return true;
+			}
+			throw new AppRuntimeException("dirName is a file!");
+		}
+		return f.mkdir();
+	}
+
+	/**
+	 * 遍历目录底下所有的文件，返回在文件列表中（包含子目录）
+	 * 
+	 * @param dirPath
+	 * @return 返回文件列表为全局共享，用完要清，特别是下一次使用之前，必须清理，否则数据不安全
+	 */
+	public final static synchronized List<File> getDirectoryFileList(String dirPath) {
+		File dir = new File(dirPath);
+		File[] files = dir.listFiles(); // 该文件目录下文件全部放入数组
+		if (files != null) {
+			for (int i = 0; i < files.length; i++) {
+				// 是文件夹的话就是要递归再深入查找文件
+				if (files[i].isDirectory()) { // 判断是文件还是文件夹
+					getDirectoryFileList(files[i].getAbsolutePath()); // 获取文件绝对路径
+				} else {
+					// 如果是文件，直接添加到集合
+					dirfilelist.add(files[i]);
+				}
+			}
+		}
+		return dirfilelist;
+	}
+
+	/**
+	 * 查找目录底下所有匹配后缀名的文件，返回文件列表
+	 * 
+	 * @param dirPath
+	 * @param suffixname 例如："pdf"
+	 * @return 返回文件列表为全局共享，用完要清，特别是下一次使用之前，必须清理，否则数据不安全
+	 */
+	public final static synchronized List<File> getDirectoryFileList(String dirPath, String suffixname) {
+		File dir = new File(dirPath);
+		File[] files = dir.listFiles(); // 该文件目录下文件全部放入数组
+		if (files != null) {
+			for (int i = 0; i < files.length; i++) {
+				// 是文件夹的话就是要递归再深入查找文件
+				if (files[i].isDirectory()) { // 判断是文件还是文件夹
+					getDirectoryFileList(files[i].getAbsolutePath(), suffixname); // 获取文件绝对路径
+				} else {
+					// 如果是文件，直接添加到集合
+					String ext = FileUtil.getExtension(files[i]);
+					if (ext != null && ext.equalsIgnoreCase(suffixname)) {
+						dirfileSuflist.add(files[i]);
+					}
+				}
+			}
+		}
+		return dirfileSuflist;
+	}
 
 	/**
 	 * 列出某个目录下所有的文件名
 	 * 
 	 * 
 	 * @param dirPath
-	 * @param includePath
-	 *            -true文件名包含路径，false不带路径
+	 * @param includePath -true文件名包含路径，false不带路径
 	 * @return
 	 */
-	public final static List<String> getCurrentDirectoryFileNames(
-			String dirPath, boolean includePath) {
+	public final static List<String> getCurrentDirectoryFileNames(String dirPath, boolean includePath) {
 		File file = new File(dirPath);
 		if (!file.isDirectory()) {
-			throw new AppRuntimeException(dirPath
-					+ " is not a directory,can't deal!");
+			throw new AppRuntimeException(dirPath + " is not a directory,can't deal!");
 		}
 		List<String> l = new ArrayList<String>();
 		File[] fs = file.listFiles();
@@ -130,16 +191,14 @@ public class DirUtil {
 	 * 
 	 * 
 	 * @param dirPath
-	 * @param includePath
-	 *            '.txt'
+	 * @param includePath '.txt'
 	 * @return
 	 */
-	public final static List<String> getCurrentDirectoryFileNames(
-			String dirPath, boolean includePath, String suffixname) {
+	public final static List<String> getCurrentDirectoryFileNames(String dirPath, boolean includePath,
+			String suffixname) {
 		File file = new File(dirPath);
 		if (!file.isDirectory()) {
-			throw new AppRuntimeException(dirPath
-					+ " is not a directory,can't deal!");
+			throw new AppRuntimeException(dirPath + " is not a directory,can't deal!");
 		}
 		List<String> l = new ArrayList<String>();
 		File[] fs = file.listFiles(new FF(suffixname));
