@@ -110,7 +110,7 @@ public class DIContainer {
 				binder.bindProperties();
 				initBean();
 				initInject();
-				//binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27
+				// binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27
 			}
 		}
 	}
@@ -230,18 +230,18 @@ public class DIContainer {
 		Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
 		String x = System.getProperties().getProperty("java.class.path");
 		String[] jars = x.split(System.getProperties().getProperty("path.separator"));
-		logger.debug("packname:{}",packname);
+		logger.debug("packname:{}", packname);
 		for (int i = 0; i < jars.length; i++) {
 			String jar = jars[i];
-			logger.debug("jar:{}",jar);
+			logger.debug("jar:{}", jar);
 			if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
 				Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
 				if (!kvs.isEmpty()) {
 					allKvs.putAll(kvs);
 				}
 				Map<Class<?>, Class<?>> kvs2 = scanManifestLib(packname, jar);
-				if(!kvs2.isEmpty())
-				    allKvs.putAll(kvs2);
+				if (!kvs2.isEmpty())
+					allKvs.putAll(kvs2);
 			}
 		}
 		if (allKvs.isEmpty()) {// java.class.path没有，找web容器底下的
@@ -265,38 +265,42 @@ public class DIContainer {
 	}
 
 	private static Map<Class<?>, Class<?>> scanManifestLib(String packname, String sourceJar) {
-	    Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
-	    JarFile jarFile=null;
-	    try {
-	        jarFile=new JarFile(sourceJar);
-	        Manifest manifest=jarFile.getManifest();
-	        Attributes attributes=manifest.getMainAttributes();
-	        String libs=attributes.getValue("Class-Path");
-	        String[] jars=libs.split(" ");
-	        for (int i = 0; i < jars.length; i++) {
-	            String jar = jars[i];
-	            logger.debug("jar:{}",jar);
-	            if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
-	                Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
-	                if (!kvs.isEmpty()) {
-	                    allKvs.putAll(kvs);
-	                }
-	            }
-	        }
-        } catch (Exception e) {
-            logger.error("扫描{}的manifest中的lib错误",sourceJar,e);
-        }finally {
-            if(jarFile!=null)
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                    logger.error("关闭JarFile失败",e);
-                }
-        }
-        return allKvs;
-    }
+		Map<Class<?>, Class<?>> allKvs = new HashMap<Class<?>, Class<?>>();
+		JarFile jarFile = null;
+		try {
+			jarFile = new JarFile(sourceJar);
+			Manifest manifest = jarFile.getManifest();
+			if (manifest != null) {
+				Attributes attributes = manifest.getMainAttributes();
+				String libs = attributes.getValue("Class-Path");
+				if (libs != null) {
+					String[] jars = libs.split(" ");
+					for (int i = 0; i < jars.length; i++) {
+						String jar = jars[i];
+						logger.debug("jar:{}", jar);
+						if (jar.endsWith(".jar") || jar.endsWith(".JAR")) {
+							Map<Class<?>, Class<?>> kvs = ClassUtil.getPackAllInterfaceImplMap(packname, jar);
+							if (!kvs.isEmpty()) {
+								allKvs.putAll(kvs);
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("扫描{}的manifest中的lib错误", sourceJar, e);
+		} finally {
+			if (jarFile != null)
+				try {
+					jarFile.close();
+				} catch (IOException e) {
+					logger.error("关闭JarFile失败", e);
+				}
+		}
+		return allKvs;
+	}
 
-    private void loadXmlFile(ReleBinder rb, String xmlname) {
+	private void loadXmlFile(ReleBinder rb, String xmlname) {
 		String filename = AppProperties.getAppHome() + xmlname;
 		File f = new File(filename);
 		if (f.exists()) {
@@ -390,7 +394,7 @@ public class DIContainer {
 							propvalue = getBean(ref);
 						}
 						logger.debug("set :{} value", name);
-						//ObjectUtil.setFieldValue(bean, name, propvalue);
+						// ObjectUtil.setFieldValue(bean, name, propvalue);
 						ObjectUtil.setFieldValueX(bean, name, propvalue);
 					}
 				}
@@ -405,10 +409,9 @@ public class DIContainer {
 			initBean();
 			initInject();
 			/*
-			if (binder != null) {
-				binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27
-			}
-			*/
+			 * if (binder != null) {
+			 * binder.getBeanVoList().clear();//清空后aop无法用，aop需要从中寻找2018-8-27 }
+			 */
 			initFlag = true;
 		}
 	}

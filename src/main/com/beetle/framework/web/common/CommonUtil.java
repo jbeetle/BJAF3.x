@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import com.beetle.framework.AppProperties;
 import com.beetle.framework.util.file.FileUtil;
 import com.beetle.framework.util.file.XMLReader;
 
@@ -46,7 +47,7 @@ import com.beetle.framework.util.file.XMLReader;
  */
 
 public class CommonUtil extends WebUtil {
-	private static final Object lock=new Object();
+	private static final Object lock = new Object();
 	public static final String WEB_ENCODE_CHARSET = "WEB_ENCODE_CHARSET";
 	public static final String WEB_SERVER_INFO = "WEB_SERVER_INFO";
 	// public static final String WEB_EXCEPTION_INFO = "WEB_EXCEPTION_INFO";
@@ -64,11 +65,11 @@ public class CommonUtil extends WebUtil {
 	public static final String DOT_STR = ".";
 	public static final char DOT = '.';
 	public static final char RIGHT_SLASHDOT = '/';
-	public static final char DOLLAR = '$';
+	public static final char DOLLAR = AppProperties.get("web_zero_char", '$');
 	public static final String app_Context = "app_servlet_context";
 	public static final String GET_STR = "get";
 	public static final String TOMCAT_STR = "Tomcat";
-	public static final String ACTION_STR = "$action";
+	public static final String ACTION_STR = DOLLAR + "action";
 	public static final String PRC_SERVICE_FACE_STR = "$interface";
 	public static final String PRC_SERVICE_METHOD_STR = "$method";
 	public static final String PRC_SERVICE_PARAMS_STR = "$parameter";
@@ -78,20 +79,13 @@ public class CommonUtil extends WebUtil {
 	/**
 	 * 填充配置文件数据
 	 * 
-	 * @param app
-	 *            ServletContext
-	 * @param filename
-	 *            String
-	 * @param itemPath
-	 *            String
-	 * @param ElementName
-	 *            String
-	 * @param keyName
-	 *            String
-	 * @param valueName
-	 *            String
-	 * @param map
-	 *            Map
+	 * @param app         ServletContext
+	 * @param filename    String
+	 * @param itemPath    String
+	 * @param ElementName String
+	 * @param keyName     String
+	 * @param valueName   String
+	 * @param map         Map
 	 */
 	public static final void fill_DataMap(ServletContext app, String filename, String itemPath, String ElementName,
 			String keyName, String valueName, Map<String, String> map) {
@@ -159,10 +153,8 @@ public class CommonUtil extends WebUtil {
 	/**
 	 * getCookie
 	 * 
-	 * @param cookieName
-	 *            String
-	 * @param request
-	 *            HttpServletRequest
+	 * @param cookieName String
+	 * @param request    HttpServletRequest
 	 * @return Cookie
 	 */
 	public static final Cookie getCookie(String cookieName, HttpServletRequest request) {
@@ -207,8 +199,7 @@ public class CommonUtil extends WebUtil {
 	/**
 	 * 获取url的资源目录
 	 * 
-	 * @param url
-	 *            String
+	 * @param url String
 	 * @return String
 	 */
 	public final static String getUrlDir(String url) {
@@ -273,8 +264,7 @@ public class CommonUtil extends WebUtil {
 	/**
 	 * 分析请求路径 只返回请求控制器名称（不带路径）
 	 * 
-	 * @param path
-	 *            String
+	 * @param path String
 	 * @return String
 	 */
 	public final static String analysePath(String path) {

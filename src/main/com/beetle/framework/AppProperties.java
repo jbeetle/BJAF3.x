@@ -181,6 +181,15 @@ final public class AppProperties {
 		}
 	}
 
+	public static char get(String key, char defaultValue) {
+		String a = get(key);
+		if (a == null) {
+			return defaultValue;
+		} else {
+			return a.charAt(0);
+		}
+	}
+
 	public static boolean getAsBoolean(String key) {
 		return Boolean.parseBoolean(get(key).trim());
 	}

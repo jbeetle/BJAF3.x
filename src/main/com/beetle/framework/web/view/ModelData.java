@@ -44,7 +44,7 @@ public class ModelData {
 	private static final String dataKey = "DATA_KEY_2009_05_21";
 
 	public enum DataType {
-		JAVA, XML, JSON;
+		JAVA, XML, JSON, TXT;
 	}
 
 	public ModelData() {
@@ -82,14 +82,22 @@ public class ModelData {
 	}
 
 	/**
+	 * 以Txt String返回，针对web service
+	 * 
+	 * @return
+	 */
+	public ModelData asTXT() {
+		this.dataType = DataType.TXT;
+		return this;
+	}
+
+	/**
 	 * 加入一个返回数据,此方法与setData方法互斥
 	 * 
 	 * 
-	 * @param key
-	 *            数据的标识
+	 * @param key     数据的标识
 	 * 
-	 * @param ObjData
-	 *            需要返回的数据对象
+	 * @param ObjData 需要返回的数据对象
 	 */
 	public void put(String key, Object ObjData) {
 		if (dataMap.containsKey(dataKey)) {

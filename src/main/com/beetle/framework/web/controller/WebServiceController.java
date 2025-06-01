@@ -159,6 +159,15 @@ public abstract class WebServiceController extends AbnormalViewControlerImp {
 			} else {
 				JacksonCreator.getInstance().toJSONJackson(outputStream, md, ecode);
 			}
+		} else if (md.getDataType().equals(ModelData.DataType.TXT)) {
+			String txt = (String) md.getData();
+			PrintWriter out = new PrintWriter(outputStream);
+			try {
+				out.print(txt);
+			} finally {
+				out.flush();
+				out.close();
+			}
 		} else {
 			dealOtherCase(webInput, outputStream, md, ecode);
 		}

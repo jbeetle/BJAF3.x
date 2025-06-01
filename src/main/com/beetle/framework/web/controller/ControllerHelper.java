@@ -171,16 +171,15 @@ final public class ControllerHelper {
 	}
 
 	/*
-	 * public static Method getActionMethod_bak(String ctrlname, String
-	 * actionName, Object o, Class<?> methodParameter) throws
-	 * ControllerException { final String key = ctrlname + actionName; Method
-	 * method = methodCache.get(key); if (method == null) { synchronized
-	 * (methodCache) { if (methodCache.containsKey(key)) { method =
-	 * methodCache.get(key); } else { try { method =
+	 * public static Method getActionMethod_bak(String ctrlname, String actionName,
+	 * Object o, Class<?> methodParameter) throws ControllerException { final String
+	 * key = ctrlname + actionName; Method method = methodCache.get(key); if (method
+	 * == null) { synchronized (methodCache) { if (methodCache.containsKey(key)) {
+	 * method = methodCache.get(key); } else { try { method =
 	 * o.getClass().getMethod(actionName, new Class[] { methodParameter });
 	 * methodCache.put(key, method); logger.debug("cache key:{}", key);
-	 * logger.debug("cache method:{}", method); } catch (Exception e) { throw
-	 * new ControllerException(e); } } } } return method; }
+	 * logger.debug("cache method:{}", method); } catch (Exception e) { throw new
+	 * ControllerException(e); } } } } return method; }
 	 */
 	private static void dealModelAndForward(View view, HttpServletRequest request, HttpServletResponse response,
 			ServletContext app) throws IOException, ServletException {
@@ -192,6 +191,11 @@ final public class ControllerHelper {
 			logger.debug("-->viewURL:" + url);
 			logger.debug("-->viewData:{}", view.getData());
 			logger.debug("-------->Report End<--------");
+		}
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			logger.debug("-->sendRedirect:" + url);
+			response.sendRedirect(url);
+			return;
 		}
 		// 建立控制器与视图的映射关系
 		ControllerFactory.mapCtrlView(request, viewName);
